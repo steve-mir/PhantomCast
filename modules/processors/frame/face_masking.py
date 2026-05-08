@@ -150,8 +150,12 @@ def create_lower_mouth_mask(
 def create_eyes_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple, np.ndarray):
     mask = np.zeros(frame.shape[:2], dtype=np.uint8)
     eyes_cutout = None
-    landmarks = face.landmark_2d_106
-    if landmarks is not None:
+    # Pre-init outputs so we can early-return if landmarks are missing
+    # (transient detection misses on a live webcam frame).
+    min_x = min_y = max_x = max_y = 0
+    eyes_polygon = np.zeros((0, 2), dtype=np.int32)
+    landmarks = getattr(face, "landmark_2d_106", None)
+    if landmarks is not None and landmarks.shape[0] >= 106:
         # Left eye landmarks (87-96) and right eye landmarks (33-42)
         left_eye = landmarks[87:96]
         right_eye = landmarks[33:42]
@@ -160,13 +164,17 @@ def create_eyes_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple
         left_eye_center = np.mean(left_eye, axis=0).astype(np.int32)
         right_eye_center = np.mean(right_eye, axis=0).astype(np.int32)
         
-        # Calculate eye dimensions with size adjustment
+        # Calculate eye dimensions with size adjustment.
+        # eyes_mask_size is a 0-100 slider; map to a 1.0..2.0 expansion.
+        eyes_size_pct = max(0.0, min(100.0, getattr(modules.globals, "eyes_mask_size", 0.0)))
+        eyes_expansion = 1.0 + (eyes_size_pct / 100.0)
+
         def get_eye_dimensions(eye_points):
             x_coords = eye_points[:, 0]
             y_coords = eye_points[:, 1]
-            width = int((np.max(x_coords) - np.min(x_coords)) * (1 + modules.globals.mask_down_size * modules.globals.eyes_mask_size))
-            height = int((np.max(y_coords) - np.min(y_coords)) * (1 + modules.globals.mask_down_size * modules.globals.eyes_mask_size))
-            return width, height
+            width = int((np.max(x_coords) - np.min(x_coords)) * eyes_expansion)
+            height = int((np.max(y_coords) - np.min(y_coords)) * eyes_expansion)
+            return max(width, 1), max(height, 1)
         
         left_width, left_height = get_eye_dimensions(left_eye)
         right_width, right_height = get_eye_dimensions(right_eye)
@@ -288,8 +296,11 @@ def create_curved_eyebrow(points):
 def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple, np.ndarray):
     mask = np.zeros(frame.shape[:2], dtype=np.uint8)
     eyebrows_cutout = None
-    landmarks = face.landmark_2d_106
-    if landmarks is not None:
+    # Pre-init outputs so we can early-return if landmarks are missing.
+    min_x = min_y = max_x = max_y = 0
+    eyebrows_polygon = np.zeros((0, 2), dtype=np.int32)
+    landmarks = getattr(face, "landmark_2d_106", None)
+    if landmarks is not None and landmarks.shape[0] >= 106:
         # Left eyebrow landmarks (97-105) and right eyebrow landmarks (43-51)
         left_eyebrow = landmarks[97:105].astype(np.float32)
         right_eyebrow = landmarks[43:51].astype(np.float32)
@@ -298,9 +309,10 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
         left_center = np.mean(left_eyebrow, axis=0)
         right_center = np.mean(right_eyebrow, axis=0)
         
-        # Calculate bounding box with padding adjusted by size
+        # Calculate bounding box with padding adjusted by size.
+        # eyebrows_mask_size is a 0-100 slider; normalize to 0..1.
         all_points = np.vstack([left_eyebrow, right_eyebrow])
-        padding_factor = modules.globals.eyebrows_mask_size
+        padding_factor = max(0.0, min(100.0, getattr(modules.globals, "eyebrows_mask_size", 0.0))) / 100.0
         min_x = np.min(all_points[:, 0]) - 25 * padding_factor
         max_x = np.max(all_points[:, 0]) + 25 * padding_factor
         min_y = np.min(all_points[:, 1]) - 20 * padding_factor
@@ -382,7 +394,12 @@ def create_eyebrows_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, t
             # Generate and draw eyebrow shapes
             left_shape = create_curved_eyebrow(left_local)
             right_shape = create_curved_eyebrow(right_local)
-            
+
+            # Fill the curved eyebrow contours into the ROI before feathering;
+            # without this the multi-stage blur runs over an all-zero mask.
+            cv2.fillPoly(mask_roi, [left_shape.astype(np.int32)], 255)
+            cv2.fillPoly(mask_roi, [right_shape.astype(np.int32)], 255)
+
             # Apply multi-stage blurring for natural feathering (GPU-accelerated when available)
             # First, strong Gaussian blur for initial softening
             mask_roi = gpu_gaussian_blur(mask_roi, (21, 21), 7)
@@ -575,3 +592,141 @@ def draw_mask_visualization(
     )
 
     return vis_frame
+
+
+def create_chin_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple, np.ndarray):
+    """Build a feathered mask covering the chin / lower-jaw region.
+
+    Used to feather the swap's jaw boundary toward the original — the
+    classic "harsh jawline" artifact where the swapped skin tone meets
+    the target's neck. The size slider stretches the mask vertically so
+    higher values consume more of the lower face.
+
+    Returns ``(full_mask, cutout, box, polygon)`` matching the contract
+    other ``create_*_mask`` functions in this module use, so callers can
+    reuse :func:`apply_mask_area` directly.
+    """
+    mask = np.zeros(frame.shape[:2], dtype=np.uint8)
+    cutout = None
+    box = (0, 0, 0, 0)
+    polygon = np.zeros((0, 2), dtype=np.int32)
+
+    landmarks = face.landmark_2d_106
+    if landmarks is None or landmarks.shape[0] < 106:
+        return mask, cutout, box, polygon
+
+    try:
+        size_pct = max(0.0, min(100.0, getattr(modules.globals, "chin_mask_size", 0.0)))
+        # 0..100 → 0.0..1.0; controls how far up the chin region reaches
+        size_norm = size_pct / 100.0
+
+        # Jaw outline 0-32 wraps the lower face. The chin tip sits at
+        # landmark 16. Lip-bottom sits around landmark 65. We build a
+        # closed polygon: jaw outline (0..32) + a line slightly above
+        # the lower lip so the mask hugs the lower half of the face.
+        jaw = landmarks[0:33].astype(np.float32)
+        lip_bottom = landmarks[57:72].astype(np.float32)
+
+        # The "top edge" of the chin region: a horizontal line at the
+        # lip-bottom y-level, lifted slightly upward as the slider grows
+        # so larger values encroach toward the cheekbones.
+        chin_tip = jaw[16]
+        ref_top_y = float(np.min(lip_bottom[:, 1]))
+        chin_y = float(chin_tip[1])
+        # vertical span between lip-bottom and chin-tip
+        span = max(1.0, chin_y - ref_top_y)
+        # Lift the top edge upward as size grows (max ~80% of span).
+        top_y = ref_top_y - span * 0.8 * size_norm
+
+        left_x = float(jaw[0, 0])
+        right_x = float(jaw[-1, 0])
+        # Outward (lateral) padding grows with size to cover jaw corners.
+        lateral_pad = (right_x - left_x) * 0.04 * size_norm
+        top_left = np.array([left_x - lateral_pad, top_y], dtype=np.float32)
+        top_right = np.array([right_x + lateral_pad, top_y], dtype=np.float32)
+
+        # Polygon: top-left → jaw (left-to-right) → top-right (closes).
+        # jaw[0..32] already runs left-to-right along the lower contour.
+        chin_poly = np.vstack([top_left, jaw, top_right]).astype(np.int32)
+
+        # Compute bounding box.
+        min_x = max(0, int(np.min(chin_poly[:, 0])))
+        max_x = min(frame.shape[1], int(np.max(chin_poly[:, 0])))
+        min_y = max(0, int(np.min(chin_poly[:, 1])))
+        max_y = min(frame.shape[0], int(np.max(chin_poly[:, 1])))
+        if max_x <= min_x or max_y <= min_y:
+            return mask, cutout, box, polygon
+
+        # Fill polygon into a ROI then feather.
+        mask_roi = np.zeros((max_y - min_y, max_x - min_x), dtype=np.uint8)
+        polygon_relative = chin_poly - [min_x, min_y]
+        cv2.fillPoly(mask_roi, [polygon_relative], 255)
+
+        # Heavy feathering — the chin mask exists *to* hide a hard edge,
+        # so it gets a wider blur than the eyes/mouth masks.
+        mask_roi = gpu_gaussian_blur(mask_roi, (31, 31), 11)
+
+        mask[min_y:max_y, min_x:max_x] = mask_roi
+        cutout = frame[min_y:max_y, min_x:max_x].copy()
+        box = (min_x, min_y, max_x, max_y)
+        polygon = chin_poly
+    except Exception:
+        pass
+
+    return mask, cutout, box, polygon
+
+
+def create_quick_lip_mask(face: Face, frame: Frame) -> (np.ndarray, np.ndarray, tuple, np.ndarray):
+    """Fast inner-lip-only mask. Pastes the original lip strip back over
+    the swap so lip motion (e.g. for lip-syncing on a live talker)
+    survives the swap, without exposing the whole mouth-to-chin area
+    that ``create_lower_mouth_mask`` does.
+
+    Cheaper than :func:`create_lower_mouth_mask`: targets only the outer
+    lip contour (52..72) with a small expansion and a single light blur.
+    """
+    mask = np.zeros(frame.shape[:2], dtype=np.uint8)
+    cutout = None
+    box = (0, 0, 0, 0)
+    polygon = np.zeros((0, 2), dtype=np.int32)
+
+    landmarks = face.landmark_2d_106
+    if landmarks is None or landmarks.shape[0] < 72:
+        return mask, cutout, box, polygon
+
+    try:
+        # Outer lip contour
+        lip_pts = landmarks[52:72].astype(np.float32)
+        center = np.mean(lip_pts, axis=0)
+
+        # Tight expansion: 0..100 → 1.0..1.4 (vs lower-mouth-mask's 1..3.5)
+        size_pct = max(0.0, min(100.0, getattr(modules.globals, "quick_lip_size", 0.0)))
+        expansion = 1.0 + (size_pct / 100.0) * 0.4
+
+        offsets = lip_pts - center
+        expanded = (center + offsets * expansion).astype(np.int32)
+
+        min_x, min_y = np.min(expanded, axis=0)
+        max_x, max_y = np.max(expanded, axis=0)
+        # Small padding so the feather has room
+        pad = max(2, int((max_x - min_x) * 0.06))
+        min_x = max(0, min_x - pad)
+        min_y = max(0, min_y - pad)
+        max_x = min(frame.shape[1], max_x + pad)
+        max_y = min(frame.shape[0], max_y + pad)
+        if max_x <= min_x or max_y <= min_y:
+            return mask, cutout, box, polygon
+
+        mask_roi = np.zeros((max_y - min_y, max_x - min_x), dtype=np.uint8)
+        cv2.fillPoly(mask_roi, [expanded - [min_x, min_y]], 255)
+        # Single short blur — quick by design.
+        mask_roi = gpu_gaussian_blur(mask_roi, (9, 9), 3)
+
+        mask[min_y:max_y, min_x:max_x] = mask_roi
+        cutout = frame[min_y:max_y, min_x:max_x].copy()
+        box = (min_x, min_y, max_x, max_y)
+        polygon = expanded
+    except Exception:
+        pass
+
+    return mask, cutout, box, polygon

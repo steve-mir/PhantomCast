@@ -37,6 +37,13 @@ from modules.processors.frame.face_swapper import (
     apply_mouth_area,
     draw_mouth_mask_visualization,
 )
+from modules.processors.frame.face_masking import (
+    apply_mask_area,
+    create_chin_mask,
+    create_eyebrows_mask,
+    create_eyes_mask,
+    create_quick_lip_mask,
+)
 from modules.processors.frame import hair_swap as _hair_swap
 
 NAME = "DLC.FACE-SWAPPER-HYPERSWAP"
@@ -223,7 +230,30 @@ def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
 
     opacity = max(0.0, min(1.0, getattr(modules.globals, "opacity", 1.0)))
     mouth_mask_enabled = getattr(modules.globals, "mouth_mask", False)
-    needs_original = opacity < 1.0 or mouth_mask_enabled
+    quick_lip_enabled = (
+        getattr(modules.globals, "quick_lip_mask", False)
+        and getattr(modules.globals, "quick_lip_size", 0.0) > 0
+    )
+    chin_mask_enabled = (
+        getattr(modules.globals, "chin_mask", False)
+        and getattr(modules.globals, "chin_mask_size", 0.0) > 0
+    )
+    eyes_mask_enabled = (
+        getattr(modules.globals, "eyes_mask", False)
+        and getattr(modules.globals, "eyes_mask_size", 0.0) > 0
+    )
+    eyebrows_mask_enabled = (
+        getattr(modules.globals, "eyebrows_mask", False)
+        and getattr(modules.globals, "eyebrows_mask_size", 0.0) > 0
+    )
+    needs_original = (
+        opacity < 1.0
+        or mouth_mask_enabled
+        or quick_lip_enabled
+        or chin_mask_enabled
+        or eyes_mask_enabled
+        or eyebrows_mask_enabled
+    )
     original_frame = temp_frame.copy() if needs_original else temp_frame
 
     if temp_frame.dtype != np.uint8:
@@ -248,14 +278,25 @@ def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
         print(f"[{NAME}] Error during face swap: {e}")
         return original_frame
 
+    # Build the shared face mask once if any masking feature needs it.
+    feature_mask_active = (
+        mouth_mask_enabled
+        or quick_lip_enabled
+        or chin_mask_enabled
+        or eyes_mask_enabled
+        or eyebrows_mask_enabled
+    )
+    shared_face_mask = (
+        create_face_mask(target_face, original_frame) if feature_mask_active else None
+    )
+
     if mouth_mask_enabled:
-        face_mask = create_face_mask(target_face, original_frame)
         mouth_mask, mouth_cutout, mouth_box, lower_lip_polygon = (
             create_lower_mouth_mask(target_face, original_frame)
         )
         if mouth_cutout is not None and mouth_box != (0, 0, 0, 0):
             swapped_frame = apply_mouth_area(
-                swapped_frame, mouth_cutout, mouth_box, face_mask, lower_lip_polygon
+                swapped_frame, mouth_cutout, mouth_box, shared_face_mask, lower_lip_polygon
             )
             if getattr(modules.globals, "show_mouth_mask_box", False):
                 swapped_frame = draw_mouth_mask_visualization(
@@ -263,6 +304,47 @@ def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
                     target_face,
                     (mouth_mask, mouth_cutout, mouth_box, lower_lip_polygon),
                 )
+
+    # Quick lip mask — narrow lip-strip paste-back. Skipped when the
+    # broader mouth mask is already active to avoid double pastes.
+    if quick_lip_enabled and not mouth_mask_enabled:
+        _, lip_cutout, lip_box, lip_polygon = create_quick_lip_mask(
+            target_face, original_frame
+        )
+        if lip_cutout is not None and lip_box != (0, 0, 0, 0):
+            swapped_frame = apply_mask_area(
+                swapped_frame, lip_cutout, lip_box, shared_face_mask, lip_polygon
+            )
+
+    # Eyes mask — preserves the original eyes for sharp, expressive gaze.
+    if eyes_mask_enabled:
+        _, eyes_cutout, eyes_box, eyes_polygon = create_eyes_mask(
+            target_face, original_frame
+        )
+        if eyes_cutout is not None and eyes_box != (0, 0, 0, 0):
+            swapped_frame = apply_mask_area(
+                swapped_frame, eyes_cutout, eyes_box, shared_face_mask, eyes_polygon
+            )
+
+    # Eyebrows mask — preserves brow detail/arch from the original.
+    if eyebrows_mask_enabled:
+        _, brow_cutout, brow_box, brow_polygon = create_eyebrows_mask(
+            target_face, original_frame
+        )
+        if brow_cutout is not None and brow_box != (0, 0, 0, 0):
+            swapped_frame = apply_mask_area(
+                swapped_frame, brow_cutout, brow_box, shared_face_mask, brow_polygon
+            )
+
+    # Chin mask — feathers the jaw boundary toward the original.
+    if chin_mask_enabled:
+        _, chin_cutout, chin_box, chin_polygon = create_chin_mask(
+            target_face, original_frame
+        )
+        if chin_cutout is not None and chin_box != (0, 0, 0, 0):
+            swapped_frame = apply_mask_area(
+                swapped_frame, chin_cutout, chin_box, shared_face_mask, chin_polygon
+            )
 
     if getattr(modules.globals, "poisson_blend", False):
         face_mask = create_face_mask(target_face, temp_frame)

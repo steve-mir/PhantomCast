@@ -30,6 +30,12 @@ MODEL_FILE = "GPEN-BFR-256.onnx"
 ENHANCER = None
 THREAD_LOCK = threading.Lock()
 
+# Realtime Face Enhancer cache (live webcam mode only).
+# Aligned-space enhanced BGR is position-independent, so the cached
+# tensor can be re-pasted with the current frame's inv_M between
+# inference runs to keep FPS high.
+_LIVE_CACHE: dict = {'enhanced': None, 'frame_count': 0}
+
 abs_dir = os.path.dirname(os.path.abspath(__file__))
 models_dir = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(abs_dir))), "models"
@@ -69,14 +75,15 @@ def get_enhancer() -> Any:
     return ENHANCER
 
 
-def enhance_face(temp_frame: Frame, face: Face) -> Frame:
+def enhance_face(temp_frame: Frame, face: Face, live: bool = False) -> Frame:
     try:
         session = get_enhancer()
     except Exception as e:
         print(f"{NAME}: {e}")
         return temp_frame
     try:
-        return enhance_face_onnx(temp_frame, face, session, INPUT_SIZE)
+        cache = _LIVE_CACHE if live else None
+        return enhance_face_onnx(temp_frame, face, session, INPUT_SIZE, cache=cache)
     except Exception as e:
         print(f"{NAME}: Error during face enhancement: {e}")
         return temp_frame
@@ -86,14 +93,17 @@ def process_frame(source_face: Face | None, temp_frame: Frame,
                    detected_faces=None) -> Frame:
     """Enhance the target face. ``detected_faces`` is the cached list from
     the live-mode detection thread — when supplied, skips the redundant
-    per-frame detection call (~15-20 ms saved)."""
+    per-frame detection call (~15-20 ms saved) AND enables the Realtime
+    Face Enhancer cache (live FPS-preserving frame skip)."""
     if detected_faces:
         target_face = detected_faces[0]
+        live = True
     else:
         target_face = get_one_face(temp_frame)
+        live = False
     if target_face is None:
         return temp_frame
-    return enhance_face(temp_frame, target_face)
+    return enhance_face(temp_frame, target_face, live=live)
 
 
 def process_frame_v2(temp_frame: Frame) -> Frame:

@@ -65,6 +65,29 @@ mask_down_size: float = 0.1        # Expansion factor for lower lip mask (relati
 mask_size: float = 1.0             # Expansion factor for upper lip mask (relative)
 mouth_mask_size: float = 0.0       # Mouth mask size (0-100; 0=off, 100=mouth to chin)
 
+# Quick Lip Mask — fast, narrow lip-only paste-back (preserves the
+# original talker's lip motion without exposing the whole mouth-to-chin
+# area like ``mouth_mask`` does). Driven by ``quick_lip_size`` (0=off).
+quick_lip_mask: bool = False
+quick_lip_size: float = 0.0        # 0-100; >0 enables the quick lip paste-back
+
+# Chin Mask — eliminates harsh jaw boundaries by feathering the chin/jaw
+# region of the swap toward the original. ``chin_mask_size`` controls the
+# vertical extent (0-100; 0=off).
+chin_mask: bool = False
+chin_mask_size: float = 0.0
+
+# Eyes Mask — keeps eyes sharp/expressive by pasting the original eye
+# region back onto the swap. ``eyes_mask_size`` widens the elliptical
+# coverage area (0-100; 0=off).
+eyes_mask: bool = False
+eyes_mask_size: float = 0.0
+
+# Eyebrows Mask — preserves eyebrow detail and arch from the original.
+# ``eyebrows_mask_size`` controls the curved-brow padding (0-100; 0=off).
+eyebrows_mask: bool = False
+eyebrows_mask_size: float = 0.0
+
 # Forehead / Head Match Options
 # Both 0-100. Default 0 keeps the legacy face-only ellipse and forehead extension.
 # Higher values stretch the swap blend region (and the face mask used for Poisson
@@ -84,6 +107,19 @@ hair_texture: float = 0.0          # Hi-freq luminance variance match strength (
 enable_interpolation: bool = True # Toggle temporal smoothing
 interpolation_weight: float = 0  # Blend weight for current frame (0.0-1.0). Lower=smoother.
 # --- END: Added for Frame Interpolation ---
+
+# --- Face Enhancer Scaler ---
+# 0..100 slider that scales how much of the enhanced face is blended
+# back over the original. 0 = original (enhancer disabled in practice),
+# 100 = full enhanced face. Applies to GFPGAN, GPEN-256 and GPEN-512.
+enhancer_blend: float = 100.0
+
+# --- Realtime Face Enhancer ---
+# Frame-skip stride for live mode. The enhancer runs ONNX inference once
+# every ``live_enhance_skip`` frames and pastes the cached enhanced
+# face back on the in-between frames so live FPS stays high. 1 = run
+# every frame (highest fidelity, lowest FPS); larger = faster but lossier.
+live_enhance_skip: int = 2
 
 # --- END OF FILE globals.py ---
 

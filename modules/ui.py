@@ -141,10 +141,18 @@ def save_switch_states():
         "mouth_mask": modules.globals.mouth_mask,
         "show_mouth_mask_box": modules.globals.show_mouth_mask_box,
         "mouth_mask_size": modules.globals.mouth_mask_size,
+        "quick_lip_size": modules.globals.quick_lip_size,
+        "chin_mask_size": modules.globals.chin_mask_size,
+        "eyes_mask_size": modules.globals.eyes_mask_size,
+        "eyebrows_mask_size": modules.globals.eyebrows_mask_size,
         "forehead_size": modules.globals.forehead_size,
         "forehead_width": modules.globals.forehead_width,
         "hair_color": modules.globals.hair_color,
         "hair_texture": modules.globals.hair_texture,
+        "enhancer_blend": modules.globals.enhancer_blend,
+        "live_enhance_skip": modules.globals.live_enhance_skip,
+        "enable_interpolation": modules.globals.enable_interpolation,
+        "interpolation_weight": modules.globals.interpolation_weight,
     }
     with open("switch_states.json", "w") as f:
         json.dump(switch_states, f)
@@ -175,6 +183,15 @@ def load_switch_states():
         # mouth_mask is driven by the slider: on if size > 0, off if 0
         modules.globals.mouth_mask = modules.globals.mouth_mask_size > 0
         modules.globals.show_mouth_mask_box = False  # always start hidden
+        # New mask sliders — boolean toggles auto-derive from size > 0.
+        modules.globals.quick_lip_size = switch_states.get("quick_lip_size", 0.0)
+        modules.globals.quick_lip_mask = modules.globals.quick_lip_size > 0
+        modules.globals.chin_mask_size = switch_states.get("chin_mask_size", 0.0)
+        modules.globals.chin_mask = modules.globals.chin_mask_size > 0
+        modules.globals.eyes_mask_size = switch_states.get("eyes_mask_size", 0.0)
+        modules.globals.eyes_mask = modules.globals.eyes_mask_size > 0
+        modules.globals.eyebrows_mask_size = switch_states.get("eyebrows_mask_size", 0.0)
+        modules.globals.eyebrows_mask = modules.globals.eyebrows_mask_size > 0
         modules.globals.forehead_size = switch_states.get("forehead_size", 0.0)
         modules.globals.forehead_width = switch_states.get("forehead_width", 0.0)
         # New keys take precedence; fall back to legacy hair_swap_strength
@@ -184,6 +201,16 @@ def load_switch_states():
             "hair_color", switch_states.get("hair_swap_strength", 0.0)
         )
         modules.globals.hair_texture = switch_states.get("hair_texture", 0.0)
+        modules.globals.enhancer_blend = switch_states.get("enhancer_blend", 100.0)
+        modules.globals.live_enhance_skip = int(
+            switch_states.get("live_enhance_skip", 2)
+        )
+        modules.globals.enable_interpolation = switch_states.get(
+            "enable_interpolation", True
+        )
+        modules.globals.interpolation_weight = switch_states.get(
+            "interpolation_weight", 0.0
+        )
     except FileNotFoundError:
         # If the file doesn't exist, use default values
         pass
@@ -944,6 +971,93 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         _("0 = use swapped mouth, 100 = expose original mouth to chin area"),
     )
 
+    # Quick Lip Mask — fast lip-only paste-back
+    quick_lip_size_var = ctk.DoubleVar(value=modules.globals.quick_lip_size)
+
+    def on_quick_lip_size_change(value: float):
+        val = float(value)
+        modules.globals.quick_lip_size = val
+        modules.globals.quick_lip_mask = val > 0
+        save_switch_states()
+
+    quick_lip_slider, _qls = make_slider_row(
+        tuning_inner, 3, _("Quick lip mask"), quick_lip_size_var,
+        0.0, 100.0, on_quick_lip_size_change,
+    )
+    ToolTip(
+        quick_lip_slider,
+        _(
+            "Fast lip-only paste-back: keeps your original lip motion on "
+            "the swap without exposing the whole mouth-to-chin area. "
+            "0 = off, 100 = widest lip strip. Conflicts with Mouth mask "
+            "(Mouth mask wins if both are set)."
+        ),
+    )
+
+    # Chin Mask — feathers the jaw boundary
+    chin_mask_size_var = ctk.DoubleVar(value=modules.globals.chin_mask_size)
+
+    def on_chin_mask_size_change(value: float):
+        val = float(value)
+        modules.globals.chin_mask_size = val
+        modules.globals.chin_mask = val > 0
+        save_switch_states()
+
+    chin_mask_slider, _cms = make_slider_row(
+        tuning_inner, 4, _("Chin mask"), chin_mask_size_var,
+        0.0, 100.0, on_chin_mask_size_change,
+    )
+    ToolTip(
+        chin_mask_slider,
+        _(
+            "Soften the jaw boundary by feathering the swapped chin "
+            "back toward the original. Eliminates harsh jawline edges. "
+            "0 = off, 100 = covers the whole lower face."
+        ),
+    )
+
+    # Eyes Mask — keeps original eyes
+    eyes_mask_size_var = ctk.DoubleVar(value=modules.globals.eyes_mask_size)
+
+    def on_eyes_mask_size_change(value: float):
+        val = float(value)
+        modules.globals.eyes_mask_size = val
+        modules.globals.eyes_mask = val > 0
+        save_switch_states()
+
+    eyes_mask_slider, _ems = make_slider_row(
+        tuning_inner, 5, _("Eyes mask"), eyes_mask_size_var,
+        0.0, 100.0, on_eyes_mask_size_change,
+    )
+    ToolTip(
+        eyes_mask_slider,
+        _(
+            "Paste your original eyes back over the swap so gaze stays "
+            "sharp and expressive. 0 = swap eyes, 100 = widest original-eye coverage."
+        ),
+    )
+
+    # Eyebrows Mask — preserves original eyebrows
+    eyebrows_mask_size_var = ctk.DoubleVar(value=modules.globals.eyebrows_mask_size)
+
+    def on_eyebrows_mask_size_change(value: float):
+        val = float(value)
+        modules.globals.eyebrows_mask_size = val
+        modules.globals.eyebrows_mask = val > 0
+        save_switch_states()
+
+    eyebrows_mask_slider, _bms = make_slider_row(
+        tuning_inner, 6, _("Eyebrows mask"), eyebrows_mask_size_var,
+        0.0, 100.0, on_eyebrows_mask_size_change,
+    )
+    ToolTip(
+        eyebrows_mask_slider,
+        _(
+            "Preserve original brow detail and arch over the swap. "
+            "0 = off, 100 = widest curved-brow coverage."
+        ),
+    )
+
     # Forehead Height
     forehead_size_var = ctk.DoubleVar(value=modules.globals.forehead_size)
 
@@ -952,7 +1066,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         save_switch_states()
 
     forehead_size_slider, _fhs = make_slider_row(
-        tuning_inner, 3, _("Forehead height"), forehead_size_var,
+        tuning_inner, 7, _("Forehead height"), forehead_size_var,
         0.0, 100.0, on_forehead_size_change,
     )
     ToolTip(
@@ -971,7 +1085,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         save_switch_states()
 
     forehead_width_slider, _fws = make_slider_row(
-        tuning_inner, 4, _("Forehead width"), forehead_width_var,
+        tuning_inner, 8, _("Forehead width"), forehead_width_var,
         0.0, 100.0, on_forehead_width_change,
     )
     ToolTip(
@@ -990,7 +1104,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         save_switch_states()
 
     hair_color_slider, _hc = make_slider_row(
-        tuning_inner, 5, _("Hair color"), hair_color_var,
+        tuning_inner, 9, _("Hair color"), hair_color_var,
         0.0, 100.0, on_hair_color_change,
     )
     ToolTip(
@@ -1011,7 +1125,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         save_switch_states()
 
     hair_texture_slider, _ht = make_slider_row(
-        tuning_inner, 6, _("Hair texture"), hair_texture_var,
+        tuning_inner, 10, _("Hair texture"), hair_texture_var,
         0.0, 100.0, on_hair_texture_change,
     )
     ToolTip(
@@ -1020,6 +1134,69 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
             "Match the hair's fine texture (strands, sheen) to the source by "
             "scaling its high-frequency luminance variance. 0 = your texture, "
             "100 = matched. Use with Hair Color for a cohesive look."
+        ),
+    )
+
+    # Face Enhancer Scaler — dial enhancement intensity up/down.
+    enhancer_blend_var = ctk.DoubleVar(value=modules.globals.enhancer_blend)
+
+    def on_enhancer_blend_change(value: float):
+        modules.globals.enhancer_blend = float(value)
+        save_switch_states()
+
+    enhancer_blend_slider, _ebs = make_slider_row(
+        tuning_inner, 11, _("Enhancer scaler"), enhancer_blend_var,
+        0.0, 100.0, on_enhancer_blend_change,
+    )
+    ToolTip(
+        enhancer_blend_slider,
+        _(
+            "Dial the face enhancer (GFPGAN / GPEN-256 / GPEN-512) "
+            "intensity. 0 = original face, 100 = fully enhanced."
+        ),
+    )
+
+    # Realtime enhancer stride — frame skip for live FPS preservation.
+    live_skip_var = ctk.DoubleVar(value=float(modules.globals.live_enhance_skip))
+
+    def on_live_skip_change(value: float):
+        modules.globals.live_enhance_skip = max(1, int(round(float(value))))
+        save_switch_states()
+
+    live_skip_slider, _lss = make_slider_row(
+        tuning_inner, 12, _("Realtime skip"), live_skip_var,
+        1.0, 6.0, on_live_skip_change, fmt="{:.0f}",
+    )
+    ToolTip(
+        live_skip_slider,
+        _(
+            "Realtime Face Enhancer stride for live webcam mode. "
+            "1 = run every frame (max quality), 2-3 = balanced, "
+            "4-6 = lightning-fast (cached enhanced face is re-pasted "
+            "between inference runs)."
+        ),
+    )
+
+    # Interpolation — temporal smoothing between frames.
+    interpolation_var = ctk.DoubleVar(value=float(modules.globals.interpolation_weight))
+
+    def on_interpolation_change(value: float):
+        val = float(value)
+        modules.globals.interpolation_weight = val
+        # Slider drives both the weight and the on/off toggle.
+        modules.globals.enable_interpolation = val > 0
+        save_switch_states()
+
+    interpolation_slider, _ipl = make_slider_row(
+        tuning_inner, 13, _("Interpolation"), interpolation_var,
+        0.0, 0.95, on_interpolation_change, fmt="{:.2f}",
+    )
+    ToolTip(
+        interpolation_slider,
+        _(
+            "Smoother frame-to-frame transitions (temporal blend with "
+            "the previous result). 0 = off, higher = smoother but adds "
+            "ghosting on fast motion. 0.2-0.4 is a good live-cam range."
         ),
     )
 

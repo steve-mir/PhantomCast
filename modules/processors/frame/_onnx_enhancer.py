@@ -199,22 +199,44 @@ def enhance_face_onnx(
     face: Any,
     session: onnxruntime.InferenceSession,
     input_size: int,
+    cache: dict | None = None,
 ) -> np.ndarray:
-    """Enhance a single face in the frame using an ONNX face restoration model."""
+    """Enhance a single face in the frame using an ONNX face restoration model.
+
+    ``cache`` enables the Realtime Face Enhancer skip path. When supplied,
+    inference runs once every ``modules.globals.live_enhance_skip`` frames
+    and the cached aligned-space enhanced BGR is re-pasted (with the
+    current frame's inv_M) on the in-between frames. The cache dict
+    must be a per-module mutable dict — the caller owns its lifetime.
+    """
     M, inv_M = _get_face_affine(face, input_size)
     if M is None:
         return frame
 
-    face_crop = cv2.warpAffine(
-        frame, M, (input_size, input_size),
-        flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE,
-    )
+    # Decide whether this frame runs ONNX or reuses the cached enhanced face.
+    enhanced = None
+    if cache is not None:
+        cache['frame_count'] = cache.get('frame_count', 0) + 1
+        stride = max(1, int(getattr(modules.globals, "live_enhance_skip", 2)))
+        cached_enhanced = cache.get('enhanced')
+        run_now = (cached_enhanced is None
+                   or cache['frame_count'] % stride == 0)
+        if not run_now:
+            enhanced = cached_enhanced
 
-    blob = preprocess_face(face_crop, input_size)
-    with THREAD_SEMAPHORE:
-        input_name = session.get_inputs()[0].name
-        output = run_inference(session, input_name, blob)
-    enhanced = postprocess_face(output)
+    if enhanced is None:
+        face_crop = cv2.warpAffine(
+            frame, M, (input_size, input_size),
+            flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE,
+        )
+
+        blob = preprocess_face(face_crop, input_size)
+        with THREAD_SEMAPHORE:
+            input_name = session.get_inputs()[0].name
+            output = run_inference(session, input_name, blob)
+        enhanced = postprocess_face(output)
+        if cache is not None:
+            cache['enhanced'] = enhanced
 
     # Create mask for blending (feathered edges)
     mask = np.ones((input_size, input_size), dtype=np.float32)
@@ -234,7 +256,13 @@ def enhance_face_onnx(
         flags=cv2.INTER_LINEAR, borderValue=0,
     )
 
-    mask_3ch = warped_mask[:, :, np.newaxis]
+    # Face Enhancer Scaler: scale the alpha mask by the user's blend
+    # strength. 0 -> original frame, 100 -> full enhanced face. Clamped
+    # to [0, 1] so a stale slider value can't blow up the blend.
+    blend_pct = max(0.0, min(100.0, getattr(modules.globals, "enhancer_blend", 100.0)))
+    blend_scale = blend_pct / 100.0
+
+    mask_3ch = warped_mask[:, :, np.newaxis] * blend_scale
     result = (warped_enhanced.astype(np.float32) * mask_3ch +
               frame.astype(np.float32) * (1.0 - mask_3ch))
     return np.clip(result, 0, 255).astype(np.uint8)

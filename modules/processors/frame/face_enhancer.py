@@ -259,9 +259,19 @@ def _paste_back(
 
     target_crop = frame[y1p:y2p, x1p:x2p]
 
+    # Face Enhancer Scaler: dial the enhancement intensity (0..100).
+    blend_pct = max(0.0, min(100.0, getattr(modules.globals, "enhancer_blend", 100.0)))
+    blend_scale = blend_pct / 100.0
+
     if _HAS_TORCH_CUDA:
         # Upload uint8 alpha — smaller transfer, scale on device.
-        mask_t = torch.from_numpy(inv_mask_crop).cuda().float().mul_(1.0 / 255.0).unsqueeze(2)
+        mask_t = (
+            torch.from_numpy(inv_mask_crop)
+            .cuda()
+            .float()
+            .mul_(blend_scale / 255.0)
+            .unsqueeze(2)
+        )
         enhanced_t = torch.from_numpy(inv_restored_crop).float().cuda()
         target_t = torch.from_numpy(target_crop).float().cuda()
         blended = (mask_t * enhanced_t + (1.0 - mask_t) * target_t
@@ -269,7 +279,12 @@ def _paste_back(
         frame[y1p:y2p, x1p:x2p] = blended
     else:
         # Fused uint8 blend via cv2 SIMD — ~7× faster than the float32 round-trip.
-        alpha_3c = cv2.merge([inv_mask_crop, inv_mask_crop, inv_mask_crop])
+        if blend_scale < 1.0:
+            scaled_mask = cv2.multiply(inv_mask_crop, np.float32(blend_scale))
+            scaled_mask = np.clip(scaled_mask, 0, 255).astype(np.uint8)
+        else:
+            scaled_mask = inv_mask_crop
+        alpha_3c = cv2.merge([scaled_mask, scaled_mask, scaled_mask])
         inv_alpha = 255 - alpha_3c
         a_enh = cv2.multiply(inv_restored_crop, alpha_3c, scale=1.0 / 255.0)
         a_tgt = cv2.multiply(target_crop, inv_alpha, scale=1.0 / 255.0)
@@ -315,7 +330,6 @@ _enh_live_cache: dict = {
     'align_size': 0,
     'frame_count': 0,
 }
-_ENH_INTERVAL = 2  # run inference every N frames, paste cached result otherwise
 
 
 def enhance_face(temp_frame: Frame, detected_faces=None) -> Frame:
@@ -353,7 +367,11 @@ def enhance_face(temp_frame: Frame, detected_faces=None) -> Frame:
     use_cache = detected_faces is not None and not many_faces_mode
     if use_cache:
         _enh_live_cache['frame_count'] += 1
-        run_inference_this_frame = (_enh_live_cache['frame_count'] % _ENH_INTERVAL == 0
+        # Realtime Face Enhancer: stride pulled from globals so the user
+        # can dial it through the UI. 1 = run every frame (full quality);
+        # higher = faster live FPS at the cost of temporal smoothing.
+        stride = max(1, int(getattr(modules.globals, "live_enhance_skip", 2)))
+        run_inference_this_frame = (_enh_live_cache['frame_count'] % stride == 0
                                    or _enh_live_cache['enhanced_bgr'] is None)
     else:
         run_inference_this_frame = True

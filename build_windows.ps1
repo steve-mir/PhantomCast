@@ -65,7 +65,7 @@ if (-not $SkipDeps) {
     Step "Installing dependencies (cu128 stack)"
     Run "$pip install --upgrade pip wheel"
     Run "$pip install -r requirements.txt"
-    Run "$pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.5.1+cu128 torchvision==0.20.1+cu128"
+    Run "$pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.6.0+cu128 torchvision==0.21.0+cu128"
     Run "$pip install pyinstaller==6.10.0 pynvml"
 }
 

@@ -61,13 +61,13 @@ hiddenimports += ["onnxruntime", "onnxruntime.capi", "tkinter", "customtkinter"]
 
 
 a = Analysis(
-    ["launch.py"],
+    [str(ROOT / "launch.py")],
     pathex=[str(ROOT)],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
-    runtime_hooks=["build/runtime_hook_paths.py"],
+    runtime_hooks=[str(ROOT / "build" / "runtime_hook_paths.py")],
     excludes=[
         "matplotlib", "scipy.spatial.cKDTree",  # imported but not on hot path
         "tornado", "notebook",

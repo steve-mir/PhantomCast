@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Features — Phantom Cast</title>
+  <meta name="description" content="Real-time webcam swap, 4K export with GPEN-512, hyperswap full-head mode, batch queue, and a privacy architecture that keeps every frame on your machine.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="features">
+  <div data-pc-header></div>
+
+  <section class="pt-16 pb-12 bg-grid">
+    <div class="container-pc text-center">
+      <div class="eyebrow mb-3">Features</div>
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-5">Everything you need.<br><span class="gradient-text">Nothing you don't.</span></h1>
+      <p class="text-lg text-[var(--text-muted)] max-w-2xl mx-auto">A focused desktop app, not a sprawling dashboard. Each feature below ships in the box — no add-ons, no plugins, no API keys to get started.</p>
+    </div>
+  </section>
+
+  <!-- TOC strip -->
+  <section class="pb-6">
+    <div class="container-pc">
+      <div class="card p-3 flex flex-wrap gap-2 justify-center">
+        <a href="#webcam"      class="btn btn-ghost text-sm">Live webcam</a>
+        <a href="#export"      class="btn btn-ghost text-sm">4K export</a>
+        <a href="#mapping"     class="btn btn-ghost text-sm">Face mapping</a>
+        <a href="#hyperswap"   class="btn btn-ghost text-sm">Hyperswap</a>
+        <a href="#batch"       class="btn btn-ghost text-sm">Batch queue</a>
+        <a href="#diagnostics" class="btn btn-ghost text-sm">GPU diagnostics</a>
+        <a href="#privacy"     class="btn btn-ghost text-sm">Privacy</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature: webcam -->
+  <section id="webcam" class="section">
+    <div class="container-pc grid lg:grid-cols-2 gap-14 items-center">
+      <div class="order-2 lg:order-1">
+        <div class="chip chip-cyan mb-4"><i data-lucide="video" class="w-3.5 h-3.5"></i> Live</div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Real-time webcam swap</h2>
+        <p class="text-[var(--text-muted)] leading-relaxed mb-6">Pick a face, hit start. Phantom Cast captures your webcam at 30 fps, runs it through CUDA inference, and outputs the swapped feed to an OBS virtual camera that any app can use as a video source.</p>
+        <ul class="space-y-3 text-sm">
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>30 fps stable on RTX 3060 / 1080p · 60 fps on 4070 Ti</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>OBS virtual camera output with one click — works in Twitch, YouTube Live, Zoom, Meet, Teams, Discord</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Frame buffer pre-warm so the first second isn't a flicker</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Per-clip identity lock — face does not "drift" across long sessions</span></li>
+        </ul>
+        <div class="chip chip-violet mt-6">Available on: Lifetime License + Premium</div>
+      </div>
+      <div class="order-1 lg:order-2 card overflow-hidden glow-card">
+        <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/live_show.gif" class="w-full h-full object-cover" alt="Live webcam swap"/></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature: 4K export -->
+  <section id="export" class="section">
+    <div class="container-pc grid lg:grid-cols-2 gap-14 items-center">
+      <div class="card overflow-hidden glow-card">
+        <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/movie.gif" class="w-full h-full object-cover" alt="4K export"/></div>
+      </div>
+      <div>
+        <div class="chip chip-violet mb-4"><i data-lucide="film" class="w-3.5 h-3.5"></i> Studio</div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">4K export with GPEN-512 enhancement</h2>
+        <p class="text-[var(--text-muted)] leading-relaxed mb-6">Drop in a 4K source, choose a target identity, render. GPEN-512 super-resolves the swapped face region so it stays crisp under broadcast-grade compression.</p>
+        <ul class="space-y-3 text-sm">
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>True 3840×2160 output — not upscaled 1080p</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>GPEN-512 face enhancement preserves skin micro-detail</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Frame-accurate audio sync; per-clip cache speeds up re-renders</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Output to MP4 (H.264 / H.265) or ProRes 422 HQ for editorial pipelines</span></li>
+        </ul>
+        <div class="chip chip-violet mt-6">Available on: Lifetime License + Premium</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature: mapping -->
+  <section id="mapping" class="section">
+    <div class="container-pc grid lg:grid-cols-2 gap-14 items-center">
+      <div class="order-2 lg:order-1">
+        <div class="chip chip-violet mb-4"><i data-lucide="users" class="w-3.5 h-3.5"></i> Studio</div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Source-to-target face mapping</h2>
+        <p class="text-[var(--text-muted)] leading-relaxed mb-6">Multiple actors in the shot? Drop in source thumbnails, drag them to their target identities. Phantom Cast tracks each one independently — no cross-bleed, no last-second guessing.</p>
+        <ul class="space-y-3 text-sm">
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Up to 8 simultaneous source→target pairs per clip</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Identity persistence across cuts and occlusions</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Per-pair toggles for color match, eye/mouth blend strength</span></li>
+        </ul>
+        <div class="chip chip-violet mt-6">Premium add-on required</div>
+      </div>
+      <div class="order-1 lg:order-2 card overflow-hidden glow-card">
+        <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/meme.gif" class="w-full h-full object-cover" alt="Face mapping"/></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature: hyperswap -->
+  <section id="hyperswap" class="section">
+    <div class="container-pc grid lg:grid-cols-2 gap-14 items-center">
+      <div class="card overflow-hidden glow-card">
+        <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/ludwig.gif" class="w-full h-full object-cover" alt="Hyperswap full-head"/></div>
+      </div>
+      <div>
+        <div class="chip chip-violet mb-4"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Studio</div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Hyperswap full-head mode</h2>
+        <p class="text-[var(--text-muted)] leading-relaxed mb-6">When the face-only swap looks like a mask, Hyperswap extends the inference region to include hairline, ears, and jaw silhouette. Slower, but indistinguishable in close-ups.</p>
+        <ul class="space-y-3 text-sm">
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Full skull tracking with hair / ear / jawline blending</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Trade-off slider: 1× (face only) → 4× (full head, slowest)</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Best paired with GPEN-512 for film-grade close-ups</span></li>
+        </ul>
+        <div class="chip chip-violet mt-6">Premium add-on required</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature: batch -->
+  <section id="batch" class="section">
+    <div class="container-pc grid lg:grid-cols-2 gap-14 items-center">
+      <div class="order-2 lg:order-1">
+        <div class="chip chip-violet mb-4"><i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> Studio</div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Batch processing queue</h2>
+        <p class="text-[var(--text-muted)] leading-relaxed mb-6">Queue 50 clips overnight. Each job is checkpointed; killing the app and resuming the next morning picks up exactly where it left off. No re-render, no re-uploads (because there are no uploads).</p>
+        <ul class="space-y-3 text-sm">
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Resumable per-frame checkpointing</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Per-job overrides for codec, target identity, hyperswap level</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>System tray progress + optional shell-on-complete hook</span></li>
+        </ul>
+        <div class="chip chip-violet mt-6">Premium add-on required</div>
+      </div>
+      <div class="order-1 lg:order-2 card overflow-hidden glow-card p-6">
+        <div class="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-3">Batch queue · 4 jobs</div>
+        <div class="space-y-2 text-sm font-mono">
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-elev-2)]"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i><div class="flex-1 truncate">interview_clip_01.mp4</div><span class="text-[var(--text-dim)]">100% · 4K · 12:34</span></div>
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-elev-2)]"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i><div class="flex-1 truncate">interview_clip_02.mp4</div><span class="text-[var(--text-dim)]">100% · 4K · 09:11</span></div>
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-elev-2)] border border-[var(--violet)]"><i data-lucide="loader-2" class="w-4 h-4 text-[var(--violet)] animate-spin"></i><div class="flex-1 truncate">stunt_double_take_03.mov</div><div class="w-32 h-1.5 rounded-full bg-black overflow-hidden"><div class="h-full gradient-bg" style="width:64%"></div></div><span class="text-[var(--text-dim)]">64%</span></div>
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-elev-2)]"><i data-lucide="circle" class="w-4 h-4 text-[var(--text-dim)]"></i><div class="flex-1 truncate">stunt_double_take_04.mov</div><span class="text-[var(--text-dim)]">queued</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature: diagnostics -->
+  <section id="diagnostics" class="section">
+    <div class="container-pc grid lg:grid-cols-2 gap-14 items-center">
+      <div class="card overflow-hidden glow-card p-6">
+        <div class="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-4">GPU detection · live</div>
+        <div class="space-y-2 text-sm font-mono">
+          <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-400">CUDA 12.1 toolkit detected</span></div>
+          <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-400">NVIDIA driver 552.22 (≥ 525.60 required)</span></div>
+          <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-400">RTX 4070 Ti · 12 GB VRAM</span></div>
+          <div class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-400">cuDNN 8.9 / TensorRT 10.0 available</span></div>
+          <div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i><span class="text-amber-400">Power plan: balanced — switch to "high performance" for +12% fps</span></div>
+          <div class="flex items-center gap-2 pt-2 border-t border-[var(--border-soft)] mt-2"><i data-lucide="zap" class="w-4 h-4 gradient-text"></i><span class="text-white">Inference path: CUDA · 30.1 fps @ 1080p</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="chip chip-cyan mb-4"><i data-lucide="activity" class="w-3.5 h-3.5"></i> Always-on</div>
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">GPU diagnostics + automatic CPU fallback</h2>
+        <p class="text-[var(--text-muted)] leading-relaxed mb-6">No black-box "your GPU isn't supported" message. Phantom Cast tells you exactly which step of CUDA detection failed, what to do about it, and offers a CPU fallback so you can keep working while you fix it.</p>
+        <ul class="space-y-3 text-sm">
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Per-step CUDA / driver / cuDNN / TensorRT diagnostics with copy-paste fixes</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Automatic CPU fallback — never blocks the workflow</span></li>
+          <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>One-click "send diagnostic bundle" if you open a support ticket (no frames included)</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature: privacy -->
+  <section id="privacy" class="section">
+    <div class="container-pc">
+      <div class="grid lg:grid-cols-2 gap-14 items-center">
+        <div>
+          <div class="chip chip-success mb-4"><i data-lucide="lock" class="w-3.5 h-3.5"></i> By design</div>
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">Privacy is the architecture, not a setting</h2>
+          <p class="text-[var(--text-muted)] leading-relaxed mb-6">There is no upload pipeline. There are no servers that could leak. Inference is local — full stop. The only network traffic Phantom Cast generates is licensing and version checks.</p>
+          <ul class="space-y-3 text-sm">
+            <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Zero frames transmitted, ever — verifiable by inspecting outbound traffic</span></li>
+            <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>License fingerprint is a composite SHA-256 — raw machine identifiers never leave the device</span></li>
+            <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>Optional offline mode disables every network call after activation</span></li>
+            <li class="flex gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 mt-0.5"></i><span>SOC 2-style audit logs available on request for B2B customers</span></li>
+          </ul>
+          <a href="docs/privacy-data.html" class="btn btn-secondary mt-6">Read the privacy architecture <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+        </div>
+        <div class="card p-6 glow-card">
+          <pre class="code"><span style="color:#71717a"># network monitor — phantomcast running an active 4K render</span>
+<span style="color:#22d3ee">$</span> sudo netstat -i -p TCP | grep phantomcast
+phantomcast.exe   54321   licensing.phantomcast.app:443   ESTABLISHED   <span style="color:#10b981">(1.2 KB / hr)</span>
+phantomcast.exe   54322   dl.phantomcast.app:443          TIME_WAIT     <span style="color:#10b981">(version check)</span>
+
+<span style="color:#71717a"># bytes uploaded total since launch:</span>
+<span style="color:#10b981">~</span> <span style="color:#10b981">1.4 KB</span>  <span style="color:#71717a"># license heartbeat only</span>
+<span style="color:#71717a"># video / audio bytes transmitted:</span>
+<span style="color:#10b981">~</span> <span style="color:#10b981">0 bytes</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container-pc">
+      <div class="card p-10 md:p-14 text-center bg-grid">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to see it on your machine?</h2>
+        <p class="text-[var(--text-muted)] mb-8 max-w-xl mx-auto">7-day free trial. Full feature access. No card.</p>
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <a href="download.html" class="btn btn-primary btn-lg"><i data-lucide="download" class="w-5 h-5"></i> Download for <span data-pc-os>Windows</span></a>
+          <a href="pricing.html" class="btn btn-secondary btn-lg">See pricing</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+</body>
+</html>

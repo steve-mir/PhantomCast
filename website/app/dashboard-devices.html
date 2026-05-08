@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Devices — Phantom Cast Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="dashboard">
+  <div data-pc-header></div>
+
+  <section class="py-10">
+    <div class="container-pc max-w-6xl">
+      <div class="grid lg:grid-cols-[220px_1fr] gap-8">
+        <aside class="space-y-1 lg:sticky lg:top-20 self-start text-sm">
+          <a href="dashboard.html"           class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview</a>
+          <a href="dashboard-devices.html"   class="flex items-center gap-2 py-2 px-3 rounded-lg bg-[var(--bg-elev)] text-white"><i data-lucide="monitor" class="w-4 h-4"></i> Devices</a>
+          <a href="dashboard-billing.html"   class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="receipt" class="w-4 h-4"></i> Billing</a>
+          <a href="../docs/index.html"       class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="book-open" class="w-4 h-4"></i> Docs</a>
+          <a href="../help.html"             class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="life-buoy" class="w-4 h-4"></i> Support</a>
+          <div class="border-t border-[var(--border-soft)] my-3"></div>
+          <a href="login.html"               class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="log-out" class="w-4 h-4"></i> Sign out</a>
+        </aside>
+
+        <main>
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h1 class="text-2xl font-bold">Activated devices</h1>
+              <p class="text-sm text-[var(--text-muted)]">Lifetime License covers up to 2 simultaneous activations.</p>
+            </div>
+            <span class="chip chip-violet">1 of 2 used</span>
+          </div>
+
+          <div class="card overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="text-left">
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]">Device</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]">OS / GPU</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]">Last seen</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]">Status</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]"></th>
+                </tr></thead>
+                <tbody class="divide-y divide-[var(--border-soft)]">
+                  <tr>
+                    <td class="p-4"><div class="flex items-center gap-3"><i data-lucide="monitor" class="w-5 h-5 text-cyan-400"></i><div><div class="font-medium">My streaming PC</div><div class="text-xs text-[var(--text-dim)] font-mono">fp:e3b0c44…7c81d3</div></div></div></td>
+                    <td class="p-4 text-[var(--text-muted)]">Windows 11 · RTX 4070 Ti</td>
+                    <td class="p-4 text-[var(--text-muted)]">2 minutes ago</td>
+                    <td class="p-4"><span class="chip chip-success"><span class="dot dot-up"></span> active</span></td>
+                    <td class="p-4 text-right"><button class="btn btn-secondary text-xs" onclick="if(confirm('Deactivate this device? It will lose paid features within 6 hours.')) this.closest('tr').remove()">Deactivate</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Move license -->
+          <div class="card p-6 mt-6">
+            <div class="flex items-start gap-4">
+              <i data-lucide="arrow-right-left" class="w-6 h-6 text-violet-400 mt-1 flex-none"></i>
+              <div class="flex-1">
+                <h3 class="font-semibold mb-1">Moving to a new computer?</h3>
+                <p class="text-sm text-[var(--text-muted)] mb-4">Use Move License — it deactivates the old device and primes activation on the new one in a single step. Limited to 1 move per year (we honor genuine cases like stolen laptops, just contact support).</p>
+                <button class="btn btn-secondary"><i data-lucide="arrow-right-left" class="w-4 h-4"></i> Start move</button>
+                <span class="text-xs text-[var(--text-dim)] ml-3">0 / 1 move used in the last 365 days</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

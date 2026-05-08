@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create account — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="auth">
+  <div data-pc-header></div>
+
+  <section class="py-16 min-h-[80vh] flex items-center">
+    <div class="container-pc max-w-md w-full">
+      <div class="card p-8">
+        <h1 class="text-2xl font-bold mb-1">Create your account.</h1>
+        <p class="text-sm text-[var(--text-muted)] mb-6">Free — needed only to manage your license and devices.</p>
+
+        <form class="space-y-4" onsubmit="event.preventDefault(); location.href='verify-email.html'">
+          <div><label class="label" for="name">Name</label><input class="field" id="name" type="text" required /></div>
+          <div><label class="label" for="email">Email</label><input class="field" id="email" type="email" required autocomplete="email" /></div>
+          <div><label class="label" for="pw">Password</label><input class="field" id="pw" type="password" minlength="10" required autocomplete="new-password" /><div class="text-xs text-[var(--text-dim)] mt-1">Minimum 10 characters.</div></div>
+          <label class="flex items-start gap-2 text-xs text-[var(--text-muted)]"><input type="checkbox" required class="mt-0.5"/><span>I agree to the <a href="../legal/terms.html" class="text-cyan-400">Terms</a>, <a href="../legal/eula.html" class="text-cyan-400">EULA</a>, and <a href="../legal/acceptable-use.html" class="text-cyan-400">Acceptable Use Policy</a>.</span></label>
+          <button class="btn btn-primary w-full" type="submit">Create account</button>
+        </form>
+
+        <p class="text-xs text-center text-[var(--text-dim)] mt-6">Already have one? <a href="login.html" class="text-cyan-400 hover:underline">Sign in</a></p>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

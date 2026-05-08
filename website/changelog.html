@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Changelog — Phantom Cast</title>
+  <meta name="description" content="Every release of Phantom Cast — what shipped, what was fixed, what changed.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="changelog">
+  <div data-pc-header></div>
+
+  <section class="pt-16 pb-10 bg-grid">
+    <div class="container-pc max-w-3xl">
+      <div class="eyebrow mb-3">Changelog</div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Every release. <span class="gradient-text">No silent updates.</span></h1>
+      <p class="text-[var(--text-muted)]">RSS at <a href="changelog.html" class="text-cyan-400 underline">/changelog/feed.xml</a> · subscribe to email release notes from your <a href="app/dashboard.html" class="text-cyan-400 underline">dashboard</a>.</p>
+    </div>
+  </section>
+
+  <section class="pb-24">
+    <div class="container-pc max-w-3xl">
+      <div class="space-y-12">
+
+        <article id="1.4.2" class="card p-8">
+          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3"><h2 class="text-2xl font-bold gradient-text">1.4.2</h2><span class="chip chip-success">Latest</span></div>
+            <div class="text-sm text-[var(--text-dim)]">May 6, 2026</div>
+          </div>
+          <div class="prose-pc">
+            <h3>Added</h3>
+            <ul>
+              <li>GPEN-512 face enhancement is now the default for all 4K exports.</li>
+              <li>Tray notification when a batch job completes.</li>
+              <li>Dashboard "Move license" rate-limit display (1 move per year).</li>
+            </ul>
+            <h3>Fixed</h3>
+            <ul>
+              <li>OBS virtual camera dropped to 24 fps when Windows changed power plans — now stays locked to 30 fps.</li>
+              <li>Hyperswap full-head: occasional jaw jitter on profile angles &gt; 60°.</li>
+              <li>License heartbeat now retries with exponential backoff instead of failing fast on transient DNS.</li>
+            </ul>
+            <h3>Changed</h3>
+            <ul><li>Bumped CUDA runtime from 12.0 → 12.1; minimum NVIDIA driver is now 525.60 (was 520.61).</li></ul>
+          </div>
+        </article>
+
+        <article id="1.4.1" class="card p-8">
+          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+            <h2 class="text-2xl font-bold">1.4.1</h2>
+            <div class="text-sm text-[var(--text-dim)]">Apr 21, 2026</div>
+          </div>
+          <div class="prose-pc">
+            <h3>Fixed</h3>
+            <ul>
+              <li>Crash when launching with no webcam attached.</li>
+              <li>Wrong identity persistence after seeking in batch jobs &gt; 30 minutes.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article id="1.4.0" class="card p-8">
+          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+            <h2 class="text-2xl font-bold">1.4.0</h2>
+            <div class="text-sm text-[var(--text-dim)]">Apr 1, 2026</div>
+          </div>
+          <div class="prose-pc">
+            <h3>Added</h3>
+            <ul>
+              <li><strong>Hyperswap full-head mode</strong> — full skull tracking with hair / ear / jaw blending.</li>
+              <li><strong>Source-to-target face mapping</strong> — up to 8 simultaneous identity pairs per clip.</li>
+              <li>NOWPayments Bitcoin checkout now live (replaces previous payment provider).</li>
+            </ul>
+            <h3>Breaking</h3>
+            <ul><li>Project files saved in 1.3.x must be re-imported into the new 1.4 timeline format. A one-shot migrator runs on first launch.</li></ul>
+          </div>
+        </article>
+
+        <article id="1.3.0" class="card p-8">
+          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+            <h2 class="text-2xl font-bold">1.3.0</h2>
+            <div class="text-sm text-[var(--text-dim)]">Feb 18, 2026</div>
+          </div>
+          <div class="prose-pc">
+            <h3>Added</h3>
+            <ul>
+              <li>OBS virtual camera output (Premium add-on).</li>
+              <li>Batch processing queue with resumable per-frame checkpoints.</li>
+            </ul>
+            <h3>Fixed</h3>
+            <ul><li>30+ small UI polish bugs from community feedback.</li></ul>
+          </div>
+        </article>
+
+        <article id="1.2.0" class="card p-8">
+          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+            <h2 class="text-2xl font-bold">1.2.0</h2>
+            <div class="text-sm text-[var(--text-dim)]">Jan 7, 2026</div>
+          </div>
+          <div class="prose-pc">
+            <h3>Added</h3>
+            <ul>
+              <li>4K H.265 / ProRes 422 HQ export options.</li>
+              <li>Per-step CUDA detection diagnostics with copy-paste fixes.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article id="1.0.0" class="card p-8">
+          <div class="flex flex-wrap items-baseline justify-between gap-3 mb-4">
+            <h2 class="text-2xl font-bold">1.0.0 — Public launch</h2>
+            <div class="text-sm text-[var(--text-dim)]">Nov 4, 2025</div>
+          </div>
+          <div class="prose-pc">
+            <p>Phantom Cast 1.0 — first general availability. Real-time webcam swap, 1080p / 4K export, GPU-accelerated CUDA inference with CPU fallback. Lifetime license model launched at $770.</p>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+</body>
+</html>

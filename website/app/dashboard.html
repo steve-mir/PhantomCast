@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="dashboard">
+  <div data-pc-header></div>
+
+  <section class="py-10">
+    <div class="container-pc max-w-6xl">
+
+      <!-- Welcome banner -->
+      <div class="card p-6 mb-6 flex flex-wrap items-center gap-4 border-l-4" style="border-left-color: var(--violet)">
+        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center text-[#0a0a0f] font-bold">F</div>
+        <div class="flex-1 min-w-[200px]">
+          <div class="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-0.5">Welcome back</div>
+          <div class="font-semibold">frankojarkarta@gmail.com</div>
+        </div>
+        <a href="../download.html" class="btn btn-primary"><i data-lucide="download" class="w-4 h-4"></i> Download Phantom Cast</a>
+      </div>
+
+      <!-- Sidebar layout -->
+      <div class="grid lg:grid-cols-[220px_1fr] gap-8">
+        <aside class="space-y-1 lg:sticky lg:top-20 self-start text-sm">
+          <a href="dashboard.html"           class="flex items-center gap-2 py-2 px-3 rounded-lg bg-[var(--bg-elev)] text-white"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview</a>
+          <a href="dashboard-devices.html"   class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="monitor" class="w-4 h-4"></i> Devices</a>
+          <a href="dashboard-billing.html"   class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="receipt" class="w-4 h-4"></i> Billing</a>
+          <a href="../docs/index.html"       class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="book-open" class="w-4 h-4"></i> Docs</a>
+          <a href="../help.html"             class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="life-buoy" class="w-4 h-4"></i> Support</a>
+          <div class="border-t border-[var(--border-soft)] my-3"></div>
+          <a href="login.html"               class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="log-out" class="w-4 h-4"></i> Sign out</a>
+        </aside>
+
+        <main class="space-y-6">
+
+          <!-- Plan card -->
+          <div class="card p-6">
+            <div class="flex flex-wrap items-start justify-between gap-4 mb-5">
+              <div>
+                <div class="chip chip-violet mb-2"><i data-lucide="key" class="w-3 h-3"></i> Lifetime License</div>
+                <h2 class="text-2xl font-bold">Phantom Cast — Lifetime</h2>
+                <div class="text-sm text-[var(--text-muted)] mt-1">Purchased Apr 18, 2026 · Order PC-LICENSE-770-1745…</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">Premium add-on</div>
+                <div class="font-semibold">Active</div>
+                <div class="text-xs text-[var(--text-dim)]">Renews May 31, 2026</div>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-3 gap-3 text-sm">
+              <div class="card-elev card p-4"><div class="text-xs text-[var(--text-dim)]">Devices</div><div class="text-xl font-semibold">1 / 2</div></div>
+              <div class="card-elev card p-4"><div class="text-xs text-[var(--text-dim)]">Updates</div><div class="text-xl font-semibold">1.4.2 latest</div></div>
+              <div class="card-elev card p-4"><div class="text-xs text-[var(--text-dim)]">Premium</div><div class="text-xl font-semibold text-emerald-400">25 days left</div></div>
+            </div>
+          </div>
+
+          <!-- License key card -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold">Your license key</h3>
+              <span class="text-xs text-[var(--text-dim)]">Paste this into the desktop app's first-launch screen</span>
+            </div>
+            <div class="flex items-center gap-3 p-4 rounded-lg bg-[var(--bg-elev-2)]">
+              <code id="lk" class="font-mono text-lg gradient-text font-semibold flex-1 break-all">PC-K7Q9X-M2VP4-RB5LD-X3YHN</code>
+              <button class="btn btn-secondary text-xs" onclick="navigator.clipboard.writeText(document.getElementById('lk').innerText); this.innerHTML='<i data-lucide=check class=w-4 h-4></i> Copied'; window.lucide && window.lucide.createIcons()"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
+            </div>
+            <div class="text-xs text-[var(--text-dim)] mt-3">Lost your key? It's also in your purchase confirmation email. Need to regenerate? <a href="../contact.html" class="text-cyan-400">Contact support</a>.</div>
+          </div>
+
+          <!-- Devices card -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold">Activated devices</h3>
+              <a href="dashboard-devices.html" class="text-xs text-cyan-400 hover:underline">Manage all →</a>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center gap-4 p-3 rounded-lg bg-[var(--bg-elev-2)]">
+                <i data-lucide="monitor" class="w-5 h-5 text-cyan-400"></i>
+                <div class="flex-1">
+                  <div class="font-medium text-sm">My streaming PC</div>
+                  <div class="text-xs text-[var(--text-dim)]">Windows 11 · RTX 4070 Ti · Last seen 2 minutes ago</div>
+                </div>
+                <span class="chip chip-success"><span class="dot dot-up"></span> active</span>
+              </div>
+              <div class="flex items-center gap-4 p-3 rounded-lg border border-dashed border-[var(--border)]">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-[var(--text-dim)]"></i>
+                <div class="flex-1 text-sm text-[var(--text-muted)]">1 device slot available — install Phantom Cast on a second machine and activate with your key</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Downloads card -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold">Downloads</h3>
+              <span class="chip chip-success">v1.4.2 latest</span>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <a href="../download.html" class="card-elev card p-4 flex items-center gap-3 hover:border-[var(--violet)]"><i data-lucide="download" class="w-5 h-5 text-emerald-400"></i><div><div class="font-medium text-sm">Windows installer 1.4.2</div><div class="text-xs text-[var(--text-dim)]">1.4 GB · code-signed</div></div></a>
+              <a href="../changelog.html" class="card-elev card p-4 flex items-center gap-3 hover:border-[var(--violet)]"><i data-lucide="history" class="w-5 h-5 text-cyan-400"></i><div><div class="font-medium text-sm">Previous versions</div><div class="text-xs text-[var(--text-dim)]">All v1.x releases</div></div></a>
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

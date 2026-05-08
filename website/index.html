@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phantom Cast — Real-time face swap. On your GPU. In private.</title>
+  <meta name="description" content="GPU-accelerated, locally-run face swap for streamers, creators, and producers. 30 fps live webcam swap, 4K export, no cloud uploads.">
+  <meta property="og:title" content="Phantom Cast — Real-time face swap on your GPU">
+  <meta property="og:description" content="Local. Private. 30 fps live webcam swap. 4K export. No frames leave your machine.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%238b5cf6'/%3E%3Cpath d='M30 60 q20 -25 40 0' stroke='%230a0a0f' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="home">
+  <div data-pc-header></div>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-grid">
+    <div class="container-pc pt-20 pb-24 md:pt-28 md:pb-32 relative">
+      <div class="max-w-3xl">
+        <div class="chip chip-violet mb-6">
+          <span class="live-dot"></span> Phantom Cast 1.4.2 — now with GPEN-512 enhancement
+        </div>
+        <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
+          Real-time face swap.<br>
+          <span class="gradient-text">On your GPU.</span><br>
+          In private.
+        </h1>
+        <p class="text-lg md:text-xl text-[var(--text-muted)] max-w-2xl leading-relaxed mb-9">
+          Phantom Cast turns a live webcam or 4K video into a different face — without uploading a single frame to the cloud. Built for streamers, creators, and producers who care about privacy and performance.
+        </p>
+        <div class="flex flex-wrap items-center gap-3">
+          <a href="download.html" class="btn btn-primary btn-lg">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            Download for <span data-pc-os>Windows</span>
+          </a>
+          <a href="#demo-reel" class="btn btn-secondary btn-lg">
+            <i data-lucide="play-circle" class="w-5 h-5"></i>
+            See it in action
+          </a>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-8 text-sm text-[var(--text-dim)]">
+          <span class="flex items-center gap-1.5"><i data-lucide="cpu" class="w-4 h-4 text-[var(--cyan)]"></i> Runs locally</span>
+          <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-[var(--emerald)]"></i> Code-signed</span>
+          <span class="flex items-center gap-1.5"><i data-lucide="lock" class="w-4 h-4 text-[var(--violet)]"></i> No frames leave your machine</span>
+        </div>
+      </div>
+
+      <!-- Hero preview card -->
+      <div class="mt-16 md:mt-20 relative">
+        <div class="card overflow-hidden glow-card" style="box-shadow: var(--shadow-glow)">
+          <div class="flex items-center gap-1.5 px-4 py-3 border-b border-[var(--border-soft)] bg-[var(--bg-elev-2)]">
+            <span class="w-3 h-3 rounded-full bg-[#ef4444]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span>
+            <span class="w-3 h-3 rounded-full bg-[#10b981]"></span>
+            <div class="ml-3 text-xs font-mono text-[var(--text-dim)]">phantomcast — live preview · CUDA · 30.0 fps</div>
+            <div class="ml-auto chip chip-success text-[10px]"><span class="dot dot-up"></span> GPU active</div>
+          </div>
+          <div class="grid md:grid-cols-2">
+            <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
+              <img src="assets/img/live_show.gif" alt="Live face swap demo" class="w-full h-full object-cover" />
+            </div>
+            <div class="aspect-video bg-black flex items-center justify-center overflow-hidden">
+              <img src="assets/img/streamers.gif" alt="Streamers using Phantom Cast" class="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO REEL -->
+  <section id="demo-reel" class="section">
+    <div class="container-pc">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-10">
+        <div>
+          <div class="eyebrow mb-2">Live demo reel</div>
+          <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Real footage. Real machines. No retouching.</h2>
+        </div>
+        <a href="features.html" class="btn btn-ghost">All features <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+      </div>
+      <div class="grid md:grid-cols-3 gap-5">
+        <figure class="card overflow-hidden glow-card">
+          <div class="aspect-video bg-black overflow-hidden"><img src="assets/img/demo.gif" class="w-full h-full object-cover" alt="Live webcam swap"/></div>
+          <figcaption class="p-4">
+            <div class="text-sm font-semibold mb-1">Webcam swap, 30 fps</div>
+            <div class="text-xs text-[var(--text-dim)]">RTX 3060 · 1080p · CUDA 12</div>
+          </figcaption>
+        </figure>
+        <figure class="card overflow-hidden glow-card">
+          <div class="aspect-video bg-black overflow-hidden"><img src="assets/img/movie.gif" class="w-full h-full object-cover" alt="4K export"/></div>
+          <figcaption class="p-4">
+            <div class="text-sm font-semibold mb-1">4K export with GPEN-512</div>
+            <div class="text-xs text-[var(--text-dim)]">12-min source · 38 min render · 4090</div>
+          </figcaption>
+        </figure>
+        <figure class="card overflow-hidden glow-card">
+          <div class="aspect-video bg-black overflow-hidden"><img src="assets/img/ludwig.gif" class="w-full h-full object-cover" alt="Streamer demo"/></div>
+          <figcaption class="p-4">
+            <div class="text-sm font-semibold mb-1">Twitch live stream</div>
+            <div class="text-xs text-[var(--text-dim)]">OBS virtual camera route · zero added latency reported</div>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- THREE PILLARS -->
+  <section class="section">
+    <div class="container-pc">
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <div class="eyebrow mb-2">Why Phantom Cast</div>
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Three things every other tool gets wrong.</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="card p-7 glow-card">
+          <div class="w-11 h-11 rounded-xl gradient-bg-soft flex items-center justify-center mb-5">
+            <i data-lucide="zap" class="w-5 h-5 gradient-text"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">GPU-accelerated</h3>
+          <p class="text-sm text-[var(--text-muted)] leading-relaxed">CUDA 12 inference at 30 fps on a $400 GPU. Automatic CPU fallback if no compatible GPU is detected.</p>
+        </div>
+        <div class="card p-7 glow-card">
+          <div class="w-11 h-11 rounded-xl gradient-bg-soft flex items-center justify-center mb-5">
+            <i data-lucide="shield" class="w-5 h-5 gradient-text"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Private by design</h3>
+          <p class="text-sm text-[var(--text-muted)] leading-relaxed">Frames, audio, and video never leave your machine. The only network calls are license checks and version pings.</p>
+        </div>
+        <div class="card p-7 glow-card">
+          <div class="w-11 h-11 rounded-xl gradient-bg-soft flex items-center justify-center mb-5">
+            <i data-lucide="film" class="w-5 h-5 gradient-text"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Studio output</h3>
+          <p class="text-sm text-[var(--text-muted)] leading-relaxed">4K export, GPEN-512 face enhancement, batch queue, hyperswap full-head mode. Professional pipelines, no watermark.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON BAND -->
+  <section class="section">
+    <div class="container-pc">
+      <div class="card p-2 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left">
+                <th class="p-5 font-semibold text-[var(--text-dim)] uppercase text-xs tracking-wider">Capability</th>
+                <th class="p-5 font-semibold text-[var(--text-dim)] uppercase text-xs tracking-wider">Cloud face-swap services</th>
+                <th class="p-5 font-semibold uppercase text-xs tracking-wider gradient-text">Phantom Cast</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border-soft)]">
+              <tr><td class="p-5 font-medium">Frames uploaded to a server</td>     <td class="p-5 text-[var(--text-muted)]">Yes</td>             <td class="p-5"><span class="chip chip-success">Never</span></td></tr>
+              <tr><td class="p-5 font-medium">Live webcam (real-time)</td>          <td class="p-5 text-[var(--text-muted)]">Rare / capped</td>  <td class="p-5"><span class="chip chip-success">30 fps</span></td></tr>
+              <tr><td class="p-5 font-medium">4K export</td>                        <td class="p-5 text-[var(--text-muted)]">Paid tier</td>      <td class="p-5"><span class="chip chip-success">Included</span></td></tr>
+              <tr><td class="p-5 font-medium">Cost over a year of daily use</td>    <td class="p-5 text-[var(--text-muted)]">$300 – $1,800</td>  <td class="p-5"><span class="chip chip-violet">$770 once</span></td></tr>
+              <tr><td class="p-5 font-medium">Works offline</td>                    <td class="p-5 text-[var(--text-muted)]">No</td>             <td class="p-5"><span class="chip chip-success">Yes</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURE HIGHLIGHTS -->
+  <section class="section">
+    <div class="container-pc">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-10">
+        <div>
+          <div class="eyebrow mb-2">Highlights</div>
+          <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Built for the actual workflows.</h2>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <a href="features.html#webcam" class="card overflow-hidden glow-card group">
+          <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/live_show.gif" class="w-full h-full object-cover transition group-hover:scale-105" alt=""/></div>
+          <div class="p-6">
+            <div class="chip chip-cyan mb-3">Live</div>
+            <h3 class="text-xl font-semibold mb-2">Real-time webcam → OBS virtual camera</h3>
+            <p class="text-sm text-[var(--text-muted)]">Route the swapped feed straight into Twitch, YouTube Live, Zoom, or Google Meet. No restream, no extra encoder.</p>
+          </div>
+        </a>
+        <a href="features.html#export" class="card overflow-hidden glow-card group">
+          <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/movie.gif" class="w-full h-full object-cover transition group-hover:scale-105" alt=""/></div>
+          <div class="p-6">
+            <div class="chip chip-violet mb-3">Studio</div>
+            <h3 class="text-xl font-semibold mb-2">4K export with GPEN-512 enhancement</h3>
+            <p class="text-sm text-[var(--text-muted)]">Render a 12-minute 4K clip in ~38 minutes on an RTX 4090. Frame-accurate audio sync and per-clip cache.</p>
+          </div>
+        </a>
+        <a href="features.html#mapping" class="card overflow-hidden glow-card group">
+          <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/meme.gif" class="w-full h-full object-cover transition group-hover:scale-105" alt=""/></div>
+          <div class="p-6">
+            <div class="chip chip-violet mb-3">Studio</div>
+            <h3 class="text-xl font-semibold mb-2">Source-to-target face mapping</h3>
+            <p class="text-sm text-[var(--text-muted)]">Multiple actors in frame? Map each source identity to a specific target — drag, drop, done.</p>
+          </div>
+        </a>
+        <a href="features.html#batch" class="card overflow-hidden glow-card group">
+          <div class="aspect-[16/10] bg-black overflow-hidden"><img src="assets/img/streamers.gif" class="w-full h-full object-cover transition group-hover:scale-105" alt=""/></div>
+          <div class="p-6">
+            <div class="chip chip-violet mb-3">Studio</div>
+            <h3 class="text-xl font-semibold mb-2">Batch processing queue</h3>
+            <p class="text-sm text-[var(--text-muted)]">Queue 50 clips overnight; checkpointed, resumable, and never re-uploaded. Wake up to a finished folder.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING TEASER -->
+  <section class="section">
+    <div class="container-pc">
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <div class="eyebrow mb-2">Pricing</div>
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight">One license. Pay in Bitcoin.</h2>
+        <p class="mt-4 text-[var(--text-muted)]">Buy the lifetime license once. Add Premium for live streaming and Studio features any month you need them.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+        <div class="card p-7">
+          <div class="text-sm text-[var(--text-muted)] mb-2">Free trial</div>
+          <div class="text-4xl font-bold mb-1">$0</div>
+          <div class="text-xs text-[var(--text-dim)] mb-6">7 days · all core features · watermarked output</div>
+          <a href="download.html" class="btn btn-secondary w-full">Start the trial</a>
+          <ul class="mt-6 space-y-2.5 text-sm text-[var(--text-muted)]">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Real-time webcam swap</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> 1080p export</li>
+            <li class="flex gap-2"><i data-lucide="x"     class="w-4 h-4 text-[var(--text-dim)] mt-0.5"></i> Watermark on output</li>
+          </ul>
+        </div>
+
+        <div class="card p-7 tier-highlight relative" style="box-shadow: var(--shadow-glow)">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 chip chip-violet text-[11px]">Recommended</div>
+          <div class="text-sm text-[var(--text-muted)] mb-2">Lifetime License</div>
+          <div class="flex items-baseline gap-2 mb-1"><span class="text-5xl font-bold gradient-text">$770</span><span class="text-sm text-[var(--text-dim)]">one-time · BTC</span></div>
+          <div class="text-xs text-[var(--text-dim)] mb-6">Pay once. Owned forever. No recurring fees on the core app.</div>
+          <a href="checkout.html?plan=license" class="btn btn-primary w-full">
+            <i data-lucide="bitcoin" class="w-4 h-4"></i>
+            Pay with Bitcoin
+          </a>
+          <ul class="mt-6 space-y-2.5 text-sm text-[var(--text-muted)]">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Everything in Free</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> No watermark — ever</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> 4K export · GPEN-512 enhance</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Lifetime updates within v1.x</li>
+          </ul>
+        </div>
+
+        <div class="card p-7">
+          <div class="text-sm text-[var(--text-muted)] mb-2">Premium add-on</div>
+          <div class="flex items-baseline gap-2 mb-1"><span class="text-4xl font-bold">$30</span><span class="text-sm text-[var(--text-dim)]">/ month · BTC</span></div>
+          <div class="text-xs text-[var(--text-dim)] mb-6">Unlock the live + studio modules. Cancel any month.</div>
+          <a href="checkout.html?plan=premium" class="btn btn-secondary w-full">
+            <i data-lucide="bitcoin" class="w-4 h-4"></i>
+            Add Premium
+          </a>
+          <ul class="mt-6 space-y-2.5 text-sm text-[var(--text-muted)]">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Live OBS virtual camera</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Hyperswap full-head mode</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Batch processing queue</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Source-to-target mapping</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="text-center text-xs text-[var(--text-dim)] mt-6">Requires the lifetime license. Premium attaches to your existing license key.</div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section">
+    <div class="container-pc">
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <div class="eyebrow mb-2">From the people running it</div>
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Quietly running on thousands of machines.</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-5">
+        <figure class="card p-6">
+          <i data-lucide="quote" class="w-5 h-5 text-[var(--violet)] mb-3"></i>
+          <blockquote class="text-[var(--text)] leading-relaxed">"I used a cloud face-swap for one stream. The clip was on r/all 12 hours later — without my permission. With Phantom Cast my frames don't leave the box. End of risk model."</blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-[#0a0a0f] font-bold text-sm">A</div>
+            <div><div class="text-sm font-semibold">Aiden Park</div><div class="text-xs text-[var(--text-dim)]">VTuber · 240K followers</div></div>
+          </figcaption>
+        </figure>
+        <figure class="card p-6">
+          <i data-lucide="quote" class="w-5 h-5 text-[var(--violet)] mb-3"></i>
+          <blockquote class="text-[var(--text)] leading-relaxed">"Replaced our $1.2K/yr face-swap subscription. The 4K render quality with GPEN-512 is sharper than any cloud product we'd tried. Paid for itself in week one."</blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-[#0a0a0f] font-bold text-sm">M</div>
+            <div><div class="text-sm font-semibold">Mara Liu</div><div class="text-xs text-[var(--text-dim)]">Producer · indie short film studio</div></div>
+          </figcaption>
+        </figure>
+        <figure class="card p-6">
+          <i data-lucide="quote" class="w-5 h-5 text-[var(--violet)] mb-3"></i>
+          <blockquote class="text-[var(--text)] leading-relaxed">"OBS virtual camera setup took 3 minutes. 30 fps stable on my 3060. Zero cloud lag, zero \"please wait while we queue your render\". Just runs."</blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-[#0a0a0f] font-bold text-sm">D</div>
+            <div><div class="text-sm font-semibold">Dani Rivera</div><div class="text-xs text-[var(--text-dim)]">Twitch streamer · just chatting</div></div>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANTI-MISUSE BANNER -->
+  <section class="pb-16">
+    <div class="container-pc">
+      <div class="card p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-5 border-l-4" style="border-left-color: var(--rose)">
+        <i data-lucide="shield-alert" class="w-8 h-8 text-rose-400 flex-none"></i>
+        <div class="flex-1">
+          <div class="font-semibold mb-1">A clear line on misuse.</div>
+          <p class="text-sm text-[var(--text-muted)] leading-relaxed">
+            Phantom Cast is not a deepfake tool. We do not allow it to be used for non-consensual likenesses, impersonation for fraud or harassment, political deception, or sexual content involving minors. License keys for verified violations are revoked within 6 hours.
+          </p>
+        </div>
+        <a href="legal/acceptable-use.html" class="btn btn-secondary flex-none">Read Acceptable Use <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="pb-24">
+    <div class="container-pc">
+      <div class="card p-10 md:p-16 text-center bg-grid">
+        <h2 class="text-3xl md:text-5xl font-bold tracking-tight max-w-2xl mx-auto mb-5">Try it on your own GPU. <span class="gradient-text">In the next ten minutes.</span></h2>
+        <p class="text-[var(--text-muted)] max-w-xl mx-auto mb-8">7-day free trial. No card. No cloud. No data sent off your machine.</p>
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <a href="download.html" class="btn btn-primary btn-lg"><i data-lucide="download" class="w-5 h-5"></i> Download for <span data-pc-os>Windows</span></a>
+          <a href="pricing.html"  class="btn btn-secondary btn-lg">See pricing</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+</body>
+</html>

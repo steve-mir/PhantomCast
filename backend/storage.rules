@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// Models bucket: never public. All reads happen through 15-min signed URLs
+// minted by the v1_modelUrl Cloud Function, which gates on plan.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

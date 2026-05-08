@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout — Phantom Cast</title>
+  <meta name="description" content="Pay for Phantom Cast in Bitcoin via NOWPayments.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="pricing">
+  <div data-pc-header></div>
+
+  <section class="pt-12 pb-6">
+    <div class="container-pc max-w-5xl">
+      <a href="pricing.html" class="text-sm text-[var(--text-muted)] hover:text-white inline-flex items-center gap-1.5 mb-6"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back to pricing</a>
+
+      <div class="flex items-center gap-3 mb-2">
+        <i data-lucide="bitcoin" class="w-6 h-6 text-amber-400"></i>
+        <span class="chip">Powered by NOWPayments</span>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Checkout</h1>
+      <p class="text-[var(--text-muted)]">Non-custodial Bitcoin payment. Your funds go directly to our wallet — no card networks, no bank, no chargeback risk.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1: order summary + email -->
+  <section class="pb-20">
+    <div class="container-pc max-w-5xl">
+
+      <div id="pc-step1" class="grid lg:grid-cols-[1fr_360px] gap-6">
+        <!-- Customer info -->
+        <form id="pc-checkout-form" class="card p-7 space-y-5">
+          <h2 class="text-lg font-semibold">Your details</h2>
+          <div>
+            <label class="label" for="email">Email <span class="text-rose-400">*</span></label>
+            <input class="field" type="email" id="email" required placeholder="you@example.com" />
+            <div class="text-xs text-[var(--text-dim)] mt-1.5">Where we'll send your license key and receipt.</div>
+          </div>
+          <div>
+            <label class="label" for="name">Name (optional)</label>
+            <input class="field" type="text" id="name" placeholder="For the receipt" />
+          </div>
+
+          <div class="card-elev card p-4 mt-2">
+            <div class="flex items-start gap-3">
+              <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400 flex-none mt-0.5"></i>
+              <div class="text-xs text-[var(--text-muted)] leading-relaxed">
+                We process this payment via <strong class="text-white">NOWPayments</strong>, a non-custodial gateway. Your BTC goes directly to a Phantom Cast wallet address — neither NOWPayments nor we hold it on your behalf. We never see your wallet's other balances or transactions.
+              </div>
+            </div>
+          </div>
+
+          <button id="pc-pay-btn" class="btn btn-primary btn-lg w-full" type="submit">
+            <i data-lucide="bitcoin" class="w-5 h-5"></i>
+            Continue to Bitcoin payment
+          </button>
+          <div class="text-xs text-center text-[var(--text-dim)]">By continuing you agree to our <a href="legal/terms.html" class="text-cyan-400">Terms</a>, <a href="legal/eula.html" class="text-cyan-400">EULA</a>, and <a href="legal/acceptable-use.html" class="text-cyan-400">Acceptable Use Policy</a>.</div>
+        </form>
+
+        <!-- Order summary -->
+        <aside class="card p-6 h-fit">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-dim)] mb-4">Order summary</h3>
+
+          <div id="pc-summary"></div>
+
+          <div class="divider my-4"></div>
+
+          <div class="flex items-baseline justify-between mb-1">
+            <span class="text-sm text-[var(--text-muted)]">Total</span>
+            <span id="pc-total-usd" class="text-2xl font-bold gradient-text">—</span>
+          </div>
+          <div class="flex items-baseline justify-between text-xs text-[var(--text-dim)]">
+            <span>≈ in Bitcoin (live rate)</span>
+            <span id="pc-total-btc" class="font-mono">—</span>
+          </div>
+
+          <div class="divider my-4"></div>
+
+          <ul class="text-xs text-[var(--text-muted)] space-y-2 leading-relaxed">
+            <li class="flex gap-2"><i data-lucide="rotate-ccw"   class="w-3.5 h-3.5 text-cyan-400 flex-none mt-0.5"></i> 14-day refund, no questions</li>
+            <li class="flex gap-2"><i data-lucide="zap"          class="w-3.5 h-3.5 text-emerald-400 flex-none mt-0.5"></i> License key sent within 30 minutes of confirmation</li>
+            <li class="flex gap-2"><i data-lucide="lock"         class="w-3.5 h-3.5 text-violet-400 flex-none mt-0.5"></i> No card data ever touches our servers</li>
+          </ul>
+        </aside>
+      </div>
+
+      <!-- STEP 2: invoice (BTC address + QR + status) -->
+      <div id="pc-step2" class="hidden">
+        <div class="card p-6 md:p-8" id="pc-invoice-root"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+
+  <!-- Libraries -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+  <script src="assets/js/checkout.js"></script>
+
+  <script>
+    // ----- Determine plan from URL ?plan=license|premium -----
+    const params = new URLSearchParams(location.search);
+    const plan = (params.get('plan') === 'premium') ? 'premium' : 'license';
+    const product = window.PCCheckout.PRICES[plan];
+
+    // ----- Render order summary -----
+    const summary = document.getElementById('pc-summary');
+    if (plan === 'license') {
+      summary.innerHTML = `
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center flex-none">
+            <i data-lucide="key" class="w-5 h-5" style="color:#0a0a0f"></i>
+          </div>
+          <div>
+            <div class="font-semibold">Lifetime License</div>
+            <div class="text-xs text-[var(--text-dim)]">2 device activations · all v1.x updates</div>
+          </div>
+        </div>
+        <div class="text-xs text-[var(--text-muted)] space-y-1">
+          <div class="flex items-center gap-1.5"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i> No watermark on output</div>
+          <div class="flex items-center gap-1.5"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i> 4K export with GPEN-512</div>
+          <div class="flex items-center gap-1.5"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i> Email support</div>
+        </div>
+      `;
+    } else {
+      summary.innerHTML = `
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center flex-none">
+            <i data-lucide="zap" class="w-5 h-5" style="color:#0a0a0f"></i>
+          </div>
+          <div>
+            <div class="font-semibold">Premium add-on</div>
+            <div class="text-xs text-[var(--text-dim)]">1 month · attaches to your license</div>
+          </div>
+        </div>
+        <div class="text-xs text-[var(--text-muted)] space-y-1">
+          <div class="flex items-center gap-1.5"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i> OBS virtual camera (live)</div>
+          <div class="flex items-center gap-1.5"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i> Hyperswap full-head mode</div>
+          <div class="flex items-center gap-1.5"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i> Batch processing queue</div>
+        </div>
+      `;
+    }
+    document.getElementById('pc-total-usd').textContent = `$${product.amount}`;
+
+    // Live BTC estimate
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+      .then(r => r.json()).then(j => {
+        if (j && j.bitcoin && j.bitcoin.usd) {
+          const btc = (product.amount / j.bitcoin.usd).toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+          document.getElementById('pc-total-btc').textContent = btc + ' BTC';
+        } else {
+          document.getElementById('pc-total-btc').textContent = '—';
+        }
+      })
+      .catch(() => { document.getElementById('pc-total-btc').textContent = '—'; });
+
+    if (window.lucide) window.lucide.createIcons();
+
+    // ----- Submit -> generate invoice -----
+    document.getElementById('pc-checkout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      if (!email) return;
+
+      document.getElementById('pc-step1').classList.add('hidden');
+      document.getElementById('pc-step2').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      await window.PCCheckout.startCheckout({
+        plan,
+        email,
+        root: document.getElementById('pc-invoice-root'),
+      });
+    });
+  </script>
+</body>
+</html>

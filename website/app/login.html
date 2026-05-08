@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="auth">
+  <div data-pc-header></div>
+
+  <section class="py-16 min-h-[80vh] flex items-center">
+    <div class="container-pc max-w-md w-full">
+      <div class="card p-8">
+        <h1 class="text-2xl font-bold mb-1">Welcome back.</h1>
+        <p class="text-sm text-[var(--text-muted)] mb-6">Sign in to manage your license and devices.</p>
+
+        <form class="space-y-4" onsubmit="event.preventDefault(); location.href='dashboard.html'">
+          <div>
+            <label class="label" for="email">Email</label>
+            <input class="field" id="email" type="email" required autocomplete="email" />
+          </div>
+          <div>
+            <div class="flex items-center justify-between"><label class="label" for="pw">Password</label><a href="forgot-password.html" class="text-xs text-cyan-400 hover:underline">Forgot?</a></div>
+            <input class="field" id="pw" type="password" required autocomplete="current-password" />
+          </div>
+          <button class="btn btn-primary w-full" type="submit">Sign in</button>
+        </form>
+
+        <div class="my-5 flex items-center gap-3">
+          <div class="flex-1 h-px bg-[var(--border-soft)]"></div>
+          <div class="text-xs text-[var(--text-dim)]">or</div>
+          <div class="flex-1 h-px bg-[var(--border-soft)]"></div>
+        </div>
+
+        <div class="space-y-2">
+          <button class="btn btn-secondary w-full text-sm"><i data-lucide="github" class="w-4 h-4"></i> Continue with GitHub</button>
+          <button class="btn btn-secondary w-full text-sm"><svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#fff" d="M21.35 11.1H12v3.2h5.35c-.23 1.42-1.65 4.16-5.35 4.16-3.22 0-5.85-2.66-5.85-5.96S8.78 6.54 12 6.54c1.84 0 3.06.78 3.76 1.45l2.56-2.47C16.86 3.96 14.6 3 12 3 7.03 3 3 7.03 3 12s4.03 9 9 9c5.2 0 8.64-3.65 8.64-8.78 0-.59-.06-1.05-.14-1.5z"/></svg> Continue with Google</button>
+        </div>
+
+        <p class="text-xs text-center text-[var(--text-dim)] mt-6">Don't have an account? <a href="signup.html" class="text-cyan-400 hover:underline">Create one</a></p>
+      </div>
+
+      <p class="text-xs text-center text-[var(--text-dim)] mt-6">
+        Need just to redeem a license key? Open the desktop app → Settings → License → Enter key.
+      </p>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

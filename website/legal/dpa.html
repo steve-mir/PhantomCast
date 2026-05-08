@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Data Processing Addendum (DPA) — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="legal">
+  <div data-pc-header></div>
+
+  <section class="py-12">
+    <div class="container-pc grid lg:grid-cols-[220px_1fr] gap-12 max-w-5xl">
+      <aside class="lg:sticky lg:top-20 self-start">
+        <div class="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2 font-semibold">Legal</div>
+        <ul class="space-y-1 text-sm">
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="terms.html">Terms of Service</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="privacy.html">Privacy Policy</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="acceptable-use.html">Acceptable Use</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="eula.html">EULA</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="refund-policy.html">Refund Policy</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-white bg-[var(--bg-elev)]" href="dpa.html">DPA (B2B)</a></li>
+        </ul>
+      </aside>
+
+      <article class="prose-pc">
+        <h1>Data Processing Addendum (DPA)</h1>
+        <p class="text-sm text-[var(--text-dim)]">For Phantom Cast Ltd. multi-seat / studio customers · v1.0 · May 2026</p>
+
+        <p>This DPA forms part of the <a href="terms.html">Terms of Service</a> between Phantom Cast Ltd. ("Processor") and the entity that has signed up for a multi-seat or studio license ("Controller"). It applies where Processor processes Personal Data on behalf of Controller in the course of providing the Services.</p>
+
+        <h2>1. Roles &amp; processing</h2>
+        <p>Controller determines the purposes and means of processing. Processor processes Personal Data only on documented instructions from Controller, including with regard to international transfers.</p>
+
+        <h2>2. Categories of data subjects &amp; data</h2>
+        <ul>
+          <li><strong>Subjects:</strong> Controller's authorized users (typically employees / contractors) of the Phantom Cast software.</li>
+          <li><strong>Data:</strong> business email, name, license fingerprint hash (composite SHA-256), IP (hashed), heartbeat timestamps, support ticket content. <em>No customer media (frames, audio, video, project files) is processed by Processor.</em></li>
+        </ul>
+
+        <h2>3. Sub-processors</h2>
+        <p>Processor uses the sub-processors listed in our <a href="privacy.html">Privacy Policy</a>. Controller authorizes these in advance. Processor will give 30 days' notice of any new sub-processor and Controller may object with reasonable cause.</p>
+
+        <h2>4. Security</h2>
+        <p>Processor implements appropriate technical and organizational measures including: encryption in transit (TLS 1.2+) and at rest (AES-256); least-privilege access controls and audit logging on the Firestore project; an incident response plan with 72-hour breach notification commitment; periodic third-party security review.</p>
+
+        <h2>5. International transfers</h2>
+        <p>Personal Data is stored in the EU (Frankfurt). Where transfers outside the EEA / UK occur via sub-processors, the Standard Contractual Clauses (EU 2021/914) apply, with the UK Addendum and Swiss Addendum as relevant.</p>
+
+        <h2>6. Data subject rights</h2>
+        <p>Processor will assist Controller in responding to data subject access, rectification, erasure, portability, restriction, and objection requests within the timelines required by GDPR.</p>
+
+        <h2>7. Audit</h2>
+        <p>On reasonable notice and no more than once per 12 months, Controller may audit Processor's compliance with this DPA. SOC 2 Type II reports (when available) and recent penetration test summaries can be shared under NDA in lieu of on-site audit where appropriate.</p>
+
+        <h2>8. Return / deletion</h2>
+        <p>On termination of the Services, Processor will delete or return all Personal Data within 30 days, except where retention is required by law (e.g., financial records under tax law).</p>
+
+        <h2>9. Liability</h2>
+        <p>The liability terms in the Terms of Service apply to this DPA.</p>
+
+        <h2>10. Signing</h2>
+        <p>For B2B customers requiring a counter-signed DPA, email <a href="mailto:legal@phantomcast.app">legal@phantomcast.app</a> with your company name and we will return a counter-signed PDF within 5 business days.</p>
+      </article>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

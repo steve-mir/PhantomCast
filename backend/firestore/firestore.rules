@@ -1,0 +1,58 @@
+rules_version = '2';
+
+// Deep-Live-Cam Pro Firestore security rules.
+//
+// Authority model: every mutation goes through Cloud Functions which run
+// with admin credentials and bypass these rules. The rules only protect
+// direct client reads, locking each user/license/device to its owner's
+// custom claims.
+
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function uid()        { return request.auth.uid; }
+    function claim(k)     { return request.auth.token[k]; }
+
+    // ---------- Users ----------
+    match /users/{userId} {
+      allow read:  if isSignedIn() && uid() == userId;
+      allow write: if false;
+    }
+
+    // ---------- Licenses ----------
+    // Owner can read their own license; the bound device can read it via
+    // the licenseId custom claim. Writes are server-side only.
+    match /licenses/{licenseId} {
+      allow read: if isSignedIn() && (
+        claim('licenseId') == licenseId ||
+        resource.data.ownerUid == uid()
+      );
+      allow write: if false;
+    }
+
+    // ---------- Devices ----------
+    match /devices/{deviceId} {
+      allow read:  if isSignedIn() && claim('deviceId') == deviceId;
+      allow write: if false;
+    }
+
+    // ---------- Subscriptions ----------
+    match /subscriptions/{subId} {
+      allow read:  if isSignedIn() && resource.data.uid == uid();
+      allow write: if false;
+    }
+
+    // ---------- Audit logs ----------
+    match /activation_audit/{eventId} {
+      allow read:  if false;
+      allow write: if false;
+    }
+
+    // ---------- Feature flags (public read) ----------
+    match /feature_flags/{document=**} {
+      allow read:  if isSignedIn();
+      allow write: if false;
+    }
+  }
+}

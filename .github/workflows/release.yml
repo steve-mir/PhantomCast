@@ -1,0 +1,68 @@
+name: Windows Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 90
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Build
+        shell: pwsh
+        run: pwsh -File build_windows.ps1
+        env:
+          DLCPRO_FIREBASE_PROJECT: ${{ secrets.FIREBASE_PROJECT }}
+          DLCPRO_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+
+      - name: Sign EXE & installer
+        if: env.SIGN_PFX_BASE64 != ''
+        shell: pwsh
+        env:
+          SIGN_PFX_BASE64:    ${{ secrets.SIGN_PFX_BASE64 }}
+          SIGN_PFX_PASSWORD:  ${{ secrets.SIGN_PFX_PASSWORD }}
+        run: |
+          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\code.pfx", [Convert]::FromBase64String($env:SIGN_PFX_BASE64))
+          $sign = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe"
+          & $sign sign /f "$env:RUNNER_TEMP\code.pfx" /p $env:SIGN_PFX_PASSWORD `
+                  /tr http://timestamp.digicert.com /td sha256 /fd sha256 `
+                  dist\DeepLiveCamPro\DeepLiveCamPro.exe
+          Get-ChildItem dist\installer\*.exe | ForEach-Object {
+            & $sign sign /f "$env:RUNNER_TEMP\code.pfx" /p $env:SIGN_PFX_PASSWORD `
+                    /tr http://timestamp.digicert.com /td sha256 /fd sha256 $_.FullName
+          }
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeepLiveCamPro-installer
+          path: dist/installer/*.exe
+
+      - name: Draft release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: dist/installer/*.exe
+          generate_release_notes: true

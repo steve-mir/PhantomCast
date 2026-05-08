@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OBS &amp; streaming — Phantom Cast docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="docs">
+  <div data-pc-header></div>
+
+  <section class="py-12">
+    <div class="container-pc grid lg:grid-cols-[240px_1fr] gap-12 max-w-6xl">
+      <aside class="space-y-6 lg:sticky lg:top-20 self-start">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2 font-semibold">Docs</div>
+          <ul class="space-y-1 text-sm">
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="getting-started.html">Getting started</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="gpu-troubleshooting.html">GPU troubleshooting</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-white bg-[var(--bg-elev)]" href="obs-integration.html">OBS &amp; streaming</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="account-billing.html">Account &amp; billing</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="system-requirements.html">System requirements</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="privacy-data.html">Privacy &amp; data</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <article class="prose-pc">
+        <div class="chip chip-cyan mb-4"><i data-lucide="video" class="w-3 h-3"></i> Live · Premium</div>
+        <h1>Set up Phantom Cast as an OBS virtual camera in 5 minutes</h1>
+        <p>The OBS virtual camera output (Premium add-on) lets the swapped feed appear as a normal webcam in <em>any</em> app — Twitch, YouTube Live, Zoom, Google Meet, Microsoft Teams, Discord, Slack huddles. Set up takes about five minutes.</p>
+
+        <h2>Prerequisites</h2>
+        <ul>
+          <li>Phantom Cast 1.4.0+ with the <strong>Premium add-on</strong> active</li>
+          <li>OBS Studio 30+ installed (any operating system)</li>
+          <li>The Phantom Cast Virtual Camera driver (offered during installation; can also be installed later from <strong>Settings → Live output</strong>)</li>
+        </ul>
+
+        <h2>Step 1 — Enable live output in Phantom Cast</h2>
+        <ol>
+          <li>Open Phantom Cast and load a project with your source identity.</li>
+          <li>Switch to the <strong>Live</strong> tab.</li>
+          <li>Pick your physical webcam under "Input device" and set the resolution / framerate (1080p30 recommended for streaming).</li>
+          <li>Toggle <strong>Output to virtual camera</strong> on. The status indicator should turn green.</li>
+        </ol>
+
+        <h2>Step 2 — Add the virtual camera in OBS</h2>
+        <ol>
+          <li>In OBS, in your scene, click <strong>+</strong> in the Sources panel → <strong>Video Capture Device</strong>.</li>
+          <li>Name it "Phantom Cast" → OK.</li>
+          <li>From the "Device" dropdown, choose <code>Phantom Cast Virtual Camera</code>.</li>
+          <li>Set Resolution/FPS Type to <strong>Custom</strong> and pick 1920×1080 @ 30.</li>
+          <li>Click OK. You should immediately see your swapped feed in the OBS preview.</li>
+        </ol>
+
+        <h2>Step 3 — Pipe to Twitch / YouTube / Zoom / etc.</h2>
+        <p>From here it's normal OBS workflow:</p>
+        <ul>
+          <li><strong>Twitch / YouTube:</strong> Settings → Stream → key in your stream key → Start streaming.</li>
+          <li><strong>Zoom / Meet / Teams / Discord:</strong> in the conferencing app's video settings, pick "OBS Virtual Camera" (or "Phantom Cast Virtual Camera" if you skip OBS).</li>
+        </ul>
+
+        <h2>Performance tuning</h2>
+        <ul>
+          <li>If you get dropped frames in OBS, lower the input resolution to 720p — the swap quality difference is negligible at streaming bitrates.</li>
+          <li>Enable <strong>NVENC</strong> as the OBS encoder so OBS isn't fighting Phantom Cast for the GPU's CUDA cores.</li>
+          <li>Use Windows "High performance" power plan; the difference is ~10% sustained fps.</li>
+        </ul>
+
+        <h2>Latency</h2>
+        <p>Total added latency from camera capture to OBS preview is typically 80-120 ms on an RTX 3060 — imperceptible for chat / streaming, but worth knowing for time-critical applications. The on-screen "live offset" indicator shows it in real time.</p>
+
+        <hr>
+        <p class="text-sm">Premium add-on costs $30/month and includes everything described above. <a href="../pricing.html">Add it to your license</a>.</p>
+      </article>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

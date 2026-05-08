@@ -1,0 +1,26 @@
+{
+  "name": "dlc-pro-functions",
+  "version": "1.0.0",
+  "description": "Cloud Functions for Deep-Live-Cam Pro: license activation, heartbeat, Stripe webhook.",
+  "engines": { "node": "20" },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "lint": "eslint --ext .ts src",
+    "deploy": "firebase deploy --only functions",
+    "shell": "firebase functions:shell"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  },
+  "private": true
+}

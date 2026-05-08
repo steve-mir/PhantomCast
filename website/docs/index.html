@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Documentation — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="docs">
+  <div data-pc-header></div>
+
+  <section class="pt-16 pb-10 bg-grid">
+    <div class="container-pc max-w-3xl text-center">
+      <div class="eyebrow mb-3">Documentation</div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Phantom Cast docs.</h1>
+      <p class="text-[var(--text-muted)]">Install, troubleshoot, integrate. Updated with each release.</p>
+    </div>
+  </section>
+
+  <section class="pb-16">
+    <div class="container-pc max-w-5xl">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="getting-started.html" class="card p-6 hover:border-[var(--violet)] glow-card">
+          <i data-lucide="rocket" class="w-6 h-6 text-violet-400 mb-3"></i>
+          <h3 class="font-semibold mb-1">Getting started</h3>
+          <p class="text-sm text-[var(--text-muted)]">Install, activate, and run your first swap in under 10 minutes.</p>
+        </a>
+        <a href="gpu-troubleshooting.html" class="card p-6 hover:border-[var(--violet)] glow-card">
+          <i data-lucide="cpu" class="w-6 h-6 text-cyan-400 mb-3"></i>
+          <h3 class="font-semibold mb-1">GPU troubleshooting</h3>
+          <p class="text-sm text-[var(--text-muted)]">Why your CUDA face-swap is running on CPU — and how to fix it.</p>
+        </a>
+        <a href="obs-integration.html" class="card p-6 hover:border-[var(--violet)] glow-card">
+          <i data-lucide="video" class="w-6 h-6 text-emerald-400 mb-3"></i>
+          <h3 class="font-semibold mb-1">OBS &amp; streaming</h3>
+          <p class="text-sm text-[var(--text-muted)]">Route the swapped feed to Twitch, YouTube Live, Zoom, Discord.</p>
+        </a>
+        <a href="account-billing.html" class="card p-6 hover:border-[var(--violet)] glow-card">
+          <i data-lucide="receipt" class="w-6 h-6 text-amber-400 mb-3"></i>
+          <h3 class="font-semibold mb-1">Account &amp; billing</h3>
+          <p class="text-sm text-[var(--text-muted)]">License moves, BTC payments, refunds, and managing your devices.</p>
+        </a>
+        <a href="system-requirements.html" class="card p-6 hover:border-[var(--violet)] glow-card">
+          <i data-lucide="hard-drive" class="w-6 h-6 text-rose-400 mb-3"></i>
+          <h3 class="font-semibold mb-1">System requirements</h3>
+          <p class="text-sm text-[var(--text-muted)]">GPU compatibility list and recommended specs by use case.</p>
+        </a>
+        <a href="privacy-data.html" class="card p-6 hover:border-[var(--violet)] glow-card">
+          <i data-lucide="shield" class="w-6 h-6 text-[var(--violet)] mb-3"></i>
+          <h3 class="font-semibold mb-1">Privacy &amp; data</h3>
+          <p class="text-sm text-[var(--text-muted)]">Exactly what we collect, what we don't, and how to verify it.</p>
+        </a>
+      </div>
+
+      <div class="card p-7 mt-10 flex flex-col md:flex-row items-start md:items-center gap-5">
+        <i data-lucide="help-circle" class="w-8 h-8 text-cyan-400 flex-none"></i>
+        <div class="flex-1">
+          <div class="font-semibold mb-1">Can't find what you need?</div>
+          <p class="text-sm text-[var(--text-muted)]">Check the FAQ or open a support ticket — most responses go out within one business day.</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="../help.html" class="btn btn-secondary">FAQ</a>
+          <a href="../contact.html" class="btn btn-primary">Contact</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

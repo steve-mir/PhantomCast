@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>System requirements — Phantom Cast docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="docs">
+  <div data-pc-header></div>
+
+  <section class="py-12">
+    <div class="container-pc grid lg:grid-cols-[240px_1fr] gap-12 max-w-6xl">
+      <aside class="space-y-6 lg:sticky lg:top-20 self-start">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2 font-semibold">Docs</div>
+          <ul class="space-y-1 text-sm">
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="getting-started.html">Getting started</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="gpu-troubleshooting.html">GPU troubleshooting</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="obs-integration.html">OBS &amp; streaming</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="account-billing.html">Account &amp; billing</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-white bg-[var(--bg-elev)]" href="system-requirements.html">System requirements</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="privacy-data.html">Privacy &amp; data</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <article class="prose-pc">
+        <div class="chip chip-rose mb-4" style="color:#fca5a5;border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.08)"><i data-lucide="hard-drive" class="w-3 h-3"></i> Reference</div>
+        <h1>System requirements</h1>
+
+        <h2>Operating system</h2>
+        <ul>
+          <li>Windows 10 21H2 (build 19044) or Windows 11 — fully supported</li>
+          <li>macOS 14+ on Apple Silicon (M2/M3) — private beta</li>
+          <li>Ubuntu 22.04+ — planned H2 2026</li>
+        </ul>
+
+        <h2>RAM &amp; disk</h2>
+        <table>
+          <thead><tr><th>Use case</th><th>Minimum</th><th>Recommended</th></tr></thead>
+          <tbody>
+            <tr><td>Trial / casual use</td><td>8 GB RAM, 6 GB disk</td><td>16 GB RAM, SSD</td></tr>
+            <tr><td>1080p streaming</td>  <td>16 GB RAM, SSD</td>     <td>32 GB RAM, NVMe</td></tr>
+            <tr><td>4K editorial export</td><td>32 GB RAM, NVMe</td>   <td>64 GB RAM, NVMe in RAID 0 for project cache</td></tr>
+          </tbody>
+        </table>
+
+        <h2>NVIDIA GPU compatibility</h2>
+        <p>Phantom Cast needs compute capability 7.5 or newer (Turing / Ampere / Ada Lovelace / Blackwell). Older architectures fall back to CPU.</p>
+
+        <table>
+          <thead><tr><th>GPU family</th><th>Examples</th><th>Live (1080p)</th><th>4K render (RT)</th></tr></thead>
+          <tbody>
+            <tr><td>RTX 50 (Blackwell)</td>  <td>5070 Ti, 5080, 5090</td>          <td>60+ fps</td><td>0.6× — 0.9×</td></tr>
+            <tr><td>RTX 40 (Ada)</td>        <td>4060, 4070 Ti, 4080, 4090</td>     <td>30–60 fps</td><td>0.8× — 3.2×</td></tr>
+            <tr><td>RTX 30 (Ampere)</td>     <td>3060, 3070, 3080, 3090</td>        <td>30 fps</td>   <td>2× — 4×</td></tr>
+            <tr><td>RTX 20 (Turing)</td>     <td>2060, 2070, 2080</td>              <td>20–24 fps</td><td>4× — 6×</td></tr>
+            <tr><td>GTX 16 (Turing)</td>     <td>1660, 1660 Ti</td>                 <td>15–18 fps</td><td>6× — 8×</td></tr>
+            <tr><td>GTX 10 &amp; older</td>  <td>1080 Ti and earlier</td>           <td>CPU fallback</td><td>CPU fallback</td></tr>
+          </tbody>
+        </table>
+        <p class="text-xs">"4K render (RT)" = realtime multiplier vs source duration on a 12-min sample. Lower is better. Measured with GPEN-512 on, no Hyperswap.</p>
+
+        <h2>AMD &amp; Intel GPUs</h2>
+        <p>Phantom Cast 1.x is CUDA-only. AMD ROCm and Intel oneAPI backends are scoped for 2.x. Until then, AMD/Intel users get the CPU fallback path.</p>
+
+        <h2>Driver baseline</h2>
+        <ul>
+          <li><strong>NVIDIA driver ≥ 525.60</strong> (CUDA 12 runtime requirement)</li>
+          <li><strong>cuDNN 8.9</strong> bundled with the installer — no separate install needed</li>
+          <li><strong>TensorRT 10.0</strong> bundled — required for the optional optimized inference path</li>
+        </ul>
+
+        <h2>OBS plugin compatibility</h2>
+        <ul>
+          <li>OBS Studio 28+ — supported</li>
+          <li>OBS Studio 30+ — recommended (better virtual camera latency)</li>
+          <li>Streamlabs Desktop — supported via shared OBS virtual camera driver</li>
+        </ul>
+
+        <hr>
+        <p class="text-sm">Have a GPU not listed here? Send the model and your live FPS reading to <a href="mailto:hello@phantomcast.app">hello@phantomcast.app</a> and we'll add it.</p>
+      </article>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

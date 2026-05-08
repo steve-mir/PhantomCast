@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Account &amp; billing — Phantom Cast docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="docs">
+  <div data-pc-header></div>
+
+  <section class="py-12">
+    <div class="container-pc grid lg:grid-cols-[240px_1fr] gap-12 max-w-6xl">
+      <aside class="space-y-6 lg:sticky lg:top-20 self-start">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2 font-semibold">Docs</div>
+          <ul class="space-y-1 text-sm">
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="getting-started.html">Getting started</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="gpu-troubleshooting.html">GPU troubleshooting</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="obs-integration.html">OBS &amp; streaming</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-white bg-[var(--bg-elev)]" href="account-billing.html">Account &amp; billing</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="system-requirements.html">System requirements</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="privacy-data.html">Privacy &amp; data</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <article class="prose-pc">
+        <div class="chip chip-amber mb-4"><i data-lucide="receipt" class="w-3 h-3"></i> Reference</div>
+        <h1>Account &amp; billing</h1>
+
+        <h2>Bitcoin payments via NOWPayments</h2>
+        <p>All Phantom Cast purchases are denominated in USD but settled in Bitcoin via NOWPayments — a non-custodial gateway. We never see your wallet, and NOWPayments doesn't hold your funds: BTC routes directly to our wallet address.</p>
+        <ul>
+          <li>Confirmation usually completes within 10–30 minutes (1 confirmation).</li>
+          <li>If your transaction has 1+ confirmations but no license has arrived after 60 min, contact <a href="mailto:billing@phantomcast.app">billing@phantomcast.app</a> with the order ID and BTC txid.</li>
+          <li>Lightning Network support is on the roadmap for Q3 2026.</li>
+        </ul>
+
+        <h2>Your license key</h2>
+        <p>The format is <code>PC-XXXXX-XXXXX-XXXXX-XXXXX</code>. It's emailed on purchase and always visible in your <a href="../app/dashboard.html">dashboard</a>. To activate the desktop app, paste the key on first launch — or in <strong>Settings → License → Enter key</strong>.</p>
+
+        <h2>Activated devices &amp; moves</h2>
+        <p>The Lifetime License covers <strong>2 simultaneous device activations</strong>. From the dashboard:</p>
+        <ul>
+          <li><strong>Devices</strong> tab lists all active machines (nickname, OS, GPU, last seen).</li>
+          <li>Click <strong>Deactivate</strong> on a row to free that slot. The desktop app loses access on its next license heartbeat (within 6 hours; immediately if it's online).</li>
+          <li><strong>Move license</strong> is a guided flow: deactivate the old, activate the new in one shot. Limited to once per year per license — <a href="mailto:support@phantomcast.app">contact support</a> for genuine cases like a stolen laptop.</li>
+        </ul>
+
+        <h2>Premium add-on management</h2>
+        <p>Premium ($30/month) attaches to your existing license. Each month is purchased separately — there's no auto-renewal unless you opt in. To extend:</p>
+        <ol>
+          <li><a href="../checkout.html?plan=premium">Buy another month</a> — paid in BTC.</li>
+          <li>The new month appends to your current expiry; if your current Premium expires May 30 and you buy on May 25, the new expiry is June 30 (not June 25).</li>
+          <li>If Premium lapses, the desktop app loses Live + Studio features within 6 hours of expiry; the core Lifetime functionality is unaffected.</li>
+        </ol>
+
+        <h2>Refunds</h2>
+        <p>14-day, no-questions refund. The refund is paid back in BTC to a wallet address you specify (it doesn't have to be the one you paid from). The on-chain BTC amount is recalculated at the current rate, so be aware of price volatility — if BTC has dropped 10% since you paid, you'll get back 10% less BTC than you sent.</p>
+        <p>To request a refund, email <a href="mailto:billing@phantomcast.app">billing@phantomcast.app</a> with your order ID and the destination BTC address. Most refunds settle within 24 hours.</p>
+
+        <h2>Receipts &amp; invoices</h2>
+        <p>The dashboard's Billing tab has all your past payments with downloadable PDF invoices. The invoice includes the order ID, USD amount, BTC amount, exchange rate at time of payment, and our company VAT/tax info if applicable.</p>
+
+        <hr>
+        <p class="text-sm">Still need help? <a href="../contact.html">Talk to billing</a>.</p>
+      </article>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

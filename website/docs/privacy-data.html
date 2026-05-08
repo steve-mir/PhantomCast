@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy &amp; data — Phantom Cast docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="docs">
+  <div data-pc-header></div>
+
+  <section class="py-12">
+    <div class="container-pc grid lg:grid-cols-[240px_1fr] gap-12 max-w-6xl">
+      <aside class="space-y-6 lg:sticky lg:top-20 self-start">
+        <div>
+          <div class="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2 font-semibold">Docs</div>
+          <ul class="space-y-1 text-sm">
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="getting-started.html">Getting started</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="gpu-troubleshooting.html">GPU troubleshooting</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="obs-integration.html">OBS &amp; streaming</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="account-billing.html">Account &amp; billing</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="system-requirements.html">System requirements</a></li>
+            <li><a class="block py-1.5 px-2 rounded text-white bg-[var(--bg-elev)]" href="privacy-data.html">Privacy &amp; data</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <article class="prose-pc">
+        <div class="chip chip-violet mb-4"><i data-lucide="shield" class="w-3 h-3"></i> Architecture</div>
+        <h1>Privacy &amp; data — exactly what we collect</h1>
+
+        <p>This is a non-legal companion to the <a href="../legal/privacy.html">Privacy Policy</a>. Where the policy answers "what we do with what we collect", this page answers "what we collect, full stop, with the architectural rationale".</p>
+
+        <h2>Frames, audio, video — never transmitted</h2>
+        <p>Inference runs locally on your GPU. Phantom Cast does not have an upload pipeline. There is no server-side rendering. There is no "send for cloud enhancement" toggle. The bytes never leave your machine — verifiable by inspecting outbound network traffic with Wireshark, Little Snitch, or your firewall of choice.</p>
+
+        <h2>What we do collect</h2>
+        <table>
+          <thead><tr><th>Data</th><th>Why</th><th>Where it lives</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Email + name</strong></td><td>License delivery, receipts, support correspondence</td><td>Firestore (Frankfurt region, EU)</td></tr>
+            <tr><td><strong>License fingerprint hash</strong></td><td>Bind a license to specific machines (per the EULA's 2-device limit)</td><td>Firestore — a single SHA-256 of (volume serial + GPU UUID + MAC); raw components never leave the device</td></tr>
+            <tr><td><strong>IP address</strong> (hashed)</td><td>Fraud detection on activations</td><td>Firestore — hashed before write, deleted after 30 days</td></tr>
+            <tr><td><strong>License heartbeat</strong></td><td>Verify the license is still valid; check for revocations</td><td>Firestore — once per launch + once per 24h while running</td></tr>
+            <tr><td><strong>Version-check ping</strong></td><td>Show "update available" in-app</td><td>Cloudflare R2 — anonymous GET of <code>latest.json</code></td></tr>
+            <tr><td><strong>Anonymous install counter</strong></td><td>Count successful first-launches, no identifying data</td><td>PostHog (self-hosted, EU)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>What we deliberately don't collect</h2>
+        <ul>
+          <li>Your raw video/audio/webcam frames</li>
+          <li>Source or target identity images</li>
+          <li>Project files, render output, file paths</li>
+          <li>Browsing history, other apps, system processes</li>
+          <li>Raw machine identifiers (volume serial, MAC, etc.) — only the SHA-256 composite hash leaves the device</li>
+        </ul>
+
+        <h2>Optional offline mode</h2>
+        <p>Once activated, you can flip <strong>Settings → Privacy → Offline mode</strong> to disable every network call for up to 30 days between heartbeats. The app continues to work fully during the offline window. Reconnect any time within 30 days to refresh.</p>
+
+        <h2>Telemetry &amp; analytics</h2>
+        <p>The desktop app does not ship with crash analytics or product telemetry by default. The website uses self-hosted PostHog (EU region) for product analytics; you can opt out via the cookie banner.</p>
+
+        <h2>Data subject requests (DSAR)</h2>
+        <p>If you're an EU/UK/CA resident, you can request a data export or full deletion at <a href="mailto:privacy@phantomcast.app">privacy@phantomcast.app</a>. We fulfill within 30 days as required by GDPR. The export is a JSON bundle of every record tied to your email + license.</p>
+
+        <hr>
+        <p class="text-sm">For the legal-grade version see the <a href="../legal/privacy.html">Privacy Policy</a>. For B2B customers needing a DPA, see <a href="../legal/dpa.html">DPA</a>.</p>
+      </article>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

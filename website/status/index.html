@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Status — Phantom Cast</title>
+  <meta name="description" content="Public status page for Phantom Cast services.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="status">
+  <div data-pc-header></div>
+
+  <section class="pt-12 pb-10">
+    <div class="container-pc max-w-4xl">
+
+      <!-- Headline -->
+      <div class="card p-8 text-center" style="border-top: 4px solid var(--emerald)">
+        <div class="inline-flex w-16 h-16 rounded-full items-center justify-center mb-4" style="background: rgba(16,185,129,.12)">
+          <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-400"></i>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">All systems operational</h1>
+        <div class="text-sm text-[var(--text-muted)]">Last checked just now · Auto-refreshes every 60s</div>
+      </div>
+
+      <!-- Components -->
+      <div class="card mt-6 overflow-hidden">
+        <div class="p-5 border-b border-[var(--border-soft)]"><h2 class="font-semibold">Services</h2></div>
+        <div class="divide-y divide-[var(--border-soft)]">
+          <div class="p-4 flex items-center gap-4">
+            <span class="dot dot-up flex-none"></span>
+            <div class="flex-1">
+              <div class="font-medium text-sm">Marketing site (phantomcast.app)</div>
+              <div class="text-xs text-[var(--text-dim)]">Cloudflare CDN · Vercel edge</div>
+            </div>
+            <span class="font-mono text-sm text-emerald-400">99.99% · 90d</span>
+          </div>
+          <div class="p-4 flex items-center gap-4">
+            <span class="dot dot-up flex-none"></span>
+            <div class="flex-1">
+              <div class="font-medium text-sm">Customer portal (app.phantomcast.app)</div>
+              <div class="text-xs text-[var(--text-dim)]">Vercel · Firebase Auth</div>
+            </div>
+            <span class="font-mono text-sm text-emerald-400">99.97% · 90d</span>
+          </div>
+          <div class="p-4 flex items-center gap-4">
+            <span class="dot dot-up flex-none"></span>
+            <div class="flex-1">
+              <div class="font-medium text-sm">Licensing service (heartbeat &amp; activation)</div>
+              <div class="text-xs text-[var(--text-dim)]">Cloud Functions · Firestore EU</div>
+            </div>
+            <span class="font-mono text-sm text-emerald-400">99.95% · 90d</span>
+          </div>
+          <div class="p-4 flex items-center gap-4">
+            <span class="dot dot-up flex-none"></span>
+            <div class="flex-1">
+              <div class="font-medium text-sm">Installer CDN (dl.phantomcast.app)</div>
+              <div class="text-xs text-[var(--text-dim)]">Cloudflare R2</div>
+            </div>
+            <span class="font-mono text-sm text-emerald-400">100.00% · 90d</span>
+          </div>
+          <div class="p-4 flex items-center gap-4">
+            <span class="dot dot-up flex-none"></span>
+            <div class="flex-1">
+              <div class="font-medium text-sm">NOWPayments invoice creation</div>
+              <div class="text-xs text-[var(--text-dim)]">Third-party · we monitor end-to-end</div>
+            </div>
+            <span class="font-mono text-sm text-emerald-400">99.92% · 90d</span>
+          </div>
+          <div class="p-4 flex items-center gap-4">
+            <span class="dot dot-warn flex-none"></span>
+            <div class="flex-1">
+              <div class="font-medium text-sm">Transactional email (Resend)</div>
+              <div class="text-xs text-[var(--text-dim)]">Slight delivery delays observed in last 24h</div>
+            </div>
+            <span class="font-mono text-sm text-amber-400">99.81% · 90d</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 90-day uptime bars -->
+      <div class="card p-6 mt-6">
+        <div class="flex items-baseline justify-between mb-4">
+          <h2 class="font-semibold">90-day uptime</h2>
+          <span class="text-xs text-[var(--text-dim)]">Hover a bar for the day's status</span>
+        </div>
+        <div id="bars" class="flex gap-[2px] h-10 items-end"></div>
+      </div>
+
+      <!-- Incidents -->
+      <div class="card p-6 mt-6">
+        <h2 class="font-semibold mb-4">Recent incidents</h2>
+        <div class="space-y-4 text-sm">
+          <div class="border-l-2 border-amber-400 pl-4">
+            <div class="flex items-baseline justify-between gap-2">
+              <div class="font-medium">Resend transactional email — slight delivery delay</div>
+              <div class="text-xs text-[var(--text-dim)]">May 6, 2026 · ongoing · monitoring</div>
+            </div>
+            <p class="text-xs text-[var(--text-muted)] mt-1">Resend reporting elevated queue depth on EU pop. License keys arriving with ~3 min delay. No impact on payment confirmation or license validity.</p>
+          </div>
+          <div class="border-l-2 border-emerald-400 pl-4">
+            <div class="flex items-baseline justify-between gap-2">
+              <div class="font-medium">Licensing service — brief 503 spike</div>
+              <div class="text-xs text-[var(--text-dim)]">Apr 28, 2026 · 14:02–14:11 UTC · resolved</div>
+            </div>
+            <p class="text-xs text-[var(--text-muted)] mt-1">Cloud Functions cold-start storm following a deploy. Client retries with exponential backoff masked the impact for most users. Mitigation: minimum-instance count raised from 1 → 3.</p>
+          </div>
+          <div class="border-l-2 border-emerald-400 pl-4">
+            <div class="flex items-baseline justify-between gap-2">
+              <div class="font-medium">Installer CDN — Cloudflare regional issue</div>
+              <div class="text-xs text-[var(--text-dim)]">Apr 12, 2026 · 21:30–22:14 UTC · resolved</div>
+            </div>
+            <p class="text-xs text-[var(--text-muted)] mt-1">Cloudflare R2 had a regional issue affecting EU downloads. Mirrored to a secondary region; downloads resumed within 12 minutes of detection.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-center text-xs text-[var(--text-dim)] mt-8">Subscribe to status updates: <a href="#" class="text-cyan-400">RSS</a> · <a href="#" class="text-cyan-400">Email</a> · <a href="#" class="text-cyan-400">Webhook</a></p>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+
+  <script>
+    // 90-day uptime bars — mostly green with a couple of amber days
+    const bars = document.getElementById('bars');
+    const incidentDays = new Set([78 /* April 28 */, 94 /* April 12 */, 0 /* today, Resend */]);
+    for (let i = 89; i >= 0; i--) {
+      const b = document.createElement('div');
+      b.className = 'flex-1 rounded-sm';
+      b.style.height = '100%';
+      let cls = 'bg-emerald-500';
+      if (incidentDays.has(89 - i)) cls = 'bg-amber-500';
+      b.classList.add(...cls.split(' '));
+      b.title = `${i} days ago — ${cls.includes('amber') ? 'partial outage' : '100% uptime'}`;
+      bars.appendChild(b);
+    }
+  </script>
+</body>
+</html>

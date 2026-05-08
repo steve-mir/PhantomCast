@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="contact">
+  <div data-pc-header></div>
+
+  <section class="pt-16 pb-12 bg-grid">
+    <div class="container-pc max-w-2xl text-center">
+      <div class="eyebrow mb-3">Contact</div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Get in touch.</h1>
+      <p class="text-[var(--text-muted)]">Sales, press, partnerships, or just questions. Pick a channel and we'll get back inside one business day.</p>
+    </div>
+  </section>
+
+  <section class="pb-16">
+    <div class="container-pc grid md:grid-cols-2 gap-6 max-w-4xl">
+      <!-- Contact info -->
+      <div class="space-y-3">
+        <a href="mailto:sales@phantomcast.app"   class="card p-5 flex items-start gap-4 hover:border-[var(--violet)]"><i data-lucide="briefcase" class="w-6 h-6 text-[var(--violet)] mt-1"></i><div><div class="font-semibold mb-1">Sales</div><div class="text-sm text-[var(--text-muted)]">Multi-seat, studio licenses, integrations</div><div class="text-sm font-mono text-cyan-400 mt-1">sales@phantomcast.app</div></div></a>
+        <a href="mailto:press@phantomcast.app"   class="card p-5 flex items-start gap-4 hover:border-[var(--violet)]"><i data-lucide="newspaper" class="w-6 h-6 text-[var(--violet)] mt-1"></i><div><div class="font-semibold mb-1">Press</div><div class="text-sm text-[var(--text-muted)]">Interviews, embargoed reviews, b-roll</div><div class="text-sm font-mono text-cyan-400 mt-1">press@phantomcast.app</div></div></a>
+        <a href="mailto:abuse@phantomcast.app"   class="card p-5 flex items-start gap-4 hover:border-[var(--violet)]"><i data-lucide="shield-alert" class="w-6 h-6 text-rose-400 mt-1"></i><div><div class="font-semibold mb-1">Report misuse</div><div class="text-sm text-[var(--text-muted)]">Non-consensual likeness, fraud, CSAM, etc.</div><div class="text-sm font-mono text-cyan-400 mt-1">abuse@phantomcast.app</div></div></a>
+        <a href="mailto:security@phantomcast.app" class="card p-5 flex items-start gap-4 hover:border-[var(--violet)]"><i data-lucide="bug" class="w-6 h-6 text-amber-400 mt-1"></i><div><div class="font-semibold mb-1">Security disclosure</div><div class="text-sm text-[var(--text-muted)]">Responsible disclosure inbox · PGP available</div><div class="text-sm font-mono text-cyan-400 mt-1">security@phantomcast.app</div></div></a>
+      </div>
+
+      <!-- Form -->
+      <form class="card p-6 space-y-4" onsubmit="event.preventDefault(); document.getElementById('pc-thanks').classList.remove('hidden'); this.reset();">
+        <div>
+          <label class="label" for="cname">Your name</label>
+          <input id="cname" type="text" class="field" required />
+        </div>
+        <div>
+          <label class="label" for="cemail">Email</label>
+          <input id="cemail" type="email" class="field" required />
+        </div>
+        <div>
+          <label class="label" for="ccategory">What's this about?</label>
+          <select id="ccategory" class="field">
+            <option>General question</option>
+            <option>Sales / multi-seat license</option>
+            <option>Partnership</option>
+            <option>Press inquiry</option>
+            <option>macOS or Linux beta access</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="label" for="cmessage">Message</label>
+          <textarea id="cmessage" rows="5" class="field" required></textarea>
+        </div>
+        <button class="btn btn-primary w-full" type="submit"><i data-lucide="send" class="w-4 h-4"></i> Send message</button>
+        <div id="pc-thanks" class="hidden chip chip-success w-full justify-center py-2"><i data-lucide="check" class="w-3.5 h-3.5"></i> Thanks — we'll respond within one business day.</div>
+        <div class="text-xs text-[var(--text-dim)]">For account-specific issues, sign in and use the in-dashboard support form so we can see your license context.</div>
+      </form>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+</body>
+</html>

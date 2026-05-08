@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Press — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="press">
+  <div data-pc-header></div>
+
+  <section class="pt-16 pb-12 bg-grid">
+    <div class="container-pc max-w-3xl">
+      <div class="eyebrow mb-3">Press kit</div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Phantom Cast — for journalists.</h1>
+      <p class="text-lg text-[var(--text-muted)]">Logos, screenshots, founder bio, and a 100-word boilerplate. Embargoed review builds available on request: <a href="mailto:press@phantomcast.app" class="text-cyan-400 underline">press@phantomcast.app</a>.</p>
+    </div>
+  </section>
+
+  <section class="pb-12">
+    <div class="container-pc max-w-4xl space-y-6">
+
+      <div class="card p-7">
+        <h2 class="text-xl font-semibold mb-3">Boilerplate (100 words)</h2>
+        <p class="text-[var(--text-muted)] leading-relaxed">Phantom Cast is GPU-accelerated face-swap software that runs entirely on the user's local machine. Designed for streamers, content creators, and indie filmmakers, it delivers 30 fps real-time webcam swapping and 4K video export with GPEN-512 face enhancement — without uploading a single frame to the cloud. Phantom Cast is sold as a $770 one-time lifetime license, with an optional $30/month Premium add-on unlocking live streaming output (OBS virtual camera), batch processing, and Hyperswap full-head mode. The company was founded in 2025 and is funded entirely by its founders, with offices in Berlin, Lisbon, and Toronto.</p>
+        <button onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText); this.innerText='Copied'" class="btn btn-secondary text-xs mt-4"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <a href="#" class="card p-6 flex items-center justify-between hover:border-[var(--violet)]">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M21 11.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M5 19c0-3 2.5-5 7-5s7 2 7 5"/></svg>
+            </div>
+            <div>
+              <div class="font-semibold">Logos pack</div>
+              <div class="text-xs text-[var(--text-dim)]">SVG + PNG · light + dark · wordmarks + iconmarks</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-5 h-5 text-[var(--text-dim)]"></i>
+        </a>
+        <a href="#" class="card p-6 flex items-center justify-between hover:border-[var(--violet)]">
+          <div class="flex items-center gap-4">
+            <i data-lucide="image" class="w-7 h-7 text-cyan-400"></i>
+            <div>
+              <div class="font-semibold">Product screenshots</div>
+              <div class="text-xs text-[var(--text-dim)]">12 PNG (4K) · UI shots + before/after grids</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-5 h-5 text-[var(--text-dim)]"></i>
+        </a>
+        <a href="#" class="card p-6 flex items-center justify-between hover:border-[var(--violet)]">
+          <div class="flex items-center gap-4">
+            <i data-lucide="video" class="w-7 h-7 text-violet-400"></i>
+            <div>
+              <div class="font-semibold">B-roll reel</div>
+              <div class="text-xs text-[var(--text-dim)]">90 sec · 4K ProRes · embargoed until launch</div>
+            </div>
+          </div>
+          <i data-lucide="lock" class="w-5 h-5 text-[var(--text-dim)]"></i>
+        </a>
+        <a href="#" class="card p-6 flex items-center justify-between hover:border-[var(--violet)]">
+          <div class="flex items-center gap-4">
+            <i data-lucide="user" class="w-7 h-7 text-amber-400"></i>
+            <div>
+              <div class="font-semibold">Founder bios + headshots</div>
+              <div class="text-xs text-[var(--text-dim)]">200-word bios · CC0 headshots · org chart</div>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-5 h-5 text-[var(--text-dim)]"></i>
+        </a>
+      </div>
+
+      <div class="card p-7">
+        <h2 class="text-xl font-semibold mb-3">Brand do's and don'ts</h2>
+        <div class="grid sm:grid-cols-2 gap-6 text-sm">
+          <div>
+            <div class="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-2">Do</div>
+            <ul class="space-y-1.5 text-[var(--text-muted)]">
+              <li>• Use "Phantom Cast" — two words, both capitalized.</li>
+              <li>• Pair the logo with at least 12 px of clear-space.</li>
+              <li>• Use the gradient mark on dark backgrounds; the mono mark on light.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-2">Don't</div>
+            <ul class="space-y-1.5 text-[var(--text-muted)]">
+              <li>• Don't call it a "deepfake app". It is face-swap software with explicit anti-misuse policy.</li>
+              <li>• Don't recolor the gradient or rotate the iconmark.</li>
+              <li>• Don't use the brand to imply endorsement of synthetic-media use cases we prohibit.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-7">
+        <h2 class="text-xl font-semibold mb-3">In the press</h2>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start justify-between gap-4"><a href="#" class="text-cyan-400 hover:underline">"The first face-swap tool that doesn't make us nervous" — TechCrunch (Apr 2026)</a><span class="text-xs text-[var(--text-dim)] flex-none">PDF</span></li>
+          <li class="flex items-start justify-between gap-4"><a href="#" class="text-cyan-400 hover:underline">"VTubers are switching off the cloud" — The Verge (Mar 2026)</a><span class="text-xs text-[var(--text-dim)] flex-none">PDF</span></li>
+          <li class="flex items-start justify-between gap-4"><a href="#" class="text-cyan-400 hover:underline">"Local-first AI is back" — Stratechery (Feb 2026)</a><span class="text-xs text-[var(--text-dim)] flex-none">PDF</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+</body>
+</html>

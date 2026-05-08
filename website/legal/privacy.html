@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="legal">
+  <div data-pc-header></div>
+
+  <section class="py-12">
+    <div class="container-pc grid lg:grid-cols-[220px_1fr] gap-12 max-w-5xl">
+      <aside class="lg:sticky lg:top-20 self-start">
+        <div class="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2 font-semibold">Legal</div>
+        <ul class="space-y-1 text-sm">
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="terms.html">Terms of Service</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-white bg-[var(--bg-elev)]" href="privacy.html">Privacy Policy</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="acceptable-use.html">Acceptable Use</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="eula.html">EULA</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="refund-policy.html">Refund Policy</a></li>
+          <li><a class="block py-1.5 px-2 rounded text-[var(--text-muted)] hover:text-white" href="dpa.html">DPA (B2B)</a></li>
+        </ul>
+      </aside>
+
+      <article class="prose-pc">
+        <h1>Privacy Policy</h1>
+        <p class="text-sm text-[var(--text-dim)]">Last updated: May 6, 2026</p>
+
+        <blockquote><strong>Frames, audio, and video are NEVER transmitted from the desktop app.</strong> Inference is local. There is no cloud upload pipeline. This policy describes the limited data we do collect for licensing, billing, and support — nothing else.</blockquote>
+
+        <h2>Who we are</h2>
+        <p>Phantom Cast Ltd., a private company registered in England &amp; Wales (company no. 14829XXX), 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ. Data Protection contact: <a href="mailto:privacy@phantomcast.app">privacy@phantomcast.app</a>.</p>
+
+        <h2>What we collect</h2>
+        <table>
+          <thead><tr><th>Data</th><th>Purpose</th><th>Lawful basis (GDPR Art. 6)</th><th>Retention</th></tr></thead>
+          <tbody>
+            <tr><td>Email + name</td><td>License delivery, receipts, support</td><td>Contract (6.1.b)</td><td>Until license deletion + 7 yrs (tax)</td></tr>
+            <tr><td>License fingerprint hash (SHA-256)</td><td>Device binding per the EULA</td><td>Contract (6.1.b)</td><td>Lifetime of the license</td></tr>
+            <tr><td>BTC payment metadata (order ID, amount, txid)</td><td>Order matching, refunds, accounting</td><td>Contract + legal obligation (6.1.b/c)</td><td>7 years</td></tr>
+            <tr><td>IP address (hashed)</td><td>Activation fraud detection</td><td>Legitimate interest (6.1.f)</td><td>30 days</td></tr>
+            <tr><td>Heartbeat timestamps + version</td><td>Verify license validity, ship updates</td><td>Contract (6.1.b)</td><td>Rolling 90 days</td></tr>
+            <tr><td>Support ticket content</td><td>Resolve issues you contact us about</td><td>Contract (6.1.b)</td><td>3 years</td></tr>
+            <tr><td>Website analytics (PostHog, EU)</td><td>Improve the website; opt-in</td><td>Consent (6.1.a)</td><td>13 months</td></tr>
+          </tbody>
+        </table>
+
+        <h2>What we do <em>not</em> collect</h2>
+        <ul>
+          <li>Your video, audio, or webcam frames — they never leave your machine</li>
+          <li>Your source/target identity images, project files, or render outputs</li>
+          <li>Raw machine identifiers (volume serial, MAC, GPU UUID); only the SHA-256 composite hash leaves the device</li>
+          <li>Browsing history, other applications, or any system-wide telemetry</li>
+        </ul>
+
+        <h2>Sub-processors</h2>
+        <ul>
+          <li><strong>NOWPayments</strong> (payment processing) — non-custodial; receives the BTC amount, order ID, and customer email</li>
+          <li><strong>Resend</strong> (transactional email) — receives email address and the email body content</li>
+          <li><strong>Cloudflare</strong> (CDN, DNS) — receives IP and request metadata for static assets</li>
+          <li><strong>Google Cloud Firestore</strong> (Frankfurt region, EU) — stores the data listed above</li>
+        </ul>
+
+        <h2>International transfers</h2>
+        <p>Data is stored in the EU (Frankfurt). Sub-processors located outside the EU operate under Standard Contractual Clauses where applicable.</p>
+
+        <h2>Your rights (EU/UK)</h2>
+        <p>Under GDPR / UK GDPR you have the right to access, correct, delete, port, restrict, or object to the processing of your data. To exercise any of these, email <a href="mailto:privacy@phantomcast.app">privacy@phantomcast.app</a>. We respond within 30 days.</p>
+
+        <h2>California (CCPA / CPRA)</h2>
+        <p>We do not "sell" personal information as defined under CCPA. The "Do not sell or share my personal information" link in our footer is provided as a courtesy. California residents may request access or deletion via the email above.</p>
+
+        <h2>Cookies</h2>
+        <p>The marketing site uses one essential session cookie (cart state) and, if you consent, a single analytics cookie (PostHog, EU). The customer portal uses an authentication cookie (Firebase Auth, essential).</p>
+
+        <h2>Changes</h2>
+        <p>We'll notify you of material changes by email at least 30 days before they take effect.</p>
+      </article>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

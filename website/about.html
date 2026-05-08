@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — Phantom Cast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="about">
+  <div data-pc-header></div>
+
+  <section class="pt-16 pb-10 bg-grid">
+    <div class="container-pc max-w-3xl text-center">
+      <div class="eyebrow mb-3">About</div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">A small team. <span class="gradient-text">A clear line.</span></h1>
+      <p class="text-lg text-[var(--text-muted)]">We make face-swap software that runs on your machine — and that's it. We don't run a cloud. We don't host frames. We don't sell models trained on your output.</p>
+    </div>
+  </section>
+
+  <section class="pb-16">
+    <div class="container-pc max-w-3xl prose-pc">
+      <h2>Why we exist</h2>
+      <p>Cloud face-swap services solved one problem (running heavy inference) by introducing two new ones: your raw face footage now lives on someone else's server, and you pay rent forever. Both of those felt wrong, especially as consumer GPUs got fast enough to do the same job locally.</p>
+      <p>Phantom Cast is the answer to that. A focused desktop app that does one thing well — real-time face swap and high-quality offline rendering — without ever touching the network with your media.</p>
+
+      <h2>Where we draw the line</h2>
+      <p>Powerful tools attract bad actors. We can't pretend that's not true of face-swap software. Our response is to be loud about what's not allowed, and to back it with infrastructure:</p>
+      <ul>
+        <li>The <a href="legal/acceptable-use.html">Acceptable Use Policy</a> explicitly prohibits non-consensual likeness use, fraud, harassment, political deception, and any sexual content involving minors.</li>
+        <li>License revocation propagates within 6 hours via heartbeat — verified violations lose access globally.</li>
+        <li>Free-tier output carries an enforced watermark; the disable toggle for paid tiers ships with a notice that disclosure may still be required by law in your jurisdiction.</li>
+        <li>We cooperate with law enforcement requests for verified abuse cases via a documented disclosure process.</li>
+      </ul>
+
+      <h2>Who we are</h2>
+      <p>A 6-person team split across Berlin, Lisbon, and Toronto. Backgrounds in real-time graphics, ML infrastructure, and creator-tooling product design. We funded the company with our own savings and Bitcoin treasury — no VC, no venture-debt obligations to keep growing past what's healthy.</p>
+
+      <h2>What's next</h2>
+      <p>The roadmap, in order: macOS Apple Silicon GA, an OBS plugin directory listing, a Studio-tier metered API for batch render farms, and (longer-term) a Linux AppImage. Subscribe to the <a href="changelog.html">changelog</a> for the actual ship dates.</p>
+
+      <h2>Contact</h2>
+      <p>Press: <a href="mailto:press@phantomcast.app">press@phantomcast.app</a> · Sales: <a href="mailto:sales@phantomcast.app">sales@phantomcast.app</a> · Support: <a href="help.html">/help</a> or <a href="mailto:hello@phantomcast.app">hello@phantomcast.app</a>.</p>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+</body>
+</html>

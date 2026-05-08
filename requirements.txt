@@ -1,0 +1,51 @@
+# --------------------------------------------------------------------
+# Deep-Live-Cam Pro — runtime dependencies (Windows GPU build target)
+#
+# Install on Windows:
+#   pip install -r requirements.txt
+#   pip install --extra-index-url https://download.pytorch.org/whl/cu128 \
+#       torch==2.5.1+cu128 torchvision==0.20.1+cu128
+#
+# CUDA Toolkit 12.8 + cuDNN 8.9.7 are *bundled* via pip wheels (nvidia-*)
+# and torch's lib/. The desktop build never relies on a system CUDA install.
+# --------------------------------------------------------------------
+
+# core ML
+numpy>=1.23.5,<2
+typing-extensions>=4.8.0
+opencv-python==4.10.0.84
+cv2_enumerate_cameras==1.1.15
+onnx==1.18.0
+insightface==0.7.3
+
+# Apple silicon dev path (CPU/CoreML only)
+onnxruntime-silicon==1.20.0; sys_platform == 'darwin' and platform_machine == 'arm64'
+
+# Windows + Linux GPU runtime — pinned for cu128
+onnxruntime-gpu==1.21.0; sys_platform != 'darwin'
+
+# CUDA / cuDNN runtime via pip (bundled into installer)
+nvidia-cuda-runtime-cu12==12.8.*; sys_platform == 'win32'
+nvidia-cudnn-cu12==8.9.7.*;       sys_platform == 'win32'
+nvidia-cublas-cu12==12.8.*;       sys_platform == 'win32'
+nvidia-cufft-cu12==11.*;          sys_platform == 'win32'
+pynvml==11.5.0;                   sys_platform == 'win32'
+
+# Tensorflow (face_enhancer pipelines)
+tensorflow>=2.15.0; sys_platform != 'darwin'
+tensorflow>=2.15.0; sys_platform == 'darwin' and python_version < '3.13'
+
+# UI
+tk==0.1.0
+customtkinter==5.2.2
+pillow==12.1.1
+
+# Misc
+psutil==5.9.8
+tqdm>=4.65.0
+opennsfw2==0.10.2
+protobuf==4.25.1
+pygrabber; sys_platform == 'win32'
+
+# Pro layer — license + claims signing verification
+cryptography>=42.0

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Billing — Phantom Cast Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body data-pc-section="dashboard">
+  <div data-pc-header></div>
+
+  <section class="py-10">
+    <div class="container-pc max-w-6xl">
+      <div class="grid lg:grid-cols-[220px_1fr] gap-8">
+        <aside class="space-y-1 lg:sticky lg:top-20 self-start text-sm">
+          <a href="dashboard.html"           class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview</a>
+          <a href="dashboard-devices.html"   class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="monitor" class="w-4 h-4"></i> Devices</a>
+          <a href="dashboard-billing.html"   class="flex items-center gap-2 py-2 px-3 rounded-lg bg-[var(--bg-elev)] text-white"><i data-lucide="receipt" class="w-4 h-4"></i> Billing</a>
+          <a href="../docs/index.html"       class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="book-open" class="w-4 h-4"></i> Docs</a>
+          <a href="../help.html"             class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="life-buoy" class="w-4 h-4"></i> Support</a>
+          <div class="border-t border-[var(--border-soft)] my-3"></div>
+          <a href="login.html"               class="flex items-center gap-2 py-2 px-3 rounded-lg text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-elev)]"><i data-lucide="log-out" class="w-4 h-4"></i> Sign out</a>
+        </aside>
+
+        <main class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-bold">Billing</h1>
+              <p class="text-sm text-[var(--text-muted)]">All payments are settled in BTC via NOWPayments.</p>
+            </div>
+          </div>
+
+          <!-- Premium status -->
+          <div class="card p-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div class="chip chip-cyan mb-2"><i data-lucide="zap" class="w-3 h-3"></i> Premium add-on</div>
+                <div class="text-2xl font-bold">Active until May 31, 2026</div>
+                <div class="text-sm text-[var(--text-muted)] mt-1">25 days remaining · auto-renew is <strong class="text-white">off</strong></div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <a href="../checkout.html?plan=premium" class="btn btn-primary"><i data-lucide="bitcoin" class="w-4 h-4"></i> Extend by 1 month</a>
+                <button class="btn btn-secondary text-xs"><i data-lucide="repeat" class="w-3.5 h-3.5"></i> Enable auto-renew</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment history -->
+          <div class="card overflow-hidden">
+            <div class="p-5 border-b border-[var(--border-soft)] flex items-center justify-between">
+              <h3 class="font-semibold">Payment history</h3>
+              <span class="text-xs text-[var(--text-dim)]">All amounts shown in USD; settled on-chain in BTC</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="text-left">
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]">Date</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]">Item</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)] text-right">USD</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)] text-right">BTC</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]">Status</th>
+                  <th class="p-4 text-xs uppercase tracking-wider text-[var(--text-dim)]"></th>
+                </tr></thead>
+                <tbody class="divide-y divide-[var(--border-soft)]">
+                  <tr><td class="p-4">May 1, 2026</td><td class="p-4">Premium add-on (1 month)</td><td class="p-4 text-right font-mono">$30.00</td><td class="p-4 text-right font-mono text-[var(--text-muted)]">0.00046154</td><td class="p-4"><span class="chip chip-success">paid</span></td><td class="p-4 text-right"><button class="btn btn-ghost text-xs"><i data-lucide="download" class="w-3.5 h-3.5"></i> PDF</button></td></tr>
+                  <tr><td class="p-4">Apr 18, 2026</td><td class="p-4">Lifetime License</td><td class="p-4 text-right font-mono">$770.00</td><td class="p-4 text-right font-mono text-[var(--text-muted)]">0.01183707</td><td class="p-4"><span class="chip chip-success">paid</span></td><td class="p-4 text-right"><button class="btn btn-ghost text-xs"><i data-lucide="download" class="w-3.5 h-3.5"></i> PDF</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Refund -->
+          <div class="card p-6 border-l-4" style="border-left-color: var(--amber)">
+            <h3 class="font-semibold mb-1">Need a refund?</h3>
+            <p class="text-sm text-[var(--text-muted)] mb-4">14-day no-questions refund. Refunded in BTC to a wallet address you specify.</p>
+            <a href="../legal/refund-policy.html" class="btn btn-secondary text-sm">Read refund policy</a>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../assets/js/partials.js"></script>
+</body>
+</html>

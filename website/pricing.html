@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pricing — Phantom Cast</title>
+  <meta name="description" content="One $770 lifetime license. Optional $30/month Premium add-on. Pay in Bitcoin via NOWPayments.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-pc-section="pricing">
+  <div data-pc-header></div>
+
+  <section class="pt-16 pb-8 bg-grid">
+    <div class="container-pc text-center">
+      <div class="eyebrow mb-3">Pricing</div>
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-5">Buy once. <span class="gradient-text">Own it.</span></h1>
+      <p class="text-lg text-[var(--text-muted)] max-w-2xl mx-auto">$770 lifetime license — paid in Bitcoin. Add the $30/mo Premium module for live streaming and Studio features whenever you need them.</p>
+      <div class="mt-6 flex items-center justify-center gap-3 text-sm text-[var(--text-dim)]">
+        <i data-lucide="bitcoin" class="w-4 h-4 text-amber-400"></i>
+        <span>Bitcoin payments processed by <span class="text-white">NOWPayments</span> — non-custodial, no bank account required.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIER CARDS -->
+  <section class="pb-16">
+    <div class="container-pc">
+      <div class="grid lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+
+        <!-- Free -->
+        <div class="card p-8 flex flex-col">
+          <div class="text-sm text-[var(--text-muted)] mb-2">Free trial</div>
+          <div class="flex items-baseline gap-2 mb-1"><span class="text-5xl font-bold">$0</span></div>
+          <div class="text-xs text-[var(--text-dim)] mb-6">7 days · all features · watermark on output</div>
+          <a href="download.html" class="btn btn-secondary w-full mb-6">Start the trial</a>
+          <ul class="space-y-3 text-sm text-[var(--text-muted)] flex-1">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Real-time webcam swap</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> 1080p video export</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> CUDA + CPU fallback</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> GPU diagnostics</li>
+            <li class="flex gap-2"><i data-lucide="x" class="w-4 h-4 text-[var(--text-dim)] mt-0.5"></i> Watermark on all output</li>
+            <li class="flex gap-2"><i data-lucide="x" class="w-4 h-4 text-[var(--text-dim)] mt-0.5"></i> No 4K export</li>
+            <li class="flex gap-2"><i data-lucide="x" class="w-4 h-4 text-[var(--text-dim)] mt-0.5"></i> No OBS virtual camera</li>
+          </ul>
+        </div>
+
+        <!-- Lifetime -->
+        <div class="card p-8 tier-highlight flex flex-col relative" style="box-shadow: var(--shadow-glow)">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 chip chip-violet text-[11px]">Recommended</div>
+          <div class="text-sm text-[var(--text-muted)] mb-2">Lifetime License</div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-6xl font-bold gradient-text">$770</span>
+          </div>
+          <div class="text-xs text-[var(--text-dim)] mb-6">one-time · paid in BTC · all v1.x updates</div>
+          <a href="checkout.html?plan=license" class="btn btn-primary w-full mb-6">
+            <i data-lucide="bitcoin" class="w-4 h-4"></i> Pay with Bitcoin
+          </a>
+          <ul class="space-y-3 text-sm text-[var(--text-muted)] flex-1">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Everything in Free</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> <strong class="text-white">No watermark</strong> on any output</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> 4K video export with GPEN-512</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> ProRes / H.265 export options</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> 2 device activations included</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Lifetime updates within v1.x</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Email support</li>
+          </ul>
+        </div>
+
+        <!-- Premium addon -->
+        <div class="card p-8 flex flex-col">
+          <div class="text-sm text-[var(--text-muted)] mb-2">Premium add-on</div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="text-5xl font-bold">$30</span>
+            <span class="text-sm text-[var(--text-dim)]">/ month</span>
+          </div>
+          <div class="text-xs text-[var(--text-dim)] mb-6">paid in BTC · cancel any month · attaches to your license</div>
+          <a href="checkout.html?plan=premium" class="btn btn-secondary w-full mb-6">
+            <i data-lucide="bitcoin" class="w-4 h-4"></i> Add Premium
+          </a>
+          <ul class="space-y-3 text-sm text-[var(--text-muted)] flex-1">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Live <strong class="text-white">OBS virtual camera</strong> output</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Hyperswap full-head mode</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Source-to-target face mapping (8 pairs)</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Batch processing queue</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Identity persistence across long takes</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5"></i> Priority email support (1-business-day SLA)</li>
+            <li class="flex gap-2"><i data-lucide="info" class="w-4 h-4 text-cyan-400 mt-0.5"></i> Requires the Lifetime License</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Trust strip -->
+      <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-center text-sm">
+        <div class="card p-4 flex items-center justify-center gap-2"><i data-lucide="rotate-ccw" class="w-4 h-4 text-cyan-400"></i> 14-day refund</div>
+        <div class="card p-4 flex items-center justify-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> NOWPayments-secured</div>
+        <div class="card p-4 flex items-center justify-center gap-2"><i data-lucide="bitcoin" class="w-4 h-4 text-amber-400"></i> Pay in BTC, no bank account</div>
+        <div class="card p-4 flex items-center justify-center gap-2"><i data-lucide="lock" class="w-4 h-4 text-violet-400"></i> No cloud frame uploads</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compare table -->
+  <section class="section">
+    <div class="container-pc">
+      <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center">Plan comparison</h2>
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left">
+                <th class="p-4 font-semibold text-[var(--text-dim)] uppercase text-xs tracking-wider">Feature</th>
+                <th class="p-4 font-semibold text-center">Free</th>
+                <th class="p-4 font-semibold text-center gradient-text">Lifetime</th>
+                <th class="p-4 font-semibold text-center">+ Premium</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border-soft)]">
+              <tr><td class="p-4">Real-time webcam swap (preview)</td>             <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td><td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td><td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">1080p video export</td>                          <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td><td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td><td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">Watermark-free output</td>                       <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td><td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">4K export with GPEN-512 enhance</td>             <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td><td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">OBS virtual camera (live to Twitch / YouTube)</td><td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">Hyperswap full-head mode</td>                    <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">Source-to-target face mapping (≤ 8 pairs)</td>  <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">Batch processing queue</td>                       <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center text-[var(--text-dim)]">—</td>                                          <td class="text-center"><i data-lucide="check" class="w-4 h-4 inline text-emerald-400"></i></td></tr>
+              <tr><td class="p-4">Device activations</td>                            <td class="text-center text-[var(--text-dim)]">1</td>                                          <td class="text-center">2</td>                                                                <td class="text-center">2</td></tr>
+              <tr><td class="p-4">Updates</td>                                       <td class="text-center text-[var(--text-dim)]">trial only</td>                                  <td class="text-center">All v1.x updates</td>                                                  <td class="text-center">All v1.x updates</td></tr>
+              <tr><td class="p-4">Support</td>                                       <td class="text-center text-[var(--text-dim)]">Community / docs</td>                          <td class="text-center">Email</td>                                                            <td class="text-center">Priority email · 1-bd SLA</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section">
+    <div class="container-pc max-w-3xl">
+      <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center">Pricing FAQ</h2>
+      <div class="space-y-3" x-data>
+        <details class="card p-5 group" open><summary class="flex justify-between items-center cursor-pointer font-semibold list-none">Why Bitcoin only?<i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition"></i></summary><p class="mt-3 text-sm text-[var(--text-muted)] leading-relaxed">We process payments through NOWPayments, which is non-custodial — your payment goes directly into our wallet without an intermediary holding it. No bank, no card-network fees, no chargeback fraud, and works in jurisdictions traditional payment rails don't reach. Lightning support is on the roadmap.</p></details>
+        <details class="card p-5 group"><summary class="flex justify-between items-center cursor-pointer font-semibold list-none">Why a $770 lifetime instead of a subscription?<i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition"></i></summary><p class="mt-3 text-sm text-[var(--text-muted)] leading-relaxed">The desktop app does not get more expensive for us to operate as you use it more. Charging recurring rent on local software didn't sit right. The $30/mo Premium add-on covers the live + studio features whose backend infra (license tracking, OBS plugin updates, batch hooks) does grow with usage.</p></details>
+        <details class="card p-5 group"><summary class="flex justify-between items-center cursor-pointer font-semibold list-none">What does "lifetime" mean exactly?<i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition"></i></summary><p class="mt-3 text-sm text-[var(--text-muted)] leading-relaxed">All Phantom Cast 1.x updates, forever. If we ship a 2.x with a major rebuild we may offer an upgrade path at a discounted rate; existing 1.x continues to work and continues to receive security patches.</p></details>
+        <details class="card p-5 group"><summary class="flex justify-between items-center cursor-pointer font-semibold list-none">Can I activate Phantom Cast on more than one machine?<i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition"></i></summary><p class="mt-3 text-sm text-[var(--text-muted)] leading-relaxed">Yes — the Lifetime License covers 2 simultaneous device activations. If you need more, deactivate one from the dashboard or contact us for a multi-seat license. Moving to a new machine is a one-click flow and rate-limited to once per year to discourage license sharing.</p></details>
+        <details class="card p-5 group"><summary class="flex justify-between items-center cursor-pointer font-semibold list-none">What if I just want Premium for one month?<i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition"></i></summary><p class="mt-3 text-sm text-[var(--text-muted)] leading-relaxed">Buy a single month — no auto-renewal unless you opt in. You can also batch-buy 12 months at the discounted annual rate. Premium attaches to your existing license key and unlocks immediately on the next app launch (or within 6 hours of revocation if you don't renew).</p></details>
+        <details class="card p-5 group"><summary class="flex justify-between items-center cursor-pointer font-semibold list-none">Refund policy?<i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition"></i></summary><p class="mt-3 text-sm text-[var(--text-muted)] leading-relaxed">14 days, no questions. Refund is paid back in BTC to the address you specify. <a href="legal/refund-policy.html" class="text-cyan-400">Full refund policy</a>.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <div data-pc-footer></div>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="assets/js/partials.js"></script>
+</body>
+</html>

@@ -121,6 +121,53 @@ enhancer_blend: float = 100.0
 # every frame (highest fidelity, lowest FPS); larger = faster but lossier.
 live_enhance_skip: int = 2
 
+# --- Camera / Output / UI (2.7 parity) ---
+# Virtual Camera (OBS-friendly). When enabled the live swap pipeline pushes
+# every processed frame to a system virtual webcam (pyvirtualcam) so OBS,
+# Zoom, Meet, etc. can pick it up as "Phantom Cast Virtual Camera".
+virtual_cam_enabled: bool = False
+virtual_cam_active: bool = False    # runtime: did we actually open the device?
+virtual_cam_backend: str = ""       # runtime: backend name, e.g. "obs" / "v4l2"
+
+# Resolution Switch — preferred capture resolution for the live cam.
+# "Auto" uses the legacy 1920x1080@60 request and lets the camera pick.
+live_resolution: str = "Auto"       # one of: Auto, 480p, 720p, 1080p, 1440p, 4K
+live_resolution_options: tuple = (
+    "Auto", "480p", "720p", "1080p", "1440p", "4K",
+)
+
+# Optimized Rendering — auto-tune detection stride / preview scale based on
+# measured FPS. When off the legacy fixed-stride live loop runs.
+optimized_rendering: bool = True
+
+# LUTs for color grading — cinematic .cube LUT applied as the final step
+# before the frame leaves the swap pipeline. ``lut_path`` is None when no
+# LUT is loaded; ``lut_strength`` is the 0..100 blend with the ungraded image.
+lut_path: str | None = None
+lut_name: str = "None"              # display name for UI
+lut_strength: float = 100.0         # 0..100; 0 = no grade, 100 = full LUT
+
+# Window Projection — borderless pop-out feed for OBS window-capture.
+# 0 = legacy preview (windowed Toplevel), 1 = borderless overrideredirect,
+# 2 = fullscreen ("F" toggle in the projection window also flips this).
+projection_mode: int = 0
+
+# In-Window Preview — render the live swap inside the main dashboard rather
+# than as a separate Toplevel. Mutually exclusive with Window Projection.
+in_window_preview: bool = False
+
+# GPU Changer / Multi-GPU support — index of the CUDA device the swap engine
+# runs on. 0 = primary GPU. Used when constructing onnxruntime sessions and
+# exported to CUDA_VISIBLE_DEVICES at startup.
+gpu_device_id: int = 0
+gpu_device_count: int = 1           # populated at startup by detect_gpus()
+gpu_device_names: list = []         # populated at startup
+
+# Forced GPU usage on laptops — sets NVIDIA Optimus / AMD Switchable env
+# vars before onnxruntime imports the CUDA loader so dual-GPU laptops use
+# the discrete card instead of the iGPU.
+force_discrete_gpu: bool = False
+
 # --- END OF FILE globals.py ---
 
 import threading

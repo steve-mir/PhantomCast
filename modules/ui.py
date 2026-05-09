@@ -38,6 +38,17 @@ from modules.video_capture import VideoCapturer
 from modules.gettext import LanguageManager
 from modules.ui_tooltip import ToolTip
 from modules import globals
+from modules.output_pipeline import (
+    LutTable,
+    apply_force_discrete_gpu,
+    apply_lut,
+    detect_gpus,
+    get_virtual_cam,
+    load_cube_lut,
+    resolution_labels,
+    resolution_map,
+    set_cuda_visible_device,
+)
 import platform
 
 if platform.system() == "Windows":
@@ -110,6 +121,26 @@ source_label_dict = {}
 source_label_dict_live = {}
 target_label_dict_live = {}
 
+# In-Window Preview / Window Projection
+in_window_preview_label = None      # CTkLabel embedded in main dashboard
+projection_window = None            # CTkToplevel created on demand
+projection_label = None             # label inside projection_window
+camera_optionmenu_ref = None        # set in create_root for camera-refresh
+camera_indices_ref: list = []       # mutable so refresh can update closures
+camera_names_ref: list = []
+resolution_optionmenu_ref = None
+gpu_optionmenu_ref = None
+lut_status_label = None
+vcam_status_label = None
+
+# Loaded LUT state — kept here so the live thread can read without ui-import
+_active_lut: LutTable | None = None
+_active_lut_path: str | None = None
+
+# Active VideoCapturer for the live preview — exposed so the resolution
+# changer / camera refresh can reach it without restarting the threads.
+_active_capturer: VideoCapturer | None = None
+
 img_ft, vid_ft = modules.globals.file_types
 
 
@@ -153,6 +184,16 @@ def save_switch_states():
         "live_enhance_skip": modules.globals.live_enhance_skip,
         "enable_interpolation": modules.globals.enable_interpolation,
         "interpolation_weight": modules.globals.interpolation_weight,
+        "virtual_cam_enabled": modules.globals.virtual_cam_enabled,
+        "live_resolution": modules.globals.live_resolution,
+        "optimized_rendering": modules.globals.optimized_rendering,
+        "lut_path": modules.globals.lut_path,
+        "lut_name": modules.globals.lut_name,
+        "lut_strength": modules.globals.lut_strength,
+        "projection_mode": modules.globals.projection_mode,
+        "in_window_preview": modules.globals.in_window_preview,
+        "gpu_device_id": modules.globals.gpu_device_id,
+        "force_discrete_gpu": modules.globals.force_discrete_gpu,
     }
     with open("switch_states.json", "w") as f:
         json.dump(switch_states, f)
@@ -211,6 +252,48 @@ def load_switch_states():
         modules.globals.interpolation_weight = switch_states.get(
             "interpolation_weight", 0.0
         )
+        # Camera / Output / UI (2.7 parity)
+        modules.globals.virtual_cam_enabled = bool(
+            switch_states.get("virtual_cam_enabled", False)
+        )
+        modules.globals.live_resolution = switch_states.get(
+            "live_resolution", "Auto"
+        )
+        modules.globals.optimized_rendering = bool(
+            switch_states.get("optimized_rendering", True)
+        )
+        modules.globals.lut_path = switch_states.get("lut_path", None)
+        modules.globals.lut_name = switch_states.get("lut_name", "None")
+        modules.globals.lut_strength = float(
+            switch_states.get("lut_strength", 100.0)
+        )
+        modules.globals.projection_mode = int(
+            switch_states.get("projection_mode", 0)
+        )
+        modules.globals.in_window_preview = bool(
+            switch_states.get("in_window_preview", False)
+        )
+        modules.globals.gpu_device_id = int(
+            switch_states.get("gpu_device_id", 0)
+        )
+        modules.globals.force_discrete_gpu = bool(
+            switch_states.get("force_discrete_gpu", False)
+        )
+        # Eagerly load the LUT if a path was persisted
+        global _active_lut, _active_lut_path
+        if modules.globals.lut_path and os.path.isfile(modules.globals.lut_path):
+            try:
+                _active_lut = load_cube_lut(modules.globals.lut_path)
+                _active_lut_path = modules.globals.lut_path
+            except Exception as e:
+                print(f"[ui] failed to reload LUT {modules.globals.lut_path}: {e}")
+                modules.globals.lut_path = None
+                modules.globals.lut_name = "None"
+        # Apply the discrete-GPU hint if set (must run before CUDA loads)
+        if modules.globals.force_discrete_gpu:
+            apply_force_discrete_gpu()
+        if modules.globals.gpu_device_id:
+            set_cuda_visible_device(modules.globals.gpu_device_id)
     except FileNotFoundError:
         # If the file doesn't exist, use default values
         pass
@@ -344,8 +427,12 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     )
     cam_label.pack(side="left", padx=(0, 8))
 
+    global camera_optionmenu_ref, camera_indices_ref, camera_names_ref
+
     available_cameras = get_available_cameras()
     camera_indices, camera_names = available_cameras
+    camera_indices_ref[:] = list(camera_indices)
+    camera_names_ref[:] = list(camera_names)
 
     if not camera_names or camera_names[0] == "No cameras found":
         camera_variable = ctk.StringVar(value="No cameras found")
@@ -354,7 +441,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
             variable=camera_variable,
             values=["No cameras found"],
             state="disabled",
-            width=200,
+            width=180,
             height=34,
         )
     else:
@@ -363,11 +450,42 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
             action_inner,
             variable=camera_variable,
             values=camera_names,
-            width=200,
+            width=180,
             height=34,
         )
-    camera_optionmenu.pack(side="left", padx=(0, 8))
+    camera_optionmenu.pack(side="left", padx=(0, 6))
+    camera_optionmenu_ref = camera_optionmenu
     ToolTip(camera_optionmenu, _("Select which camera to use for live mode"))
+
+    # Camera Refresh button — hot-swap webcam without restarting the app.
+    refresh_btn = ctk.CTkButton(
+        action_inner,
+        text="↻",
+        cursor="hand2",
+        width=34,
+        height=34,
+        fg_color=BG_ELEV_2,
+        hover_color=BORDER_HI,
+        text_color=TEXT,
+        border_width=1,
+        border_color=BORDER,
+        font=ctk.CTkFont(size=14, weight="bold"),
+        command=lambda: refresh_cameras(camera_variable),
+    )
+    refresh_btn.pack(side="left", padx=(0, 8))
+    ToolTip(
+        refresh_btn,
+        _("Re-enumerate connected cameras (hot-swap without restart)"),
+    )
+
+    def _selected_camera_index():
+        names = camera_names_ref
+        if not names or names[0] == "No cameras found":
+            return None
+        try:
+            return camera_indices_ref[names.index(camera_variable.get())]
+        except (ValueError, IndexError):
+            return camera_indices_ref[0] if camera_indices_ref else None
 
     live_button = ctk.CTkButton(
         action_inner,
@@ -377,16 +495,9 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         hover_color=EMERALD_HI,
         text_color=BG,
         height=34,
-        width=92,
+        width=84,
         font=ctk.CTkFont(size=12, weight="bold"),
-        command=lambda: webcam_preview(
-            root,
-            (
-                camera_indices[camera_names.index(camera_variable.get())]
-                if camera_names and camera_names[0] != "No cameras found"
-                else None
-            ),
-        ),
+        command=lambda: webcam_preview(root, _selected_camera_index()),
         state=(
             "normal"
             if camera_names and camera_names[0] != "No cameras found"
@@ -395,6 +506,28 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     )
     live_button.pack(side="left")
     ToolTip(live_button, _("Start real-time face swap using webcam"))
+
+    # Realtime Video Player — watch a saved video with the swap applied
+    # in real time, no rendering step.
+    play_video_button = ctk.CTkButton(
+        action_inner,
+        text="▶ " + _("Play"),
+        cursor="hand2",
+        fg_color=BG_ELEV_2,
+        hover_color=BORDER_HI,
+        text_color=TEXT,
+        border_width=1,
+        border_color=BORDER,
+        height=34,
+        width=78,
+        font=ctk.CTkFont(size=12, weight="bold"),
+        command=lambda: realtime_video_player(root),
+    )
+    play_video_button.pack(side="left", padx=(8, 0))
+    ToolTip(
+        play_video_button,
+        _("Realtime Video Player — apply the swap to a saved video as it plays"),
+    )
 
     # Right side: Destroy, Start, Preview
     stop_button = ctk.CTkButton(
@@ -1200,6 +1333,347 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         ),
     )
 
+    # ===================== CAMERA / OUTPUT / UI CARD =====================
+    cam_card = make_card(main, "05 — Camera, output & UI", _("Camera, output & UI"))
+    cam_inner = ctk.CTkFrame(cam_card, fg_color="transparent", border_width=0)
+    cam_inner.pack(fill="x", padx=18, pady=(12, 18))
+    cam_inner.grid_columnconfigure(0, weight=1, uniform="cam")
+    cam_inner.grid_columnconfigure(1, weight=1, uniform="cam")
+
+    # --- Resolution Switch ---
+    global resolution_optionmenu_ref
+    res_label = ctk.CTkLabel(
+        cam_inner, text=_("Capture resolution"),
+        text_color=TEXT_DIM, font=ctk.CTkFont(size=11), anchor="w",
+    )
+    res_label.grid(row=0, column=0, sticky="ew", padx=(0, 6), pady=(0, 4))
+
+    res_var = ctk.StringVar(value=modules.globals.live_resolution)
+
+    def on_resolution_change(choice: str):
+        modules.globals.live_resolution = choice
+        save_switch_states()
+        # Hot-apply if a live preview is currently running
+        global _active_capturer
+        if _active_capturer is not None:
+            try:
+                w, h, fps = resolution_map(choice)
+                _active_capturer.cap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
+                _active_capturer.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
+                _active_capturer.cap.set(cv2.CAP_PROP_FPS, fps)
+                _active_capturer.actual_width = int(
+                    _active_capturer.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+                )
+                _active_capturer.actual_height = int(
+                    _active_capturer.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                )
+                update_status(
+                    f"Resolution set to {choice} "
+                    f"({_active_capturer.actual_width}x"
+                    f"{_active_capturer.actual_height})"
+                )
+            except Exception as e:
+                update_status(f"Resolution change failed: {e}")
+        else:
+            update_status(f"Resolution set to {choice}")
+
+    res_dropdown = ctk.CTkOptionMenu(
+        cam_inner,
+        variable=res_var,
+        values=list(resolution_labels()),
+        command=on_resolution_change,
+        height=34,
+    )
+    res_dropdown.grid(row=1, column=0, sticky="ew", padx=(0, 6))
+    resolution_optionmenu_ref = res_dropdown
+    ToolTip(
+        res_dropdown,
+        _(
+            "Resolution Switch / Resolution Changer — picks the camera "
+            "capture size. Auto = let the camera pick. Higher = more "
+            "detail but lower FPS."
+        ),
+    )
+
+    # --- GPU Changer ---
+    global gpu_optionmenu_ref
+    gpu_names, gpu_count = detect_gpus()
+    modules.globals.gpu_device_names = list(gpu_names)
+    modules.globals.gpu_device_count = max(1, gpu_count)
+    gpu_id = max(0, min(modules.globals.gpu_device_id, len(gpu_names) - 1))
+    gpu_label_text = _("GPU device")
+    gpu_label = ctk.CTkLabel(
+        cam_inner, text=gpu_label_text, text_color=TEXT_DIM,
+        font=ctk.CTkFont(size=11), anchor="w",
+    )
+    gpu_label.grid(row=0, column=1, sticky="ew", padx=(6, 0), pady=(0, 4))
+
+    gpu_display_options = [f"{i}: {name}" for i, name in enumerate(gpu_names)]
+    gpu_var = ctk.StringVar(value=gpu_display_options[gpu_id])
+
+    def on_gpu_change(choice: str):
+        try:
+            idx = int(choice.split(":", 1)[0])
+        except ValueError:
+            idx = 0
+        modules.globals.gpu_device_id = idx
+        set_cuda_visible_device(idx)
+        save_switch_states()
+        update_status(
+            f"GPU device {idx} selected — restart Live for the swap "
+            f"engine to bind the new device."
+        )
+
+    gpu_dropdown = ctk.CTkOptionMenu(
+        cam_inner,
+        variable=gpu_var,
+        values=gpu_display_options,
+        command=on_gpu_change,
+        height=34,
+    )
+    gpu_dropdown.grid(row=1, column=1, sticky="ew", padx=(6, 0))
+    gpu_optionmenu_ref = gpu_dropdown
+    ToolTip(
+        gpu_dropdown,
+        _(
+            "GPU Changer / Multi-GPU support — selects which CUDA device "
+            "the swap engine binds to. Restart Live mode after changing."
+        ),
+    )
+
+    # --- Switches: Virtual Cam, Optimized Rendering, In-Window Preview,
+    #     Force Discrete GPU ---
+    sw_row = ctk.CTkFrame(cam_inner, fg_color="transparent", border_width=0)
+    sw_row.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(14, 4))
+    sw_row.grid_columnconfigure(0, weight=1, uniform="cam_sw")
+    sw_row.grid_columnconfigure(1, weight=1, uniform="cam_sw")
+
+    vcam_var = ctk.BooleanVar(value=modules.globals.virtual_cam_enabled)
+
+    def on_vcam_toggle():
+        modules.globals.virtual_cam_enabled = vcam_var.get()
+        save_switch_states()
+        sink = get_virtual_cam()
+        if not modules.globals.virtual_cam_enabled:
+            sink.close()
+            modules.globals.virtual_cam_active = False
+            modules.globals.virtual_cam_backend = ""
+            if vcam_status_label is not None:
+                vcam_status_label.configure(text=_("Virtual cam: off"))
+        else:
+            if vcam_status_label is not None:
+                vcam_status_label.configure(
+                    text=_("Virtual cam: opens on next Live frame")
+                )
+
+    vcam_switch = ctk.CTkSwitch(
+        sw_row, text=_("Virtual camera"),
+        variable=vcam_var, cursor="hand2", command=on_vcam_toggle,
+    )
+    vcam_switch.grid(row=0, column=0, sticky="w", pady=6)
+    ToolTip(
+        vcam_switch,
+        _(
+            "Stream the swapped feed to OBS / Zoom / Meet via OBS "
+            "Virtual Camera (Win/Mac) or v4l2loopback (Linux). "
+            "Requires the pyvirtualcam package."
+        ),
+    )
+
+    optrend_var = ctk.BooleanVar(value=modules.globals.optimized_rendering)
+
+    def on_optrend_toggle():
+        modules.globals.optimized_rendering = optrend_var.get()
+        save_switch_states()
+
+    optrend_switch = ctk.CTkSwitch(
+        sw_row, text=_("Optimized rendering"),
+        variable=optrend_var, cursor="hand2", command=on_optrend_toggle,
+    )
+    optrend_switch.grid(row=0, column=1, sticky="w", pady=6)
+    ToolTip(
+        optrend_switch,
+        _(
+            "Auto-tune detection stride, preview scale and frame skipping "
+            "based on measured FPS so live, video and image modes stay "
+            "responsive on any hardware."
+        ),
+    )
+
+    inwin_var = ctk.BooleanVar(value=modules.globals.in_window_preview)
+
+    def on_inwin_toggle():
+        modules.globals.in_window_preview = inwin_var.get()
+        save_switch_states()
+        # If projection mode is active, In-Window wins (mutually exclusive)
+        if modules.globals.in_window_preview and modules.globals.projection_mode:
+            modules.globals.projection_mode = 0
+            close_projection_window()
+
+    inwin_switch = ctk.CTkSwitch(
+        sw_row, text=_("In-window preview"),
+        variable=inwin_var, cursor="hand2", command=on_inwin_toggle,
+    )
+    inwin_switch.grid(row=1, column=0, sticky="w", pady=6)
+    ToolTip(
+        inwin_switch,
+        _(
+            "Render the live swap inside the main dashboard rather than "
+            "in a separate window. Mutually exclusive with Window Projection."
+        ),
+    )
+
+    fgpu_var = ctk.BooleanVar(value=modules.globals.force_discrete_gpu)
+
+    def on_force_gpu_toggle():
+        modules.globals.force_discrete_gpu = fgpu_var.get()
+        save_switch_states()
+        if modules.globals.force_discrete_gpu:
+            apply_force_discrete_gpu()
+            update_status(
+                "Forced discrete GPU on next launch (laptop dual-GPU systems)"
+            )
+
+    fgpu_switch = ctk.CTkSwitch(
+        sw_row, text=_("Force discrete GPU"),
+        variable=fgpu_var, cursor="hand2", command=on_force_gpu_toggle,
+    )
+    fgpu_switch.grid(row=1, column=1, sticky="w", pady=6)
+    ToolTip(
+        fgpu_switch,
+        _(
+            "Forced GPU usage on laptops — sets NVIDIA Optimus / AMD "
+            "switchable graphics hints so the discrete GPU is used instead "
+            "of the iGPU. Takes effect on next launch."
+        ),
+    )
+
+    # --- Window Projection buttons ---
+    proj_row = ctk.CTkFrame(cam_inner, fg_color="transparent", border_width=0)
+    proj_row.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(8, 4))
+    proj_row.grid_columnconfigure(0, weight=1, uniform="proj")
+    proj_row.grid_columnconfigure(1, weight=1, uniform="proj")
+
+    project_btn = ctk.CTkButton(
+        proj_row, text=_("Window projection"),
+        cursor="hand2", height=34,
+        fg_color=BG_ELEV_2, hover_color=BORDER_HI, text_color=TEXT,
+        border_width=1, border_color=BORDER,
+        command=lambda: toggle_projection_window(borderless=True),
+    )
+    project_btn.grid(row=0, column=0, sticky="ew", padx=(0, 6))
+    ToolTip(
+        project_btn,
+        _(
+            "Borderless pop-out preview suitable for OBS window-capture. "
+            "Click again to close. Press F inside the window for full screen."
+        ),
+    )
+
+    fullscreen_btn = ctk.CTkButton(
+        proj_row, text=_("Projection: fullscreen"),
+        cursor="hand2", height=34,
+        fg_color=BG_ELEV_2, hover_color=BORDER_HI, text_color=TEXT,
+        border_width=1, border_color=BORDER,
+        command=lambda: toggle_projection_window(fullscreen=True),
+    )
+    fullscreen_btn.grid(row=0, column=1, sticky="ew", padx=(6, 0))
+    ToolTip(
+        fullscreen_btn,
+        _(
+            "Window Projection Full Screen Mode — true fullscreen output "
+            "for clean recording / streaming."
+        ),
+    )
+
+    # --- LUTs ---
+    global lut_status_label, vcam_status_label
+    lut_row = ctk.CTkFrame(cam_inner, fg_color="transparent", border_width=0)
+    lut_row.grid(row=4, column=0, columnspan=2, sticky="ew", pady=(8, 0))
+    lut_row.grid_columnconfigure(1, weight=1)
+
+    lut_btn = ctk.CTkButton(
+        lut_row, text=_("Load .cube LUT"),
+        cursor="hand2", height=34,
+        fg_color=VIOLET, hover_color=VIOLET_HI, text_color=BG,
+        font=ctk.CTkFont(size=12, weight="bold"),
+        command=lambda: load_lut_file(),
+    )
+    lut_btn.grid(row=0, column=0, sticky="w", padx=(0, 8))
+    ToolTip(
+        lut_btn,
+        _(
+            "Load a cinematic .cube LUT and apply it to live, video and "
+            "image output as the final color-grading step."
+        ),
+    )
+
+    lut_status_label = ctk.CTkLabel(
+        lut_row, text=f"LUT: {modules.globals.lut_name}",
+        text_color=TEXT_MUTED, font=ctk.CTkFont(size=11), anchor="w",
+    )
+    lut_status_label.grid(row=0, column=1, sticky="ew", padx=(0, 8))
+
+    clear_lut_btn = ctk.CTkButton(
+        lut_row, text=_("Clear"),
+        cursor="hand2", width=70, height=34,
+        fg_color=BG_ELEV_2, hover_color=BORDER_HI, text_color=TEXT,
+        border_width=1, border_color=BORDER,
+        command=lambda: clear_lut(),
+    )
+    clear_lut_btn.grid(row=0, column=2, sticky="e")
+    ToolTip(clear_lut_btn, _("Clear the active LUT"))
+
+    # LUT strength slider
+    lut_strength_var = ctk.DoubleVar(value=modules.globals.lut_strength)
+
+    def on_lut_strength_change(value):
+        modules.globals.lut_strength = float(value)
+        save_switch_states()
+
+    lut_str_slider, _lstr = make_slider_row(
+        cam_inner, 5, _("LUT strength"), lut_strength_var,
+        0.0, 100.0, on_lut_strength_change,
+    )
+    ToolTip(
+        lut_str_slider,
+        _(
+            "Blend strength of the active LUT. 0 = no grade, "
+            "100 = full LUT."
+        ),
+    )
+
+    # Virtual cam status line (shown right below the switches)
+    vcam_status_label = ctk.CTkLabel(
+        cam_inner,
+        text=(
+            _("Virtual cam: on (opens on next Live frame)")
+            if modules.globals.virtual_cam_enabled
+            else _("Virtual cam: off")
+        ),
+        text_color=TEXT_DIM, font=ctk.CTkFont(size=10), anchor="w",
+    )
+    vcam_status_label.grid(row=6, column=0, columnspan=2, sticky="ew", pady=(8, 0))
+
+    # ===================== IN-WINDOW PREVIEW SLOT =====================
+    # Always created; only populated when in_window_preview is on.
+    global in_window_preview_label
+    in_win_card = make_card(main, "06 — Live monitor", _("In-window preview"))
+    in_win_inner = ctk.CTkFrame(in_win_card, fg_color="transparent", border_width=0)
+    in_win_inner.pack(fill="both", expand=True, padx=18, pady=(12, 18))
+    in_win_inner.grid_columnconfigure(0, weight=1)
+    in_win_inner.grid_rowconfigure(0, weight=1)
+    in_window_preview_label = ctk.CTkLabel(
+        in_win_inner,
+        text=_(
+            "Toggle “In-window preview” above and click Live to embed "
+            "the swap feed here."
+        ),
+        text_color=TEXT_DIM, font=ctk.CTkFont(size=12),
+        height=240,
+    )
+    in_window_preview_label.grid(row=0, column=0, sticky="nsew")
+
     return root
 
 
@@ -1663,6 +2137,364 @@ def webcam_preview(root: ctk.CTk, camera_index: int):
 
 
 
+def refresh_cameras(camera_variable: "ctk.StringVar | None" = None) -> None:
+    """Re-enumerate connected cameras and update the action-bar dropdown.
+
+    The user can hot-plug a USB webcam and click ↻ — no restart required.
+    Falls back gracefully when the dropdown is currently disabled.
+    """
+    global camera_indices_ref, camera_names_ref, camera_optionmenu_ref
+    indices, names = get_available_cameras()
+    camera_indices_ref[:] = list(indices)
+    camera_names_ref[:] = list(names)
+    if camera_optionmenu_ref is None:
+        return
+    if not names or names[0] == "No cameras found":
+        camera_optionmenu_ref.configure(values=["No cameras found"], state="disabled")
+        if camera_variable is not None:
+            camera_variable.set("No cameras found")
+        update_status("No cameras detected")
+        return
+    camera_optionmenu_ref.configure(values=names, state="normal")
+    if camera_variable is not None:
+        current = camera_variable.get()
+        if current not in names:
+            camera_variable.set(names[0])
+    update_status(f"Found {len(names)} camera(s)")
+
+
+def load_lut_file() -> None:
+    """Open a file picker, parse the .cube file, and arm the LUT for live use."""
+    global _active_lut, _active_lut_path
+    path = ctk.filedialog.askopenfilename(
+        title=_("Load .cube LUT"),
+        filetypes=[("Cube LUT", ("*.cube",)), ("All files", ("*.*",))],
+    )
+    if not path:
+        return
+    try:
+        lut = load_cube_lut(path)
+    except Exception as e:
+        update_status(f"LUT load failed: {e}")
+        return
+    _active_lut = lut
+    _active_lut_path = path
+    modules.globals.lut_path = path
+    modules.globals.lut_name = os.path.basename(path)
+    save_switch_states()
+    if lut_status_label is not None:
+        lut_status_label.configure(text=f"LUT: {modules.globals.lut_name}")
+    update_status(
+        f"Loaded LUT '{modules.globals.lut_name}' (size={lut.size})"
+    )
+
+
+def clear_lut() -> None:
+    global _active_lut, _active_lut_path
+    _active_lut = None
+    _active_lut_path = None
+    modules.globals.lut_path = None
+    modules.globals.lut_name = "None"
+    save_switch_states()
+    if lut_status_label is not None:
+        lut_status_label.configure(text="LUT: None")
+    update_status("LUT cleared")
+
+
+def _ensure_projection_window():
+    """Create the projection window once.  Returns the (window, label) pair."""
+    global projection_window, projection_label
+    if projection_window is not None and projection_window.winfo_exists():
+        return projection_window, projection_label
+    projection_window = ctk.CTkToplevel(ROOT)
+    projection_window.title("Phantom Cast — Projection")
+    projection_window.configure(fg_color="#000000")
+    projection_window.geometry("960x540+120+120")
+
+    projection_label = ctk.CTkLabel(projection_window, text="", fg_color="#000000")
+    projection_label.pack(fill="both", expand=True)
+
+    def _on_close():
+        global projection_window
+        try:
+            if projection_window is not None:
+                projection_window.destroy()
+        except Exception:
+            pass
+        projection_window = None
+        modules.globals.projection_mode = 0
+
+    def _toggle_full(_e=None):
+        try:
+            cur = bool(projection_window.attributes("-fullscreen"))
+            projection_window.attributes("-fullscreen", not cur)
+            modules.globals.projection_mode = 2 if not cur else 1
+        except Exception:
+            pass
+
+    projection_window.protocol("WM_DELETE_WINDOW", _on_close)
+    projection_window.bind("<F11>", _toggle_full)
+    projection_window.bind("<f>", _toggle_full)
+    projection_window.bind("<Escape>", lambda e: _on_close())
+    return projection_window, projection_label
+
+
+def close_projection_window() -> None:
+    global projection_window
+    if projection_window is not None:
+        try:
+            projection_window.destroy()
+        except Exception:
+            pass
+        projection_window = None
+    modules.globals.projection_mode = 0
+
+
+def toggle_projection_window(borderless: bool = False, fullscreen: bool = False) -> None:
+    """Open or close the projection feed window.
+
+    * ``borderless`` — overrideredirect Toplevel suitable for OBS
+      window-capture (no chrome, draggable by Tk's window manager).
+    * ``fullscreen`` — true fullscreen mode.
+
+    Calling the same mode twice toggles the window off.
+    """
+    global projection_window
+    requested = 2 if fullscreen else 1
+    # If already in this mode, close it.
+    if (projection_window is not None
+            and projection_window.winfo_exists()
+            and modules.globals.projection_mode == requested):
+        close_projection_window()
+        return
+
+    win, _lbl = _ensure_projection_window()
+    try:
+        win.attributes("-topmost", True)
+    except Exception:
+        pass
+    if fullscreen:
+        try:
+            win.attributes("-fullscreen", True)
+        except Exception:
+            win.geometry(f"{win.winfo_screenwidth()}x{win.winfo_screenheight()}+0+0")
+        modules.globals.projection_mode = 2
+    else:
+        try:
+            win.attributes("-fullscreen", False)
+        except Exception:
+            pass
+        if borderless:
+            try:
+                win.overrideredirect(True)
+            except Exception:
+                pass
+        modules.globals.projection_mode = 1
+
+    if modules.globals.in_window_preview:
+        # Mutually exclusive — projection wins once user opens it.
+        modules.globals.in_window_preview = False
+        save_switch_states()
+
+
+def realtime_video_player(root: ctk.CTk) -> None:
+    """Realtime Video Player — apply the swap to a saved video as it plays.
+
+    No render-to-file step.  Frames are read from the file at the file's
+    own FPS, run through the live processing thread, and displayed in the
+    same preview targets (popup / in-window / projection) as live mode.
+    """
+    if modules.globals.source_path is None:
+        update_status("Please select a source image first")
+        return
+    video_path = ctk.filedialog.askopenfilename(
+        title=_("Select a video to play with face-swap"),
+        filetypes=[vid_ft, ("All files", ("*.*",))],
+    )
+    if not video_path:
+        return
+    if not is_video(video_path):
+        update_status("Selected file is not a supported video")
+        return
+
+    # Warm up models so first-frame latency is hidden behind file open.
+    from modules.face_analyser import get_face_analyser
+    get_face_analyser()
+    active = get_frame_processors_modules(modules.globals.frame_processors)
+    for fp in active:
+        try:
+            fp.pre_check()
+        except Exception:
+            pass
+
+    create_video_player_preview(video_path)
+
+
+def create_video_player_preview(video_path: str) -> None:
+    """Worker that mirrors create_webcam_preview but pulls frames from a file.
+
+    Reuses :func:`_processing_thread_func` for the swap+enhance work and
+    the same preview-target selection as live mode.
+    """
+    global preview_label, PREVIEW
+
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        update_status(f"Failed to open video: {video_path}")
+        return
+
+    src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    if src_fps <= 0 or src_fps > 240:
+        src_fps = 30.0
+
+    preview_label.configure(width=PREVIEW_DEFAULT_WIDTH, height=PREVIEW_DEFAULT_HEIGHT)
+    PREVIEW.deiconify()
+
+    capture_queue = queue.Queue(maxsize=2)
+    processed_queue = queue.Queue(maxsize=2)
+    stop_event = threading.Event()
+
+    # File reader thread — paces frames at the source FPS for realtime playback.
+    def _file_reader():
+        delay = 1.0 / src_fps
+        next_t = time.time()
+        while not stop_event.is_set():
+            ok, frame = cap.read()
+            if not ok:
+                stop_event.set()
+                break
+            try:
+                capture_queue.put_nowait(frame)
+            except queue.Full:
+                try:
+                    capture_queue.get_nowait()
+                except queue.Empty:
+                    pass
+                try:
+                    capture_queue.put_nowait(frame)
+                except queue.Full:
+                    pass
+            next_t += delay
+            sleep_for = next_t - time.time()
+            if sleep_for > 0:
+                time.sleep(min(sleep_for, 0.1))
+
+    reader = threading.Thread(target=_file_reader, daemon=True)
+    reader.start()
+
+    proc_thread = threading.Thread(
+        target=_processing_thread_func,
+        args=(capture_queue, processed_queue, stop_event, src_fps),
+        daemon=True,
+    )
+    proc_thread.start()
+
+    def _cleanup():
+        stop_event.set()
+        reader.join(timeout=2.0)
+        proc_thread.join(timeout=2.0)
+        cap.release()
+        # Don't withdraw if user routed to in-window — they may want to keep it.
+        if not modules.globals.in_window_preview and not modules.globals.projection_mode:
+            PREVIEW.withdraw()
+
+    poll_ms = max(1, min(16, int(500 / max(src_fps, 1.0))))
+
+    def _display_next_frame():
+        if stop_event.is_set():
+            _cleanup()
+            return
+        try:
+            bgr_frame = processed_queue.get_nowait()
+        except queue.Empty:
+            ROOT.after(poll_ms, _display_next_frame)
+            return
+        _present_processed_frame(bgr_frame)
+        ROOT.after(poll_ms, _display_next_frame)
+
+    ROOT.after(0, _display_next_frame)
+
+
+def _present_processed_frame(bgr_frame):
+    """Route a processed BGR frame to the active preview target(s):
+    popup window, in-window preview, projection window — and the virtual
+    camera if enabled.
+
+    Applies the LUT here (post-swap, pre-display) so all three targets
+    plus the virtual camera see the same graded output.
+    """
+    if bgr_frame is None:
+        return
+    # 1) LUT (the only color grade applied after the swap)
+    if _active_lut is not None and modules.globals.lut_strength > 0:
+        try:
+            bgr_frame = apply_lut(
+                bgr_frame, _active_lut,
+                strength=float(modules.globals.lut_strength) / 100.0,
+            )
+        except Exception as e:
+            print(f"[ui] LUT apply failed: {e}")
+
+    # 2) Virtual camera — full-resolution, ungraded-by-Tk frames
+    if modules.globals.virtual_cam_enabled:
+        sink = get_virtual_cam()
+        if not sink.is_open:
+            h, w = bgr_frame.shape[:2]
+            ok = sink.open(w, h, fps=30)
+            modules.globals.virtual_cam_active = ok
+            modules.globals.virtual_cam_backend = sink.backend
+            if vcam_status_label is not None:
+                if ok:
+                    vcam_status_label.configure(
+                        text=_("Virtual cam: live ({} {}x{})").format(
+                            sink.backend or "OBS", w, h,
+                        )
+                    )
+                else:
+                    err = sink.last_error or "unknown error"
+                    vcam_status_label.configure(
+                        text=_("Virtual cam: unavailable — {}").format(err)
+                    )
+        if sink.is_open:
+            sink.send(bgr_frame)
+    elif get_virtual_cam().is_open:
+        get_virtual_cam().close()
+        modules.globals.virtual_cam_active = False
+
+    # 3) Choose the visible target
+    targets = []
+    if modules.globals.projection_mode and projection_window is not None \
+            and projection_window.winfo_exists():
+        targets.append(("projection", projection_label, projection_window))
+    if modules.globals.in_window_preview and in_window_preview_label is not None:
+        targets.append(("inwin", in_window_preview_label, None))
+    if not targets:
+        targets.append(("popup", preview_label, PREVIEW))
+
+    for kind, label, win in targets:
+        if kind == "popup":
+            w = max(PREVIEW.winfo_width(), PREVIEW_DEFAULT_WIDTH)
+            h = max(PREVIEW.winfo_height(), PREVIEW_DEFAULT_HEIGHT)
+        elif kind == "inwin":
+            w = max(in_window_preview_label.winfo_width(), 480)
+            h = max(in_window_preview_label.winfo_height(), 270)
+        else:
+            try:
+                w = max(projection_window.winfo_width(), 640)
+                h = max(projection_window.winfo_height(), 360)
+            except Exception:
+                w, h = 960, 540
+
+        sized = fit_image_to_size(bgr_frame, w, h)
+        rgb = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
+        try:
+            img = Image.fromarray(rgb)
+            ctk_img = ctk.CTkImage(img, size=img.size)
+            label.configure(image=ctk_img, text="")
+        except Exception:
+            pass
+
+
 def get_available_cameras():
     """Returns a list of available camera names and indices."""
     if platform.system() == "Windows":
@@ -1769,7 +2601,10 @@ def _processing_thread_func(capture_queue, processed_queue, stop_event,
     cached_many_faces = None
     # Detect every N frames ≈ 80ms.  At 60fps → every 5 frames (83ms),
     # at 30fps → every 3 frames (100ms), at 15fps → every frame.
-    det_interval = max(1, round(camera_fps * 0.08))
+    base_det_interval = max(1, round(camera_fps * 0.08))
+    det_interval = base_det_interval if modules.globals.optimized_rendering else 1
+    # Last measured FPS, used by the optimized-rendering auto-tuner.
+    last_tune_fps: float = 0.0
 
     while not stop_event.is_set():
         try:
@@ -1870,6 +2705,17 @@ def _processing_thread_func(capture_queue, processed_queue, stop_event,
             fps = frame_count / (current_time - prev_time)
             frame_count = 0
             prev_time = current_time
+            # Optimized Rendering: gently auto-tune detection stride so the
+            # live pipeline keeps the preview fluid on slower hardware.
+            if modules.globals.optimized_rendering:
+                target_fps = max(camera_fps * 0.7, 20.0)
+                if fps < target_fps and det_interval < base_det_interval * 3:
+                    det_interval += 1
+                elif fps > target_fps * 1.2 and det_interval > 1:
+                    det_interval -= 1
+            else:
+                det_interval = 1
+            last_tune_fps = fps
 
         if modules.globals.show_fps:
             cv2.putText(
@@ -1899,18 +2745,29 @@ def _processing_thread_func(capture_queue, processed_queue, stop_event,
 
 
 def create_webcam_preview(camera_index: int):
-    global preview_label, PREVIEW
+    global preview_label, PREVIEW, _active_capturer
 
     cap = VideoCapturer(camera_index)
-    if not cap.start(1920, 1080, 60):
+    # Resolution Switch: honour user-selected target.
+    req_w, req_h, req_fps = resolution_map(modules.globals.live_resolution)
+    if not cap.start(req_w, req_h, req_fps):
         update_status("Failed to start camera")
         return
 
+    _active_capturer = cap
     camera_fps = cap.actual_fps
     print(f"[webcam] Camera running at {cap.actual_width}x{cap.actual_height}@{camera_fps:.0f}fps")
 
     preview_label.configure(width=PREVIEW_DEFAULT_WIDTH, height=PREVIEW_DEFAULT_HEIGHT)
-    PREVIEW.deiconify()
+
+    # Decide the visible target: in-window / projection / popup
+    show_popup = not (
+        modules.globals.in_window_preview or modules.globals.projection_mode
+    )
+    if show_popup:
+        PREVIEW.deiconify()
+    if modules.globals.projection_mode:
+        _ensure_projection_window()
 
     # Queues for decoupling capture from processing and processing from display.
     # Small maxsize ensures we always work on recent frames and drop stale ones.
@@ -1936,11 +2793,19 @@ def create_webcam_preview(camera_index: int):
 
     # Cleanup helper called from the display loop when preview closes
     def _cleanup():
+        global _active_capturer
         stop_event.set()
         cap_thread.join(timeout=2.0)
         proc_thread.join(timeout=2.0)
         cap.release()
-        PREVIEW.withdraw()
+        _active_capturer = None
+        if show_popup:
+            PREVIEW.withdraw()
+        # Stop pushing to virtual cam — caller will re-open on next Live frame.
+        sink = get_virtual_cam()
+        if sink.is_open:
+            sink.close()
+            modules.globals.virtual_cam_active = False
 
     # Poll at ~2x camera FPS (Nyquist) so we pick up frames promptly
     # without burning CPU.  Clamped to [1, 16] ms.
@@ -1949,7 +2814,18 @@ def create_webcam_preview(camera_index: int):
     # Non-blocking display loop using ROOT.after() — avoids blocking the
     # Tk event loop which could cause UI freezes or re-entrancy issues.
     def _display_next_frame():
-        if stop_event.is_set() or PREVIEW.state() == "withdrawn":
+        # Stop conditions:
+        #  - capture thread set the stop event
+        #  - popup target was withdrawn AND no other target is active
+        if stop_event.is_set():
+            _cleanup()
+            return
+        no_targets_left = (
+            not modules.globals.in_window_preview
+            and not modules.globals.projection_mode
+            and PREVIEW.state() == "withdrawn"
+        )
+        if no_targets_left:
             _cleanup()
             return
 
@@ -1959,16 +2835,7 @@ def create_webcam_preview(camera_index: int):
             ROOT.after(poll_ms, _display_next_frame)
             return
 
-        # Resize the full-resolution BGR frame to the preview window first,
-        # then convert colour on the smaller buffer.
-        bgr_frame = fit_image_to_size(
-            bgr_frame, PREVIEW.winfo_width(), PREVIEW.winfo_height()
-        )
-        rgb_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
-        image = Image.fromarray(rgb_frame)
-        image = ctk.CTkImage(image, size=image.size)
-        preview_label.configure(image=image)
-
+        _present_processed_frame(bgr_frame)
         ROOT.after(poll_ms, _display_next_frame)
 
     # Kick off the non-blocking display loop

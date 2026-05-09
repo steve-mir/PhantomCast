@@ -23,6 +23,11 @@ class VideoCapturer:
         self.actual_width: int = 0
         self.actual_height: int = 0
         self.actual_fps: float = 0.0
+        # Last requested capture parameters — used by the Resolution Changer
+        # when re-opening the device without restarting the live thread.
+        self.requested_width: int = 0
+        self.requested_height: int = 0
+        self.requested_fps: int = 0
 
         # Initialize Windows-specific components if on Windows
         if platform.system() == "Windows":
@@ -36,6 +41,9 @@ class VideoCapturer:
 
     def start(self, width: int = 960, height: int = 540, fps: int = 60) -> bool:
         """Initialize and start video capture"""
+        self.requested_width = int(width)
+        self.requested_height = int(height)
+        self.requested_fps = int(fps)
         try:
             if platform.system() == "Windows":
                 # Windows-specific capture methods.

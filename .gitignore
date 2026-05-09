@@ -75,8 +75,8 @@ DeepLiveCamPro/
 DeepLiveCamPro-*.exe
 
 # Inno Setup output
-Output/
-installer/Output/
+# Output/
+# installer/Output/
 installer/prerequisites/*.exe
 installer/prerequisites/*.msi
 installer/prerequisites/*.zip
@@ -96,8 +96,8 @@ installer/prerequisites/*.zip
 # Generated / processed output frames
 temp/
 .tmp/
-output/
-outputs/
+# output/
+# outputs/
 results/
 
 # =============================================================================

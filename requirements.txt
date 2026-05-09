@@ -31,10 +31,6 @@ nvidia-cublas-cu12==12.8.*;       sys_platform == 'win32'
 nvidia-cufft-cu12==11.*;          sys_platform == 'win32'
 pynvml==11.5.0;                   sys_platform == 'win32'
 
-# Tensorflow (face_enhancer pipelines)
-tensorflow>=2.15.0; sys_platform != 'darwin'
-tensorflow>=2.15.0; sys_platform == 'darwin' and python_version < '3.13'
-
 # UI
 tk==0.1.0
 customtkinter==5.2.2
@@ -43,9 +39,15 @@ pillow==12.1.1
 # Misc
 psutil==5.9.8
 tqdm>=4.65.0
-opennsfw2==0.10.2
 protobuf==4.25.1
 pygrabber; sys_platform == 'win32'
+
+# NSFW filter (opennsfw2 + tensorflow) was removed to keep the installer
+# under GitHub's 2GB release-asset cap (was adding ~1.1GB). The
+# --nsfw-filter CLI flag is now a no-op; predicter.py degrades gracefully.
+# To restore: re-add opennsfw2==0.10.2 and tensorflow>=2.15.0, OR migrate
+# to an ONNX-based NSFW model (~10MB) that fits the existing onnxruntime
+# stack.
 
 # Pro layer — license + claims signing verification
 cryptography>=42.0

@@ -26,9 +26,20 @@ binaries = []
 datas = []
 
 # torch/lib carries cuDNN, cublas, cuda-runtime DLLs.
+# Skip TensorRT-related DLLs: onnxruntime ships them but they reference
+# nvinfer_10/nvonnxparser_10 which we don't bundle (build log shows them
+# unresolved). TensorRT support is non-functional in this build, so
+# dropping these saves ~500MB of dead weight from the installer.
+TENSORRT_DLL_PATTERNS = (
+    "onnxruntime_providers_tensorrt",
+    "nvinfer_",
+    "nvonnxparser_",
+)
 torch_lib = SITE / "torch" / "lib"
 if torch_lib.is_dir():
     for f in torch_lib.glob("*.dll"):
+        if any(p in f.name.lower() for p in TENSORRT_DLL_PATTERNS):
+            continue
         binaries.append((str(f), "torch/lib"))
 
 # pip nvidia-* packages (cuda-runtime, cudnn, cublas, cufft, …).
@@ -69,8 +80,25 @@ a = Analysis(
     hookspath=[],
     runtime_hooks=[str(ROOT / "build" / "runtime_hook_paths.py")],
     excludes=[
-        "matplotlib", "scipy.spatial.cKDTree",  # imported but not on hot path
-        "tornado", "notebook",
+        # plotting/notebook stack — never used at runtime
+        "matplotlib", "scipy.spatial.cKDTree",
+        "tornado", "notebook", "IPython", "jupyter",
+        "pytest", "pytest_runner", "nose",
+
+        # NSFW filter dropped from this build (see modules/predicter.py
+        # and requirements.txt for context). ~1.1GB savings.
+        "tensorflow", "tensorboard", "keras",
+        "opennsfw2", "gdown",
+
+        # torch training-only modules — inference doesn't need them.
+        # ~300MB combined.
+        "torch.distributed", "torch.testing", "torch._inductor",
+        "torch._dynamo", "torch.fx", "torch.onnx",
+        "torch.utils.benchmark", "torch.utils.tensorboard",
+        "torch.profiler",
+
+        # torchvision sub-packages we don't use
+        "torchvision.datasets", "torchvision.models",
     ],
     cipher=None,
     noarchive=False,

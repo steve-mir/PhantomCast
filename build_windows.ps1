@@ -32,7 +32,7 @@ function Run($cmd) {
     $global:LASTEXITCODE = 0
     Invoke-Expression $cmd
     if ($LASTEXITCODE -ne 0) {
-        throw "Command failed with exit code $LASTEXITCODE: $cmd"
+        throw "Command failed with exit code ${LASTEXITCODE}: $cmd"
     }
 }
 

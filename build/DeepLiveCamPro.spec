@@ -90,7 +90,7 @@ exe = EXE(
     upx=False,            # UPX breaks CUDA DLL load on some Windows builds
     console=False,        # GUI app
     icon=str(ROOT / "media" / "DLC.ico") if (ROOT / "media" / "DLC.ico").is_file() else None,
-    version="build/version_info.txt" if (ROOT / "build" / "version_info.txt").is_file() else None,
+    version=str(ROOT / "build" / "version_info.txt") if (ROOT / "build" / "version_info.txt").is_file() else None,
 )
 
 coll = COLLECT(

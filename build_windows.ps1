@@ -63,9 +63,11 @@ if (-not (Test-Path venv)) {
 
 if (-not $SkipDeps) {
     Step "Installing dependencies (cu128 stack)"
-    Run "$pip install --upgrade pip wheel"
+    # Use `python -m pip` so pip can replace itself on Windows (pip.exe is locked while running).
+    Run "$python -m pip install --upgrade pip wheel"
     Run "$pip install -r requirements.txt"
-    Run "$pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.6.0+cu128 torchvision==0.21.0+cu128"
+    # Lowest torch with +cu128 wheels published is 2.7.0; pair with the matching torchvision.
+    Run "$pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.7.0+cu128 torchvision==0.22.0+cu128"
     Run "$pip install pyinstaller==6.10.0 pynvml"
 }
 

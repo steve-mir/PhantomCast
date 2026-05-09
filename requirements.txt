@@ -4,7 +4,7 @@
 # Install on Windows:
 #   pip install -r requirements.txt
 #   pip install --extra-index-url https://download.pytorch.org/whl/cu128 \
-#       torch==2.5.1+cu128 torchvision==0.20.1+cu128
+#       torch==2.7.0+cu128 torchvision==0.22.0+cu128
 #
 # CUDA Toolkit 12.8 + cuDNN 8.9.7 are *bundled* via pip wheels (nvidia-*)
 # and torch's lib/. The desktop build never relies on a system CUDA install.

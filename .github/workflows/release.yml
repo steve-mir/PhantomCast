@@ -32,7 +32,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~\AppData\Local\pip\Cache
-          key: pip-${{ hashFiles('requirements.txt') }}
+          # v2 prefix invalidates a previously-poisoned cache that produced
+          # "THESE PACKAGES DO NOT MATCH THE HASHES" errors on partial wheels.
+          key: pip-v2-${{ hashFiles('requirements.txt', 'build_windows.ps1') }}
 
       - name: Build
         shell: pwsh

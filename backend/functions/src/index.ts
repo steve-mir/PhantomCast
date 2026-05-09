@@ -2,12 +2,13 @@
  * Phantom-Cast Pro — Cloud Functions
  *
  * Endpoints (HTTPS, JSON):
- *   POST /v1_activate     — bind license to device, return signed claims
- *   POST /v1_heartbeat    — refresh claims (every 6h while online)
- *   POST /v1_deactivate   — release a device slot (rate-limited)
- *   POST /v1_moveLicense  — force re-bind on hardware swap (1/4mo)
- *   POST /v1_modelUrl     — short-lived signed model URL (paywalled models)
- *   POST /v1_stripe       — Stripe webhook handler
+ *   POST /v1_activate           — bind license to device, return signed claims
+ *   POST /v1_heartbeat          — refresh claims (every 6h while online)
+ *   POST /v1_deactivate         — release a device slot (rate-limited)
+ *   POST /v1_moveLicense        — force re-bind on hardware swap (1/4mo)
+ *   POST /v1_modelUrl           — short-lived signed model URL (paywalled models)
+ *   POST /v1_createSubscription — start a NOWPayments email subscription
+ *   POST /v1_nowpayments        — NOWPayments IPN webhook handler
  *   scheduled cleanupExpiredActivations  — daily
  *
  * All HTTP endpoints validate App Check, rate-limit per IP and per license,
@@ -17,7 +18,6 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { onRequest, onSchedule } from "firebase-functions/v2/https";
 import * as jwt from "jsonwebtoken";
-import Stripe from "stripe";
 import * as crypto from "crypto";
 
 admin.initializeApp();
@@ -26,9 +26,20 @@ const db = admin.firestore();
 // ---------- Secrets ----------
 const SIGNING_KEY = process.env.DLC_SIGNING_PRIVATE_KEY!;   // RS256 PEM
 const SIGNING_KID = process.env.DLC_SIGNING_KID!;           // e.g. "dlc-pro-2026-01"
-const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY!;
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
-const stripe = new Stripe(STRIPE_SECRET, { apiVersion: "2024-04-10" as any });
+
+// NOWPayments — https://documenter.getpostman.com/view/7907941/2s93JusNJt
+const NOWPAY_API_KEY    = process.env.NOWPAY_API_KEY!;          // x-api-key for REST calls
+const NOWPAY_IPN_SECRET = process.env.NOWPAY_IPN_SECRET!;       // HMAC-SHA512 secret for webhooks
+const NOWPAY_EMAIL      = process.env.NOWPAY_EMAIL!;            // login email (JWT-protected routes)
+const NOWPAY_PASSWORD   = process.env.NOWPAY_PASSWORD!;         // login password (JWT-protected routes)
+const NOWPAY_PLAN_PRO    = process.env.NOWPAY_PLAN_PRO    ?? "";  // subscription plan id for "pro"
+const NOWPAY_PLAN_STUDIO = process.env.NOWPAY_PLAN_STUDIO ?? "";  // subscription plan id for "studio"
+const NOWPAY_API_BASE = "https://api.nowpayments.io/v1";
+
+const PLAN_BY_NOWPAY_ID: Record<string, "pro" | "studio"> = {
+  ...(NOWPAY_PLAN_PRO    ? { [NOWPAY_PLAN_PRO]:    "pro"    as const } : {}),
+  ...(NOWPAY_PLAN_STUDIO ? { [NOWPAY_PLAN_STUDIO]: "studio" as const } : {}),
+};
 
 // ---------- Helpers ----------
 
@@ -315,44 +326,220 @@ export const v1_modelUrl = onRequest(
   }
 );
 
-// ---------- v1_stripe webhook ----------
+// ---------- NOWPayments helpers ----------
 
-export const v1_stripe = onRequest(
-  { region: "us-central1", cors: false },
+// Recursively sort object keys alphabetically. NOWPayments computes the IPN HMAC
+// over the JSON body with keys sorted at every level — any other ordering fails.
+function sortKeysDeep(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortKeysDeep);
+  if (value && typeof value === "object") {
+    return Object.keys(value as Record<string, unknown>)
+      .sort()
+      .reduce<Record<string, unknown>>((acc, k) => {
+        acc[k] = sortKeysDeep((value as Record<string, unknown>)[k]);
+        return acc;
+      }, {});
+  }
+  return value;
+}
+
+function verifyNowpaymentsSignature(rawBody: Buffer, signatureHeader: string | undefined): boolean {
+  if (!signatureHeader || !NOWPAY_IPN_SECRET) return false;
+  let parsed: unknown;
+  try { parsed = JSON.parse(rawBody.toString("utf8")); } catch { return false; }
+  const canonical = JSON.stringify(sortKeysDeep(parsed));
+  const expected = crypto.createHmac("sha512", NOWPAY_IPN_SECRET).update(canonical).digest("hex");
+  const a = Buffer.from(expected, "hex");
+  const b = Buffer.from(signatureHeader, "hex");
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+let nowpayJwt: { token: string; exp: number } | null = null;
+async function nowpaymentsBearerToken(): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  if (nowpayJwt && nowpayJwt.exp - 30 > now) return nowpayJwt.token;
+  const r = await fetch(`${NOWPAY_API_BASE}/auth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: NOWPAY_EMAIL, password: NOWPAY_PASSWORD }),
+  });
+  if (!r.ok) throw new Error(`nowpayments auth failed: ${r.status}`);
+  const j = await r.json() as { token: string };
+  // NOWPayments JWTs are valid ~5 minutes; cache conservatively for 4.
+  nowpayJwt = { token: j.token, exp: now + 4 * 60 };
+  return j.token;
+}
+
+interface NowpaymentsSubscriptionResponse {
+  result: Array<{
+    id: string;
+    subscription_plan_id: string;
+    status: string;
+    email: string;
+  }>;
+}
+
+async function nowpaymentsCreateEmailSubscription(planId: string, email: string, orderId: string): Promise<NowpaymentsSubscriptionResponse> {
+  const token = await nowpaymentsBearerToken();
+  const r = await fetch(`${NOWPAY_API_BASE}/subscriptions`, {
+    method: "POST",
+    headers: {
+      "x-api-key": NOWPAY_API_KEY,
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      subscription_plan_id: planId,
+      email,
+      order_id: orderId,
+    }),
+  });
+  if (!r.ok) {
+    const text = await r.text();
+    throw new Error(`nowpayments create subscription failed: ${r.status} ${text}`);
+  }
+  return r.json() as Promise<NowpaymentsSubscriptionResponse>;
+}
+
+// ---------- v1_createSubscription ----------
+
+export const v1_createSubscription = onRequest(
+  { region: "us-central1", enforceAppCheck: true },
   async (req, res) => {
-    const sig = req.headers["stripe-signature"] as string;
-    let event: Stripe.Event;
-    try {
-      event = stripe.webhooks.constructEvent(req.rawBody, sig, STRIPE_WEBHOOK_SECRET);
-    } catch (e) {
-      res.status(400).send("bad signature"); return;
+    if (req.method !== "POST") { res.status(405).json({ error: "method" }); return; }
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0] ?? req.ip ?? "unknown";
+    if (!rateLimit(`createSub:${ip}`, 10, 60)) {
+      res.status(429).json({ error: { code: "rate_limited" } }); return;
     }
 
-    if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
-      const sub = event.data.object as Stripe.Subscription;
-      const customer = await stripe.customers.retrieve(sub.customer as string);
-      const email = (customer as Stripe.Customer).email ?? "";
-      const plan = (sub.items.data[0]?.price?.lookup_key) ?? "pro";   // "pro" | "studio"
-      const license_key = `DLC-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
+    const { plan, email } = (req.body ?? {}) as { plan?: string; email?: string };
+    if (!email || !plan || (plan !== "pro" && plan !== "studio")) {
+      res.status(400).json({ error: { code: "bad_request", message: "plan must be 'pro' or 'studio' and email is required" } });
+      return;
+    }
+    const planId = plan === "pro" ? NOWPAY_PLAN_PRO : NOWPAY_PLAN_STUDIO;
+    if (!planId) {
+      res.status(500).json({ error: { code: "plan_not_configured", message: `NOWPayments plan id missing for ${plan}` } });
+      return;
+    }
 
-      await db.collection("licenses").doc(sub.id).set({
-        license_key,
+    const orderId = `dlc-${crypto.randomBytes(8).toString("hex")}`;
+    try {
+      const sub = await nowpaymentsCreateEmailSubscription(planId, email, orderId);
+      const created = sub.result?.[0];
+      if (!created) throw new Error("empty subscription response");
+
+      // Pre-create a pending license row keyed by the NOWPayments subscription id so
+      // the IPN handler has somewhere to write activation state idempotently.
+      await db.collection("licenses").doc(created.id).set({
         plan,
-        status: sub.status === "active" ? "active" : "suspended",
-        stripeSubscriptionId: sub.id,
-        currentPeriodEnd: new Date(sub.current_period_end * 1000),
+        status: "pending",
+        nowpaymentsSubscriptionId: created.id,
+        nowpaymentsPlanId: planId,
         ownerEmail: email,
+        orderId,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
 
-      // TODO: email license_key to ownerEmail via SendGrid / Postmark.
+      await audit("create_subscription", true, { subscriptionId: created.id, plan, ip: hash(ip) });
+      res.status(200).json({ subscription_id: created.id, plan, status: created.status, email });
+    } catch (e: any) {
+      await audit("create_subscription", false, { plan, ip: hash(ip), error: String(e?.message ?? e) });
+      res.status(502).json({ error: { code: "nowpayments_error", message: String(e?.message ?? e) } });
+    }
+  }
+);
+
+// ---------- v1_nowpayments IPN webhook ----------
+
+export const v1_nowpayments = onRequest(
+  { region: "us-central1", cors: false },
+  async (req, res) => {
+    if (req.method !== "POST") { res.status(405).send("method"); return; }
+    const sig = req.headers["x-nowpayments-sig"] as string | undefined;
+    if (!verifyNowpaymentsSignature(req.rawBody, sig)) {
+      await audit("nowpayments_ipn", false, { reason: "bad_signature" });
+      res.status(400).send("bad signature"); return;
     }
 
-    if (event.type === "customer.subscription.deleted") {
-      const sub = event.data.object as Stripe.Subscription;
-      await db.collection("licenses").doc(sub.id).update({ status: "cancelled" });
+    const body = req.body ?? {};
+    const paymentStatus: string = (body.payment_status ?? "").toLowerCase();
+    const subscriptionId: string | undefined = body.subscription_id ?? body.parent_payment_id;
+    const planId: string | undefined = body.subscription_plan_id;
+    const orderId: string | undefined = body.order_id;
+    const email: string | undefined = body.customer_email ?? body.email;
+
+    if (!subscriptionId) {
+      // One-off / non-subscription payment — log only.
+      await audit("nowpayments_ipn", true, { type: "non_subscription", paymentStatus, orderId });
+      res.status(200).send("ok"); return;
     }
 
+    const ref = db.collection("licenses").doc(subscriptionId);
+    const snap = await ref.get();
+    const existing = snap.exists ? snap.data() ?? {} : {};
+    const plan = existing.plan
+      ?? (planId ? PLAN_BY_NOWPAY_ID[planId] : undefined)
+      ?? "pro";
+
+    // Map NOWPayments lifecycle to our license states.
+    //   finished / confirmed / paid       → active (extend period by 30d)
+    //   waiting / confirming / partially_paid → keep current state
+    //   expired / failed / refunded       → suspended
+    //   (subscription) cancelled / finished_subscription → cancelled
+    let nextStatus: string | undefined;
+    let extendPeriod = false;
+    switch (paymentStatus) {
+      case "finished":
+      case "confirmed":
+      case "paid":
+        nextStatus = "active";
+        extendPeriod = true;
+        break;
+      case "expired":
+      case "failed":
+      case "refunded":
+        nextStatus = "suspended";
+        break;
+      case "cancelled":
+      case "canceled":
+      case "subscription_cancelled":
+        nextStatus = "cancelled";
+        break;
+      default:
+        // waiting / confirming / sending / partially_paid — no state change.
+        break;
+    }
+
+    const update: Record<string, unknown> = {
+      nowpaymentsSubscriptionId: subscriptionId,
+      ...(planId   ? { nowpaymentsPlanId: planId } : {}),
+      ...(orderId  ? { orderId } : {}),
+      ...(email    ? { ownerEmail: email } : {}),
+      lastIpnAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastPaymentStatus: paymentStatus,
+    };
+
+    if (nextStatus === "active") {
+      const wasActive = existing.status === "active" && existing.license_key;
+      if (!wasActive) {
+        update.license_key = `DLC-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
+        update.createdAt = existing.createdAt ?? admin.firestore.FieldValue.serverTimestamp();
+      }
+      update.plan = plan;
+      update.status = "active";
+      if (extendPeriod) {
+        update.currentPeriodEnd = new Date(Date.now() + 30 * 24 * 3600 * 1000);
+      }
+      // TODO: email license_key to ownerEmail on first activation.
+    } else if (nextStatus) {
+      update.status = nextStatus;
+    }
+
+    await ref.set(update, { merge: true });
+    await audit("nowpayments_ipn", true, {
+      subscriptionId, paymentStatus, nextStatus: nextStatus ?? "unchanged",
+    });
     res.status(200).send("ok");
   }
 );

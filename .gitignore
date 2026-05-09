@@ -150,3 +150,6 @@ desktop.ini
 # =============================================================================
 install.bat
 mypi.ini
+
+
+backend/functions/node_modules/

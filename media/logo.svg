@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <!-- App background: rounded square gradient -->
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#bg)"/>
+
+  <!-- Broadcast arcs (the "Cast" in PhantomCast) -->
+  <g stroke="#FFFFFF" stroke-linecap="round" fill="none">
+    <path d="M 392 120 A 38 38 0 0 1 430 158" stroke-width="10" opacity="0.95"/>
+    <path d="M 376 96  A 64 64 0 0 1 440 160" stroke-width="10" opacity="0.55"/>
+  </g>
+
+  <!-- Phantom silhouette -->
+  <path fill="#FFFFFF" d="
+    M 136 248
+    A 120 120 0 0 1 376 248
+    L 376 396
+    Q 356 426, 326 396
+    Q 296 426, 266 396
+    Q 236 426, 206 396
+    Q 176 426, 146 396
+    Q 136 386, 136 376
+    Z
+  "/>
+
+  <!-- Eyes -->
+  <ellipse cx="214" cy="262" rx="16" ry="24" fill="#5B5BE0"/>
+  <ellipse cx="306" cy="262" rx="16" ry="24" fill="#5B5BE0"/>
+</svg>

@@ -22,7 +22,19 @@ $ErrorActionPreference = "Stop"
 Set-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 
 function Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
-function Run($cmd)  { Write-Host "    > $cmd" -ForegroundColor DarkGray; Invoke-Expression $cmd }
+# Run a command and FAIL HARD if it exits non-zero. PowerShell's
+# $ErrorActionPreference = "Stop" only catches cmdlet errors — native exit
+# codes from pip/pyinstaller/iscc are otherwise silently swallowed by
+# Invoke-Expression, which is how a 4-release streak of broken builds went
+# unnoticed (see: v0.0.13 release with no installer).
+function Run($cmd) {
+    Write-Host "    > $cmd" -ForegroundColor DarkGray
+    $global:LASTEXITCODE = 0
+    Invoke-Expression $cmd
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command failed with exit code $LASTEXITCODE: $cmd"
+    }
+}
 
 # 1. venv + deps
 $pip = ".\venv\Scripts\pip.exe"
@@ -101,4 +113,8 @@ if ($Sign) {
 }
 
 Step "DONE — installer is in dist\installer\"
-Get-ChildItem dist\installer | Format-Table Name, Length
+$installers = Get-ChildItem -Path dist\installer -Filter *.exe -ErrorAction SilentlyContinue
+if (-not $installers) {
+    throw "Build completed but no installer .exe was produced in dist\installer\"
+}
+$installers | Format-Table Name, @{Name="Size (MB)"; Expression={[math]::Round($_.Length / 1MB, 2)}}

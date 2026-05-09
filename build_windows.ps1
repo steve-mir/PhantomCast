@@ -103,6 +103,25 @@ Step "Building installer"
 if (-not (Test-Path $InnoSetupCompiler)) {
     throw "Inno Setup compiler not found at $InnoSetupCompiler. Install from https://jrsoftware.org/isdl.php"
 }
+
+# Fetch VC++ Redistributable on demand (Microsoft forbids redistribution
+# elsewhere; the .iss bundles it but only if VCRedistNeeded). Kept out of
+# the repo to avoid a 25MB binary in source control. Per
+# installer/prerequisites/README.txt.
+$vcRedist = "installer\prerequisites\VC_redist.x64.exe"
+if (-not (Test-Path $vcRedist)) {
+    Step "Downloading VC++ Redistributable"
+    $url = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+    Write-Host "    > $url -> $vcRedist" -ForegroundColor DarkGray
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest -Uri $url -OutFile $vcRedist -UseBasicParsing
+    if (-not (Test-Path $vcRedist)) {
+        throw "VC++ Redistributable download failed"
+    }
+    $sizeMB = [math]::Round((Get-Item $vcRedist).Length / 1MB, 2)
+    Write-Host "    downloaded $sizeMB MB" -ForegroundColor DarkGray
+}
+
 Run "& `"$InnoSetupCompiler`" installer\DeepLiveCamPro.iss"
 
 # 5. Sign installer (optional)

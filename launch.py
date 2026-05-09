@@ -96,6 +96,8 @@ def _wrap_legacy_ui_init() -> None:
             root = getattr(legacy_ui, "ROOT", None)
             if root is not None:
                 bootstrap_ui(root)
+                _kick_off_update_check(root)
+                _kick_off_cuda_warning(root)
             else:
                 log.warning("legacy ui.ROOT missing; status bar not attached")
         except Exception:  # noqa: BLE001
@@ -103,6 +105,46 @@ def _wrap_legacy_ui_init() -> None:
         return result
 
     legacy_ui.init = patched_init  # type: ignore[assignment]
+
+
+def _kick_off_cuda_warning(root) -> None:
+    """Show the friendly 'GPU acceleration unavailable' dialog if needed.
+
+    No-op on macOS, when CUDA is usable, or when the user previously
+    checked 'don't show again'. Failure is silent — a missing reminder
+    is never worth blocking the app over.
+    """
+    from modules.dlc_pro.logger import get
+    log = get("launch.cuda_warning")
+    try:
+        from modules.dlc_pro.ui.cuda_warning import show_if_needed
+        show_if_needed(root)
+    except Exception:  # noqa: BLE001
+        log.exception("cuda warning init failed")
+
+
+def _kick_off_update_check(root) -> None:
+    """Background-poll GitHub Releases; pop the update dialog if newer.
+
+    Always silently tolerates failure — an update bug should never block
+    the user from running the app they already have.
+    """
+    from modules.dlc_pro.logger import get
+    log = get("launch.updater")
+    try:
+        from modules.dlc_pro import updater
+        from modules.dlc_pro.ui.update_dialog import show_if_available
+
+        def _on_available(info) -> None:
+            # Marshal back to tk main loop before constructing widgets.
+            try:
+                root.after(0, lambda: show_if_available(root, info))
+            except Exception:
+                log.exception("could not schedule update dialog")
+
+        updater.check_in_background(_on_available, delay_seconds=3.0)
+    except Exception:  # noqa: BLE001
+        log.exception("update check init failed")
 
 
 def _ensure_models_background() -> None:

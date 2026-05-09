@@ -74,12 +74,16 @@ if (-not (Test-Path venv)) {
 }
 
 if (-not $SkipDeps) {
-    Step "Installing dependencies (cu128 stack)"
+    Step "Installing dependencies (CPU torch + system CUDA)"
     # Use `python -m pip` so pip can replace itself on Windows (pip.exe is locked while running).
     Run "$python -m pip install --upgrade pip wheel"
     Run "$pip install -r requirements.txt"
-    # Lowest torch with +cu128 wheels published is 2.7.0; pair with the matching torchvision.
-    Run "$pip install --extra-index-url https://download.pytorch.org/whl/cu128 torch==2.7.0+cu128 torchvision==0.22.0+cu128"
+    # CPU-only torch wheel — saves ~1.8GB vs +cu128. The handful of
+    # torch.cuda code paths (face_enhancer/face_swapper blend ops) are
+    # already guarded by `if torch.cuda.is_available():` and fall back to
+    # CPU. Inference acceleration still happens via onnxruntime-gpu, which
+    # uses the user's installed CUDA Runtime (12.x).
+    Run "$pip install torch==2.7.0 torchvision==0.22.0"
     Run "$pip install pyinstaller==6.10.0 pynvml"
 }
 

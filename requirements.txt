@@ -3,11 +3,15 @@
 #
 # Install on Windows:
 #   pip install -r requirements.txt
-#   pip install --extra-index-url https://download.pytorch.org/whl/cu128 \
-#       torch==2.7.0+cu128 torchvision==0.22.0+cu128
+#   pip install torch==2.7.0 torchvision==0.22.0
 #
-# CUDA Toolkit 12.8 + cuDNN 8.9.7 are *bundled* via pip wheels (nvidia-*)
-# and torch's lib/. The desktop build never relies on a system CUDA install.
+# CUDA: end users install NVIDIA's CUDA 12.x Runtime themselves
+# (~600MB MSI from https://developer.nvidia.com/cuda-downloads).
+# We previously bundled cuDNN/cuBLAS/cuFFT/cuda-runtime + torch+cu128
+# (~3GB) which blew past GitHub's 2GB release-asset cap.
+# Inference acceleration still works via onnxruntime-gpu against the
+# user's CUDA Runtime; torch is CPU-only and only used for small blend
+# ops which fall back to CPU when torch.cuda.is_available() is False.
 # --------------------------------------------------------------------
 
 # core ML
@@ -21,14 +25,11 @@ insightface==0.7.3
 # Apple silicon dev path (CPU/CoreML only)
 onnxruntime-silicon==1.20.0; sys_platform == 'darwin' and platform_machine == 'arm64'
 
-# Windows + Linux GPU runtime — pinned for cu128
+# Windows + Linux GPU runtime
 onnxruntime-gpu==1.21.0; sys_platform != 'darwin'
 
-# CUDA / cuDNN runtime via pip (bundled into installer)
-nvidia-cuda-runtime-cu12==12.8.*; sys_platform == 'win32'
-nvidia-cudnn-cu12==8.9.7.*;       sys_platform == 'win32'
-nvidia-cublas-cu12==12.8.*;       sys_platform == 'win32'
-nvidia-cufft-cu12==11.*;          sys_platform == 'win32'
+# CUDA Runtime is no longer bundled — end user installs NVIDIA's
+# CUDA 12.x Runtime themselves. See header comment for context.
 pynvml==11.5.0;                   sys_platform == 'win32'
 
 # UI

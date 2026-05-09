@@ -1,12 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec for Phantom-Cast Pro — GPU-first build.
+"""PyInstaller spec for Phantom-Cast Pro — slim Windows build.
 
 Run from the repo root with:
     pyinstaller build/DeepLiveCamPro.spec --clean --noconfirm
 
-The CUDA / cuDNN runtime is collected from the venv's pip-installed
-nvidia-* wheels (and torch/lib) so the resulting onefolder build has
-working GPU support out of the box.
+GPU support: end users install NVIDIA's CUDA 12.x Runtime themselves.
+Bundling cuDNN/cuBLAS/cuda-runtime + torch+cu128 (~3GB) blew past
+GitHub's 2GB release-asset cap; onnxruntime-gpu finds the user-installed
+CUDA at load time. torch is the CPU build (small blend ops in
+face_swapper/face_enhancer fall back to CPU when torch.cuda.is_available()
+is False).
 """
 import os
 import sys
@@ -25,31 +28,15 @@ SITE = Path(SITE)
 binaries = []
 datas = []
 
-# torch/lib carries cuDNN, cublas, cuda-runtime DLLs.
-# Skip TensorRT-related DLLs: onnxruntime ships them but they reference
-# nvinfer_10/nvonnxparser_10 which we don't bundle (build log shows them
-# unresolved). TensorRT support is non-functional in this build, so
-# dropping these saves ~500MB of dead weight from the installer.
-TENSORRT_DLL_PATTERNS = (
-    "onnxruntime_providers_tensorrt",
-    "nvinfer_",
-    "nvonnxparser_",
-)
-torch_lib = SITE / "torch" / "lib"
-if torch_lib.is_dir():
-    for f in torch_lib.glob("*.dll"):
-        if any(p in f.name.lower() for p in TENSORRT_DLL_PATTERNS):
-            continue
-        binaries.append((str(f), "torch/lib"))
-
-# pip nvidia-* packages (cuda-runtime, cudnn, cublas, cufft, …).
-nvidia_root = SITE / "nvidia"
-if nvidia_root.is_dir():
-    for pkg in nvidia_root.iterdir():
-        bin_dir = pkg / "bin"
-        if bin_dir.is_dir():
-            for f in bin_dir.glob("*.dll"):
-                binaries.append((str(f), f"nvidia/{pkg.name}/bin"))
+# CUDA bundling DROPPED. torch is now the CPU build (no torch/lib CUDA
+# DLLs to grab) and nvidia-* pip packages are no longer in requirements.
+# End users install CUDA 12.x Runtime themselves — onnxruntime-gpu picks
+# it up at load time. Dropping ~3GB of bundled libs got us under the
+# GitHub 2GB release-asset cap.
+#
+# TensorRT provider DLLs (onnxruntime_providers_tensorrt.dll + nvinfer_*)
+# may still be pulled in transitively by PyInstaller's onnxruntime hook;
+# they reference deps we never had, so we filter them post-Analysis below.
 
 # onnxruntime data files (provider plugins).
 datas += collect_data_files("onnxruntime")
@@ -69,6 +56,15 @@ hiddenimports = []
 hiddenimports += collect_submodules("modules.processors.frame")
 hiddenimports += collect_submodules("modules.dlc_pro")
 hiddenimports += ["onnxruntime", "onnxruntime.capi", "tkinter", "customtkinter"]
+
+
+# TensorRT bits the onnxruntime hook may pull transitively. Filtered
+# post-Analysis (see below).
+TENSORRT_DLL_PATTERNS = (
+    "onnxruntime_providers_tensorrt",
+    "nvinfer_",
+    "nvonnxparser_",
+)
 
 
 a = Analysis(
@@ -103,6 +99,17 @@ a = Analysis(
     cipher=None,
     noarchive=False,
 )
+
+# Strip TensorRT-related binaries pulled in transitively by onnxruntime's
+# PyInstaller hook. They reference deps we don't bundle.
+def _is_tensorrt(entry):
+    name = entry[0].lower() if isinstance(entry, tuple) else str(entry).lower()
+    return any(p in name for p in TENSORRT_DLL_PATTERNS)
+
+
+_before = len(a.binaries)
+a.binaries = [b for b in a.binaries if not _is_tensorrt(b)]
+print(f"[spec] stripped {_before - len(a.binaries)} TensorRT-related binaries")
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 

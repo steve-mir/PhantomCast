@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: windows-2022
-    timeout-minutes: 90
+    timeout-minutes: 120
     permissions:
       contents: write
     env:
@@ -34,7 +34,10 @@ jobs:
           path: ~\AppData\Local\pip\Cache
           # v2 prefix invalidates a previously-poisoned cache that produced
           # "THESE PACKAGES DO NOT MATCH THE HASHES" errors on partial wheels.
-          key: pip-v2-${{ hashFiles('requirements.txt', 'build_windows.ps1') }}
+          # Cache key intentionally scoped to requirements.txt only — changes
+          # to build_windows.ps1 (build logic) shouldn't blow away ~3GB of
+          # wheels and force a fresh download (~15min).
+          key: pip-v2-${{ hashFiles('requirements.txt') }}
 
       - name: Build
         shell: pwsh

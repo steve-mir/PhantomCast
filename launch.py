@@ -105,6 +105,44 @@ def _wrap_legacy_ui_init() -> None:
     legacy_ui.init = patched_init  # type: ignore[assignment]
 
 
+def _ensure_models_background() -> None:
+    """Kick off any missing model downloads in the background.
+
+    Idempotent — if every required model is present and verified,
+    `ensure_models_async` is a no-op. When run after the first-run wizard
+    has already pulled everything, this is essentially free. When run on
+    subsequent launches where models were deleted or never finished, it
+    self-heals before the user hits a processor's lazy `pre_check()`.
+    """
+    from modules.dlc_pro.logger import get
+    from modules.dlc_pro.setup.model_downloader import (
+        ensure_models_async,
+        verify_models,
+    )
+
+    log = get("launch.models")
+    missing = verify_models()
+    if not missing:
+        return
+
+    log.info(
+        "models missing or unverified at startup: %s",
+        ", ".join(s.filename for s in missing),
+    )
+
+    def _progress(name: str, done: int, total: int) -> None:
+        if total and done == total:
+            log.info("model download complete: %s", name)
+
+    def _done(success: bool, err: str | None) -> None:
+        if success:
+            log.info("startup model self-heal finished")
+        else:
+            log.warning("startup model self-heal failed: %s", err)
+
+    ensure_models_async(_progress, _done)
+
+
 def _run_core() -> None:
     from modules.dlc_pro.core_bridge import apply
     apply()
@@ -112,6 +150,14 @@ def _run_core() -> None:
 
     from modules import platform_info
     platform_info.print_banner()
+
+    try:
+        _ensure_models_background()
+    except Exception:  # noqa: BLE001
+        # Never block app startup on the self-heal path — per-processor
+        # `pre_check()` is the authoritative fallback.
+        from modules.dlc_pro.logger import get
+        get("launch.models").exception("startup model self-heal aborted")
 
     from modules import core as legacy_core
     legacy_core.run()

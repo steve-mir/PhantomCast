@@ -11,6 +11,11 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: write
+    env:
+      # Lifted to job scope so step-level `if: env.SIGN_PFX_BASE64 != ''`
+      # can actually evaluate — secrets are not visible from `if:` directly.
+      SIGN_PFX_BASE64:   ${{ secrets.SIGN_PFX_BASE64 }}
+      SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4
@@ -39,9 +44,6 @@ jobs:
       - name: Sign EXE & installer
         if: env.SIGN_PFX_BASE64 != ''
         shell: pwsh
-        env:
-          SIGN_PFX_BASE64:    ${{ secrets.SIGN_PFX_BASE64 }}
-          SIGN_PFX_PASSWORD:  ${{ secrets.SIGN_PFX_PASSWORD }}
         run: |
           [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\code.pfx", [Convert]::FromBase64String($env:SIGN_PFX_BASE64))
           $sign = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe"

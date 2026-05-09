@@ -48,12 +48,28 @@ REQUIRED_MODELS: List[ModelSpec] = [
     #     bytes_estimate=275_000_000,
     # ),
     ModelSpec(
-        name="inswapper_128",
-        filename="inswapper_128.onnx",
-        sha256="REPLACE_WITH_REAL_SHA256_INSWAPPER",
+        name="inswapper_128 (fp16)",
+        filename="inswapper_128_fp16.onnx",
+        sha256="REPLACE_WITH_REAL_SHA256_INSWAPPER_FP16",
         url="https://huggingface.co/hacksider/deep-live-cam/resolve/main/inswapper_128_fp16.onnx",
         plan_required="free",
-        bytes_estimate=550_000_000,
+        bytes_estimate=275_000_000,
+    ),
+    ModelSpec(
+        name="HyperSwap 1A 256",
+        filename="hyperswap_1a_256.onnx",
+        sha256="REPLACE_WITH_REAL_SHA256_HYPERSWAP_1A_256",
+        url="https://huggingface.co/facefusion/models-3.3.0/resolve/main/hyperswap_1a_256.onnx",
+        plan_required="free",
+        bytes_estimate=403_000_000,
+    ),
+    ModelSpec(
+        name="BiSeNet ResNet-18 (face parser)",
+        filename="bisenet_resnet_18.onnx",
+        sha256="REPLACE_WITH_REAL_SHA256_BISENET_R18",
+        url="https://huggingface.co/facefusion/models-3.1.0/resolve/main/bisenet_resnet_18.onnx",
+        plan_required="free",
+        bytes_estimate=50_000_000,
     ),
     ModelSpec(
         name="GFPGAN v1.4",
@@ -62,6 +78,14 @@ REQUIRED_MODELS: List[ModelSpec] = [
         url="https://github.com/harisreedhar/Face-Upscalers-ONNX/releases/download/Models/GFPGANv1.4.onnx",
         plan_required="free",
         bytes_estimate=350_000_000,
+    ),
+    ModelSpec(
+        name="GPEN-256",
+        filename="GPEN-BFR-256.onnx",
+        sha256="REPLACE_WITH_REAL_SHA256_GPEN256",
+        url="https://github.com/harisreedhar/Face-Upscalers-ONNX/releases/download/Models/GPEN-BFR-256.onnx",
+        plan_required="free",
+        bytes_estimate=140_000_000,
     ),
     # Premium-only:
     ModelSpec(

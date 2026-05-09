@@ -7,6 +7,13 @@ machine or another user account and decrypted there.
 On non-Windows we fall back to AES-GCM with a key derived from a per-user
 salt + the machine fingerprint. This is weaker than DPAPI but acceptable —
 the desktop product targets Windows; non-Windows is dev-only.
+
+If ``cryptography`` isn't installed on a non-Windows host (a fresh dev box),
+we degrade further to a base64 ``PLAINv1`` blob — readable but unparsable
+without the right header, sufficient for dev/free-tier state where there's
+no JWT or sensitive secret to protect. Production builds should always
+have ``cryptography`` available; ``pip install cryptography`` removes the
+fallback.
 """
 from __future__ import annotations
 
@@ -104,6 +111,25 @@ def _aes_decrypt(blob: bytes) -> bytes:
     return aes.decrypt(nonce, ct, None)
 
 
+# ---------------------------------------------------------------- plaintext fallback
+
+
+def _have_cryptography() -> bool:
+    try:
+        import cryptography  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _plain_encode(blob: bytes) -> bytes:
+    return b"PLAINv1\x00" + base64.b64encode(blob)
+
+
+def _plain_decode(blob: bytes) -> bytes:
+    return base64.b64decode(blob[len(b"PLAINv1\x00"):])
+
+
 # ---------------------------------------------------------------- public API
 
 
@@ -112,8 +138,18 @@ def save(payload: Dict[str, Any]) -> None:
     if sys.platform == "win32":
         enc = _dpapi_protect(raw)
         header = b"DPAPIv1\x00"
-    else:
+    elif _have_cryptography():
         enc = _aes_encrypt(raw)
+        header = b""
+    else:
+        # Dev-host fallback: base64 plaintext. Acceptable for free / dev-mode
+        # state which carries no sensitive secret. Logs once per run so a
+        # production build accidentally missing cryptography is noisy.
+        log.warning(
+            "cryptography not installed; persisting license state as PLAINv1. "
+            "Install `cryptography` for AES-GCM at-rest protection."
+        )
+        enc = _plain_encode(raw)
         header = b""
 
     tmp = Path(str(state_file()) + ".tmp")
@@ -132,6 +168,8 @@ def load() -> Optional[Dict[str, Any]]:
             raw = _dpapi_unprotect(blob[len(b"DPAPIv1\x00"):])
         elif blob.startswith(b"AESGCMv1"):
             raw = _aes_decrypt(blob)
+        elif blob.startswith(b"PLAINv1\x00"):
+            raw = _plain_decode(blob)
         else:
             # Legacy / corrupted — treat as missing.
             log.warning("unknown state.bin header; ignoring")

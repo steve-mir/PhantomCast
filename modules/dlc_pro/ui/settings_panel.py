@@ -24,13 +24,20 @@ from modules.dlc_pro.ui.activation_dialog import ActivationDialog
 class SettingsPanel(ctk.CTkToplevel):
     def __init__(self, parent: tk.Misc) -> None:
         super().__init__(parent)
-        self.title("Settings — Deep-Live-Cam Pro")
+        self.title("Settings — Phantom-Cast Pro")
         self.geometry("640x520")
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except tk.TclError:
-            pass
+
+        # macOS: transient/grab_set against a withdrawn root produces a
+        # blank Toplevel — same workaround as setup_wizard.
+        self.update_idletasks()
+        if sys.platform != "darwin":
+            try:
+                self.transient(parent)
+                self.grab_set()
+            except tk.TclError:
+                pass
+        self.lift()
+        self.focus_force()
 
         self._tabs = ctk.CTkTabview(self, width=620, height=480)
         self._tabs.pack(padx=8, pady=8, fill="both", expand=True)

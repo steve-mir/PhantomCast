@@ -1,4 +1,4 @@
-"""Rotating file logger plus stderr mirror for Deep-Live-Cam Pro.
+"""Rotating file logger plus stderr mirror for Phantom-Cast Pro.
 
 Used for everything in dlc_pro. Keeps logs in
 ``%LOCALAPPDATA%/DeepLiveCamPro/logs`` so the user can grab a diagnostics

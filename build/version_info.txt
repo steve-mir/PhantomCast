@@ -12,13 +12,13 @@ VSVersionInfo(
   kids=[
     StringFileInfo([
       StringTable('040904B0', [
-        StringStruct('CompanyName', 'Deep-Live-Cam Pro'),
-        StringStruct('FileDescription', 'Deep-Live-Cam Pro — GPU-accelerated face swap'),
+        StringStruct('CompanyName', 'Phantom-Cast Pro'),
+        StringStruct('FileDescription', 'Phantom-Cast Pro — GPU-accelerated face swap'),
         StringStruct('FileVersion', '1.0.0.0'),
         StringStruct('InternalName', 'DeepLiveCamPro'),
-        StringStruct('LegalCopyright', 'Copyright (c) 2026 Deep-Live-Cam Pro'),
+        StringStruct('LegalCopyright', 'Copyright (c) 2026 Phantom-Cast Pro'),
         StringStruct('OriginalFilename', 'DeepLiveCamPro.exe'),
-        StringStruct('ProductName', 'Deep-Live-Cam Pro'),
+        StringStruct('ProductName', 'Phantom-Cast Pro'),
         StringStruct('ProductVersion', '1.0.0.0'),
       ])
     ]),

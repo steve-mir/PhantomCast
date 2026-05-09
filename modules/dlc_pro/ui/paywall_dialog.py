@@ -5,6 +5,7 @@ hosted checkout / customer portal in the default browser.
 """
 from __future__ import annotations
 
+import sys
 import tkinter as tk
 import webbrowser
 from typing import Optional
@@ -17,24 +18,28 @@ from modules.dlc_pro.subscription.gate import FeatureLocked, current_plan
 
 PLANS = [
     {
-        "name": "Free Trial",
+        "name": "Free",
         "price": "$0",
-        "tag": "7 days",
-        "highlights": ["CPU pipeline", "480p export cap", "Watermark on export"],
+        "tag": "Always free",
+        "highlights": [
+            "Lite face swap (low res)",
+            "CPU only",
+            "480p export cap",
+            "Watermark on every output",
+            "2-minute preview of any Premium feature",
+        ],
     },
     {
-        "name": "Pro",
-        "price": "$19/mo",
-        "tag": "Most popular",
-        "highlights": ["GPU acceleration", "Live webcam swap",
-                       "4K export", "Face Enhancer GPEN-512"],
-    },
-    {
-        "name": "Studio",
-        "price": "$49/mo",
-        "tag": "Best for creators",
-        "highlights": ["Everything in Pro", "Map source→target faces",
-                       "Hyperswap full-head", "Batch queue", "No watermark"],
+        "name": "Premium",
+        "price": "$29/mo",
+        "tag": "First month free with activation key",
+        "highlights": [
+            "GPU acceleration",
+            "Hyperswap full-head + GPEN-512 enhancer",
+            "Map source → target faces",
+            "Batch queue",
+            "4K export, no watermark",
+        ],
     },
 ]
 
@@ -43,19 +48,26 @@ class PaywallDialog(ctk.CTkToplevel):
     def __init__(self, parent: tk.Misc, locked: Optional[FeatureLocked] = None) -> None:
         super().__init__(parent)
         self.title("Upgrade to unlock")
-        self.geometry("720x440")
+        self.geometry("620x460")
         self.resizable(False, False)
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except tk.TclError:
-            pass
+
+        # macOS: transient/grab_set against a withdrawn root produces a
+        # blank Toplevel — same workaround as setup_wizard.
+        self.update_idletasks()
+        if sys.platform != "darwin":
+            try:
+                self.transient(parent)
+                self.grab_set()
+            except tk.TclError:
+                pass
+        self.lift()
+        self.focus_force()
 
         feature = locked.feature if locked else None
         self._build(feature)
 
     def _build(self, feature: Optional[str]) -> None:
-        title = "Unlock more with Deep-Live-Cam Pro"
+        title = "Unlock more with Phantom-Cast Pro"
         if feature:
             human = feature.replace("_", " ").title()
             title = f"{human} requires an upgrade"
@@ -68,7 +80,7 @@ class PaywallDialog(ctk.CTkToplevel):
         cards = ctk.CTkFrame(self, fg_color="transparent")
         cards.pack(padx=18, pady=(0, 14), fill="x")
         for i, plan in enumerate(PLANS):
-            self._make_card(cards, plan, recommended=(plan["name"] == "Pro")) \
+            self._make_card(cards, plan, recommended=(plan["name"] == "Premium")) \
                 .grid(row=0, column=i, padx=8, sticky="nsew")
             cards.grid_columnconfigure(i, weight=1)
 

@@ -1,5 +1,5 @@
 /**
- * Deep-Live-Cam Pro — Cloud Functions
+ * Phantom-Cast Pro — Cloud Functions
  *
  * Endpoints (HTTPS, JSON):
  *   POST /v1_activate     — bind license to device, return signed claims

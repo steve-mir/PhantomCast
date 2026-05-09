@@ -1,3 +1,3 @@
-name = 'Deep-Live-Cam'
+name = 'Phantom-Cast'
 version = '2.1.2'
-edition = 'GitHub Edition'
+edition = 'Pro Edition'

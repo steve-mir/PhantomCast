@@ -1,4 +1,4 @@
-"""Runtime GPU detection cascade for Deep-Live-Cam Pro.
+"""Runtime GPU detection cascade for Phantom-Cast Pro.
 
 Five-stage probe that decides whether to run on CUDA or fall back to CPU:
 
@@ -250,7 +250,7 @@ def _probe_runtime(result: GpuProbeResult) -> None:
                 "runtime",
                 Severity.FAIL,
                 "Missing CUDA/cuDNN DLLs: " + ", ".join(missing),
-                "Reinstall Deep-Live-Cam Pro to restore the bundled CUDA runtime, "
+                "Reinstall Phantom-Cast Pro to restore the bundled CUDA runtime, "
                 "or install CUDA 12.8 + cuDNN 8.9.7 manually.",
             )
         )

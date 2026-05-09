@@ -19,7 +19,7 @@ End-to-end steps to produce a signed, GPU-enabled `DeepLiveCamPro-Setup-X.Y.Z.ex
 
 ```powershell
 git clone <repo>
-cd Deep-Live-Cam-main
+cd Phantom-Cast
 pwsh -File build_windows.ps1
 ```
 

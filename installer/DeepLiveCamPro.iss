@@ -1,5 +1,5 @@
 ; ======================================================================
-; Deep-Live-Cam Pro — Inno Setup script
+; Phantom-Cast Pro — Inno Setup script
 ; ======================================================================
 ; Builds a signed .exe installer that:
 ;   - installs to %ProgramFiles%\DeepLiveCamPro
@@ -10,9 +10,9 @@
 ;   - launches the bootstrapper (launch.py compiled to DeepLiveCamPro.exe)
 ; ======================================================================
 
-#define MyAppName "Deep-Live-Cam Pro"
+#define MyAppName "Phantom-Cast Pro"
 #define MyAppVersion "1.0.0"
-#define MyAppPublisher "Deep-Live-Cam Pro"
+#define MyAppPublisher "Phantom-Cast Pro"
 #define MyAppURL "https://deeplivecam.pro/"
 #define MyAppExeName "DeepLiveCamPro.exe"
 
@@ -94,7 +94,7 @@ begin
   Result := True;
   // Refuse to install on 32-bit Windows.
   if not IsWin64() then begin
-    MsgBox('Deep-Live-Cam Pro requires 64-bit Windows.',
+    MsgBox('Phantom-Cast Pro requires 64-bit Windows.',
            mbCriticalError, MB_OK);
     Result := False;
   end;

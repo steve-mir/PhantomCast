@@ -1,6 +1,6 @@
-# Deep-Live-Cam Pro — Production-Ready Windows SaaS Plan
+# Phantom-Cast Pro — Production-Ready Windows SaaS Plan
 
-GPU-first commercial distribution of Deep-Live-Cam: signed Windows installer,
+GPU-first commercial distribution of Phantom-Cast: signed Windows installer,
 license-bound activation, monthly subscription, Firebase backend, polished UI.
 
 ---
@@ -9,7 +9,7 @@ license-bound activation, monthly subscription, Firebase backend, polished UI.
 
 ```
 +-----------------------------------------------------------+
-|                  Deep-Live-Cam Pro (Windows .exe)         |
+|                  Phantom-Cast Pro (Windows .exe)         |
 |                                                           |
 |  launch.py  -> Bootstrapper (preflight, env, watchdog)    |
 |     |                                                     |
@@ -304,7 +304,7 @@ The old `modules/ui.py` is *not* rewritten; we wrap its `init()` and add the sta
 ## 7. Folder & File Changes
 
 ```
-Deep-Live-Cam-main/
+Phantom-Cast/
 ├── docs/PRODUCTION_PLAN.md                       (NEW — this doc)
 ├── launch.py                                     (NEW — bootstrapper entrypoint)
 ├── run.py                                        (MODIFIED — delegates to launch.py)

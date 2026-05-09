@@ -1,4 +1,4 @@
-# Deep-Live-Cam Pro — Developer Setup
+# Phantom-Cast Pro — Developer Setup
 
 End-to-end checklist for working on the Pro layer locally.
 
@@ -19,7 +19,7 @@ nothing to install system-wide.
 
 ```powershell
 git clone <repo>
-cd Deep-Live-Cam-main
+cd Phantom-Cast-main
 py -3.11 -m venv venv
 .\venv\Scripts\pip install -r requirements.txt
 .\venv\Scripts\pip install --extra-index-url https://download.pytorch.org/whl/cu128 `

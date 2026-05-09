@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deep-Live-Cam Pro bootstrapper.
+"""Phantom-Cast Pro bootstrapper.
 
 This is the *only* entry point for the installed product. It:
 
@@ -168,7 +168,7 @@ def _crash_dialog(exc: BaseException) -> None:
     try:
         import tkinter.messagebox as mb
         mb.showerror(
-            "Deep-Live-Cam Pro — fatal error",
+            "Phantom-Cast Pro — fatal error",
             f"{exc.__class__.__name__}: {exc}\n\nDiagnostics copied to clipboard.\n"
             f"See logs in %LOCALAPPDATA%\\DeepLiveCamPro\\logs",
         )

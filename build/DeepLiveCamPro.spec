@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec for Deep-Live-Cam Pro — GPU-first build.
+"""PyInstaller spec for Phantom-Cast Pro — GPU-first build.
 
 Run from the repo root with:
     pyinstaller build/DeepLiveCamPro.spec --clean --noconfirm

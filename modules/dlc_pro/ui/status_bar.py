@@ -2,8 +2,9 @@
 
 Three pills:
     - GPU pill   — green "GPU: <name>" or yellow "CPU (fallback)"
-    - Plan pill  — "Free", "Pro", "Studio", or red "Trial expired"
-    - Online    — green dot if last heartbeat OK
+    - Plan pill  — "Free", "Premium — N days trial left", "Premium",
+                   or red "Subscription expired"
+    - Online     — green dot if last heartbeat OK
 """
 from __future__ import annotations
 
@@ -87,16 +88,27 @@ class StatusBar(ctk.CTkFrame):
             self._set_pill(self._gpu_pill, f"{kind}: forced (unverified)", YELLOW, YELLOW_BG)
 
     def _refresh_plan(self) -> None:
-        snap = license_manager().snapshot()
+        mgr = license_manager()
+        snap = mgr.snapshot()
         plan = (snap.plan or "free").capitalize()
         if snap.status == LicenseStatus.ACTIVE:
-            self._set_pill(self._plan_pill, f"Plan: {plan}", GREEN, GREEN_BG)
+            days = mgr.trial_days_remaining()
+            if days is not None and days > 0:
+                # Inside the prepaid first month, no Stripe sub yet.
+                label = f"{plan} — {days}d trial left"
+                fg, bg = (YELLOW, YELLOW_BG) if days <= 5 else (GREEN, GREEN_BG)
+                self._set_pill(self._plan_pill, label, fg, bg)
+            elif mgr.trial_lapsed():
+                # Trial month over and no subscription on file.
+                self._set_pill(self._plan_pill, "Subscription required", RED, RED_BG)
+            else:
+                self._set_pill(self._plan_pill, f"Plan: {plan}", GREEN, GREEN_BG)
             self._set_pill(self._online_pill, "● online", GREEN, GREEN_BG)
         elif snap.status == LicenseStatus.EXPIRED:
             self._set_pill(self._plan_pill, "Subscription expired", RED, RED_BG)
             self._set_pill(self._online_pill, "● offline (grace)", YELLOW, YELLOW_BG)
         elif snap.status == LicenseStatus.UNACTIVATED:
-            self._set_pill(self._plan_pill, "Free trial", SLATE, SLATE_BG)
+            self._set_pill(self._plan_pill, "Free", SLATE, SLATE_BG)
             self._set_pill(self._online_pill, "● activate", YELLOW, YELLOW_BG)
         else:
             self._set_pill(self._plan_pill, current_plan().capitalize(), SLATE, SLATE_BG)

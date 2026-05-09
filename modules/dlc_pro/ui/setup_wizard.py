@@ -29,7 +29,7 @@ from modules.dlc_pro.ui.activation_dialog import ActivationDialog
 class SetupWizard(ctk.CTkToplevel):
     def __init__(self, parent: tk.Misc, on_complete: Callable[[], None]) -> None:
         super().__init__(parent)
-        self.title("Deep-Live-Cam Pro — First-time setup")
+        self.title("Phantom-Cast Pro — First-time setup")
         self.geometry("520x420")
         self.resizable(False, False)
 
@@ -187,18 +187,23 @@ class SetupWizard(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             self._frame, justify="left", wraplength=440,
-            text=("Enter your license key, or skip to start a 7-day free trial "
-                  "(CPU-only, watermarked, 480p export cap)."),
+            text=("Enter your activation key for Premium — your first month "
+                  "is free, then $29/mo. Or continue on the Free tier "
+                  "(lite swap, watermarked, 480p, CPU only)."),
             font=("Segoe UI", 12), text_color="#475569",
         ).pack(anchor="w", pady=(2, 12))
 
-        ctk.CTkButton(self._frame, text="Enter license key",
+        ctk.CTkButton(self._frame, text="Enter activation key",
                       command=self._open_activation, width=200,
                       fg_color="#2563eb", hover_color="#1d4ed8").pack(pady=4)
 
-        ctk.CTkButton(self._frame, text="Start free trial",
-                      command=self._next, width=200,
+        ctk.CTkButton(self._frame, text="Continue on Free tier",
+                      command=self._start_free, width=200,
                       fg_color="#475569", hover_color="#334155").pack(pady=4)
+
+    def _start_free(self) -> None:
+        license_manager().start_free_trial()
+        self._next()
 
     def _open_activation(self) -> None:
         def after():

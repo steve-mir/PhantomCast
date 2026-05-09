@@ -1,7 +1,7 @@
 {
   "name": "dlc-pro-functions",
   "version": "1.0.0",
-  "description": "Cloud Functions for Deep-Live-Cam Pro: license activation, heartbeat, Stripe webhook.",
+  "description": "Cloud Functions for Phantom-Cast Pro: license activation, heartbeat, Stripe webhook.",
   "engines": { "node": "20" },
   "main": "lib/index.js",
   "scripts": {

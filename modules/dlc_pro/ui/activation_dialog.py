@@ -5,6 +5,7 @@ Settings → License → Re-activate.
 """
 from __future__ import annotations
 
+import sys
 import tkinter as tk
 import webbrowser
 from typing import Any, Callable, Optional
@@ -21,14 +22,21 @@ BUY_URL = "https://deeplivecam.pro/buy"
 class ActivationDialog(ctk.CTkToplevel):
     def __init__(self, parent: tk.Misc, on_activated: Optional[Callable[[], None]] = None) -> None:
         super().__init__(parent)
-        self.title("Activate Deep-Live-Cam Pro")
+        self.title("Activate Phantom Cast Pro")
         self.geometry("440x300")
         self.resizable(False, False)
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except tk.TclError:
-            pass
+
+        # macOS: transient/grab_set against a withdrawn root produces a
+        # blank Toplevel — same workaround as setup_wizard.
+        self.update_idletasks()
+        if sys.platform != "darwin":
+            try:
+                self.transient(parent)
+                self.grab_set()
+            except tk.TclError:
+                pass
+        self.lift()
+        self.focus_force()
 
         self._on_activated = on_activated
         self._build()

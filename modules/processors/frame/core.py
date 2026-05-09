@@ -24,6 +24,7 @@ FRAME_PROCESSORS_INTERFACE = [
 
 ALLOWED_PROCESSORS = {
     'face_swapper',
+    'face_swapper_lite',
     'face_swapper_hyperswap',
     'face_enhancer',
     'face_enhancer_gpen256',

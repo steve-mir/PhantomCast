@@ -1,4 +1,4 @@
-"""HTTPS client for Deep-Live-Cam Pro Cloud Functions.
+"""HTTPS client for Phantom-Cast Pro Cloud Functions.
 
 Standard-library only (urllib + ssl) to avoid pulling `requests` into the
 PyInstaller graph and bloating the installer.

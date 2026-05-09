@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------
-# Deep-Live-Cam Pro — runtime dependencies (Windows GPU build target)
+# Phantom-Cast Pro — runtime dependencies (Windows GPU build target)
 #
 # Install on Windows:
 #   pip install -r requirements.txt

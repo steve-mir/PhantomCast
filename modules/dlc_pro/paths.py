@@ -1,4 +1,4 @@
-"""Canonical filesystem layout for Deep-Live-Cam Pro.
+"""Canonical filesystem layout for Phantom-Cast Pro.
 
 Centralised so installer, wizard, license store, and logger all agree.
 """

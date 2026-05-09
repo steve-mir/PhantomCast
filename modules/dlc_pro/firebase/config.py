@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 
 
-PROJECT_ID = os.environ.get("DLCPRO_FIREBASE_PROJECT", "deep-live-cam-pro")
+PROJECT_ID = os.environ.get("DLCPRO_FIREBASE_PROJECT", "Phantom-Cast-pro")
 API_KEY = os.environ.get("DLCPRO_FIREBASE_API_KEY", "AIzaSy-REPLACE-WITH-YOUR-KEY")
 FUNCTIONS_REGION = os.environ.get("DLCPRO_FUNCTIONS_REGION", "us-central1")
 

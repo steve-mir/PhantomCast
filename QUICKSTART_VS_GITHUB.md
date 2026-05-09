@@ -1,10 +1,10 @@
-# Deep-Live-Cam: QuickStart (Premium) vs GitHub (Open-Source) Comparison
+# Phantom-Cast: QuickStart (Premium) vs GitHub (Open-Source) Comparison
 
 Comparison of features in the paid **QuickStart** distribution at
 <https://deeplivecam.net/index.php/quickstart> versus the open-source GitHub
-build at <https://github.com/hacksider/Deep-Live-Cam>.
+build at <https://github.com/hacksider/Phantom-Cast>.
 
-The local checkout at `Deep-Live-Cam-main/` is the open-source GitHub baseline.
+The local checkout at `Phantom-Cast-main/` is the open-source GitHub baseline.
 
 ---
 
@@ -75,9 +75,9 @@ From their news posts and teasers:
 - [DeepLiveCam Home (news feed)](https://deeplivecam.net/)
 - [2.7 Beta release post](https://deeplivecam.net/index.php/news/2-7-beta-released-windows-only-as-of-this-moment)
 - [Movies starring you (2.7)](https://deeplivecam.net/index.php/news/maximize-your-deeplivecam-experience-movies-starring-you)
-- [Teaser: 2.5 + subscriber surprises](https://deeplivecam.net/index.php/news/teaser-deep-live-cam-2-5-and-plus-more-surprises-for-subscribers)
+- [Teaser: 2.5 + subscriber surprises](https://deeplivecam.net/index.php/news/teaser-Phantom-Cast-2-5-and-plus-more-surprises-for-subscribers)
 - [We skipped 2.5… Here comes 2.6](https://deeplivecam.net/index.php/news/we-skipped-2-5-here-comes-2-6)
 - [DeepLiveCam 2.4 release](https://deeplivecam.net/index.php/news/deeplivecam-2-4-is-now-released)
 - [DeepLiveCam 2.3 release](https://deeplivecam.net/index.php/news/deeplivecam-2-3-released)
 - [VR Preview](https://deeplivecam.net/index.php/news/vr-preview)
-- [hacksider/Deep-Live-Cam GitHub](https://github.com/hacksider/Deep-Live-Cam)
+- [hacksider/Phantom-Cast GitHub](https://github.com/hacksider/Phantom-Cast)

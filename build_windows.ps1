@@ -1,4 +1,4 @@
-# Deep-Live-Cam Pro - end-to-end Windows build
+# Phantom-Cast Pro - end-to-end Windows build
 # Usage:
 #     pwsh -File build_windows.ps1 -Sign $true
 #
@@ -13,7 +13,7 @@
 param(
     [switch]$SkipDeps,
     [switch]$Sign,
-    [string]$CertSubject = "Deep-Live-Cam Pro",
+    [string]$CertSubject = "Phantom-Cast Pro",
     [string]$TimestampUrl = "http://timestamp.digicert.com",
     [string]$InnoSetupCompiler = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 )

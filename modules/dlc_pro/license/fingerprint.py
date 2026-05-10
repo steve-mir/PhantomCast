@@ -56,6 +56,9 @@ class FingerprintComponents:
 
 
 def _wmic(arg: str, prop: str) -> str:
+    """Legacy WMI command-line. wmic.exe was removed from Windows 11 24H2+ —
+    callers must treat empty as "tool unavailable" and fall through to
+    :func:`_powershell` (Get-CimInstance) for modern boxes."""
     try:
         out = subprocess.run(
             ["wmic", arg, "get", prop],
@@ -71,14 +74,23 @@ def _wmic(arg: str, prop: str) -> str:
 
 
 def _powershell(cmd: str) -> str:
+    """Run a PowerShell expression, return the first non-blank stripped line.
+
+    Multi-line output (e.g. one row per disk) is collapsed to the first
+    non-blank line so callers don't get whitespace-padded multi-disk junk.
+    """
     try:
         out = subprocess.run(
             ["powershell", "-NoProfile", "-Command", cmd],
             capture_output=True, text=True, timeout=8, check=False,
-        ).stdout.strip()
-        return out
+        ).stdout
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return ""
+    for line in out.splitlines():
+        line = line.strip()
+        if line:
+            return line
+    return ""
 
 
 # ---------------------------------------------------------------- per-component
@@ -86,9 +98,10 @@ def _powershell(cmd: str) -> str:
 
 def _motherboard_uuid() -> str:
     if sys.platform == "win32":
-        v = _wmic("csproduct", "UUID") or _powershell(
+        # PowerShell first — wmic is gone on Win11 24H2+.
+        v = _powershell(
             "(Get-CimInstance Win32_ComputerSystemProduct).UUID"
-        )
+        ) or _wmic("csproduct", "UUID")
         if v and v.lower() not in ("ffffffff-ffff-ffff-ffff-ffffffffffff", "00000000-0000-0000-0000-000000000000"):
             return v
     elif sys.platform == "darwin":
@@ -132,7 +145,12 @@ def _cpu_id() -> str:
         return "|".join(p for p in (brand, family) if p)
     parts = [platform.processor() or "", platform.machine() or ""]
     if sys.platform == "win32":
-        parts.append(_wmic("cpu", "ProcessorId"))
+        # PowerShell first — wmic is gone on Win11 24H2+.
+        proc_id = _powershell(
+            "(Get-CimInstance Win32_Processor | Select-Object -First 1).ProcessorId"
+        ) or _wmic("cpu", "ProcessorId")
+        if proc_id:
+            parts.append(proc_id)
     elif sys.platform.startswith("linux"):
         try:
             with open("/proc/cpuinfo", encoding="utf-8") as f:
@@ -147,12 +165,23 @@ def _cpu_id() -> str:
 
 def _disk_serial() -> str:
     if sys.platform == "win32":
-        # System drive's physical disk serial
-        v = _powershell(
-            "(Get-PhysicalDisk | Where-Object {$_.DeviceId -eq 0}).SerialNumber"
+        # Boot-volume disk's serial. On modern Windows this is best resolved
+        # by walking from the OS partition back to its physical disk so we
+        # don't get tripped up by removable drives or USB sticks plugged
+        # in at boot.
+        cmd = (
+            "$bootDrive = (Get-CimInstance Win32_OperatingSystem).SystemDrive; "
+            "$part = Get-Partition -DriveLetter ($bootDrive.TrimEnd(':')) -ErrorAction SilentlyContinue; "
+            "if ($part) { (Get-PhysicalDisk -DeviceNumber $part.DiskNumber -ErrorAction SilentlyContinue).SerialNumber } "
+            "else { (Get-PhysicalDisk | Sort-Object DeviceId | Select-Object -First 1).SerialNumber }"
         )
+        v = _powershell(cmd)
         if v:
-            return v.strip()
+            return v
+        # Fallback for older Windows / restricted environments.
+        v = _powershell("(Get-PhysicalDisk | Sort-Object DeviceId | Select-Object -First 1).SerialNumber")
+        if v:
+            return v
         return _wmic("diskdrive", "SerialNumber")
     elif sys.platform == "darwin":
         # Volume UUID of the boot volume — survives APFS snapshots & OS
@@ -214,6 +243,19 @@ def _machine_guid() -> str:
     return ""
 
 
+def _normalize_mac(s: str) -> str:
+    """Normalize a MAC string into ``aa:bb:cc:dd:ee:ff`` (lowercase, colon-sep).
+
+    Accepts colon, dash, dot, or no separator.
+    """
+    if not s:
+        return ""
+    hexs = re.sub(r"[^0-9a-fA-F]", "", s).lower()
+    if len(hexs) != 12:
+        return ""
+    return ":".join(hexs[i:i + 2] for i in range(0, 12, 2))
+
+
 def _primary_mac() -> str:
     # macOS: prefer en0's MAC explicitly. uuid.getnode() can pick a virtual
     # interface (utun, awdl) whose MAC drifts between boots — that would
@@ -231,6 +273,38 @@ def _primary_mac() -> str:
             except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 continue
         # Fall through to uuid.getnode if no Ethernet interface found.
+
+    if sys.platform == "win32":
+        # uuid.getnode() commonly picks a virtual adapter (Hyper-V Default
+        # Switch, WSL bridge, VPN, Docker NAT, VirtualBox host-only). Those
+        # MACs change across boots and software installs — useless as a
+        # fingerprint. Walk the physical Ethernet/Wi-Fi adapter list
+        # ourselves, sorted by ifIndex so the same machine yields the same
+        # answer every time.
+        cmd = (
+            "Get-NetAdapter -Physical -ErrorAction SilentlyContinue | "
+            "Where-Object { $_.HardwareInterface -and $_.MacAddress } | "
+            "Sort-Object ifIndex | "
+            "Select-Object -First 1 -ExpandProperty MacAddress"
+        )
+        mac = _normalize_mac(_powershell(cmd))
+        if mac:
+            return mac
+        # Fallback: enumerate physical NICs via WMI/CIM. This survives on
+        # boxes where Get-NetAdapter is locked down (some Server SKUs).
+        cmd = (
+            "Get-CimInstance Win32_NetworkAdapter "
+            "-Filter 'PhysicalAdapter=true AND MACAddress IS NOT NULL' "
+            "-ErrorAction SilentlyContinue | "
+            "Sort-Object Index | "
+            "Select-Object -First 1 -ExpandProperty MACAddress"
+        )
+        mac = _normalize_mac(_powershell(cmd))
+        if mac:
+            return mac
+        # If both PowerShell paths fail, fall through to uuid.getnode
+        # rather than empty-string — at least we get *something* unique.
+
     # uuid.getnode is stable for the primary MAC on most systems
     n = uuid.getnode()
     # If the OS couldn't resolve a real MAC, getnode sets bit 41

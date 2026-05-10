@@ -43,6 +43,11 @@ tqdm>=4.65.0
 protobuf==4.25.1
 pygrabber; sys_platform == 'win32'
 
+# Optional: mic capture for the live-output recorder. The recorder
+# degrades to video-only when sounddevice (or the system PortAudio
+# library it wraps) is missing.
+sounddevice>=0.4.6
+
 # NSFW filter (opennsfw2 + tensorflow) was removed to keep the installer
 # under GitHub's 2GB release-asset cap (was adding ~1.1GB). The
 # --nsfw-filter CLI flag is now a no-op; predicter.py degrades gracefully.

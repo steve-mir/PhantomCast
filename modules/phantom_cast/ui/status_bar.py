@@ -1,18 +1,22 @@
 """Always-visible status bar pinned to the bottom of the root window.
 
-Three pills:
-    - GPU pill   — green "GPU: <name>" or yellow "CPU (fallback)"
-    - Plan pill  — "Free", "Premium — N days trial left", "Premium",
-                   or red "Subscription expired"
-    - Online     — green dot if last heartbeat OK
+Three pills + a contextual action button:
+    - GPU pill    — green "GPU: <name>" or yellow "CPU (fallback)"
+    - Plan pill   — "Free", "Premium — N days trial left", "Premium",
+                    or red "Subscription expired"
+    - Action btn  — "Activate" when on Free, "Subscribe" when sub is
+                    at risk or expired, hidden when a paid sub is active
+    - Online      — green dot if last heartbeat OK
 """
 from __future__ import annotations
 
 import tkinter as tk
+import webbrowser
 from typing import Any, Optional
 
 import customtkinter as ctk
 
+from modules.phantom_cast.firebase.config import PORTAL_FALLBACK_URL
 from modules.phantom_cast.gpu import GpuMode, detect, selected_mode
 from modules.phantom_cast.license.manager import LicenseStatus, license_manager
 from modules.phantom_cast.subscription.gate import current_plan
@@ -38,6 +42,15 @@ class StatusBar(ctk.CTkFrame):
 
         self._plan_pill = self._make_pill("Plan: —", SLATE, SLATE_BG)
         self._plan_pill.pack(side="left", padx=6, pady=4)
+
+        # Contextual CTA: Activate (Free) / Subscribe (expired or sub-at-risk).
+        # Packed eagerly so refresh() can show/hide via a single configure().
+        # Hidden by default — refresh() decides.
+        self._action_button = ctk.CTkButton(
+            self, text="", width=104, height=24,
+            command=self._do_action, fg_color="#2563eb", hover_color="#1d4ed8",
+        )
+        self._action_mode: Optional[str] = None  # "activate" | "subscribe" | None
 
         self._online_pill = self._make_pill("● offline", YELLOW, YELLOW_BG)
         self._online_pill.pack(side="right", padx=(6, 10), pady=4)
@@ -91,6 +104,7 @@ class StatusBar(ctk.CTkFrame):
         mgr = license_manager()
         snap = mgr.snapshot()
         plan = (snap.plan or "free").capitalize()
+        action: Optional[str] = None  # default: hide CTA
         if snap.status == LicenseStatus.ACTIVE:
             days = mgr.trial_days_remaining()
             if days is not None and days > 0:
@@ -98,22 +112,73 @@ class StatusBar(ctk.CTkFrame):
                 label = f"{plan} — {days}d trial left"
                 fg, bg = (YELLOW, YELLOW_BG) if days <= 5 else (GREEN, GREEN_BG)
                 self._set_pill(self._plan_pill, label, fg, bg)
+                # Soft nudge in the last week of the trial; nothing earlier.
+                if days <= 7:
+                    action = "subscribe"
             elif mgr.trial_lapsed():
                 # Trial month over and no subscription on file.
                 self._set_pill(self._plan_pill, "Subscription required", RED, RED_BG)
+                action = "subscribe"
             else:
                 self._set_pill(self._plan_pill, f"Plan: {plan}", GREEN, GREEN_BG)
             self._set_pill(self._online_pill, "● online", GREEN, GREEN_BG)
         elif snap.status == LicenseStatus.EXPIRED:
             self._set_pill(self._plan_pill, "Subscription expired", RED, RED_BG)
             self._set_pill(self._online_pill, "● offline (grace)", YELLOW, YELLOW_BG)
+            action = "subscribe"
         elif snap.status == LicenseStatus.UNACTIVATED:
             self._set_pill(self._plan_pill, "Free", SLATE, SLATE_BG)
             self._set_pill(self._online_pill, "● activate", YELLOW, YELLOW_BG)
+            action = "activate"
         else:
             self._set_pill(self._plan_pill, current_plan().capitalize(), SLATE, SLATE_BG)
+            # ERROR / VALIDATING / SUSPENDED: offer activate as recovery path.
+            action = "activate"
+
+        self._apply_action(action)
+
+    def _apply_action(self, mode: Optional[str]) -> None:
+        """Show/hide the contextual CTA based on plan state."""
+        if mode == self._action_mode:
+            return
+        self._action_mode = mode
+        # Pack between plan pill (left side) and diagnostics button (right
+        # side). Re-pack so the position remains stable across refreshes.
+        try:
+            self._action_button.pack_forget()
+        except tk.TclError:
+            pass
+        if mode == "activate":
+            self._action_button.configure(
+                text="Activate", fg_color="#2563eb", hover_color="#1d4ed8",
+            )
+            self._action_button.pack(side="left", padx=4, pady=4)
+        elif mode == "subscribe":
+            self._action_button.configure(
+                text="Subscribe", fg_color="#b91c1c", hover_color="#7f1d1d",
+            )
+            self._action_button.pack(side="left", padx=4, pady=4)
+        # else: keep it unpacked (hidden) when fully active + subscribed.
 
     # ---------- actions ----------
+
+    def _do_action(self) -> None:
+        if self._action_mode == "activate":
+            self._open_activation()
+        elif self._action_mode == "subscribe":
+            self._open_subscribe()
+
+    def _open_activation(self) -> None:
+        from modules.phantom_cast.ui.activation_dialog import ActivationDialog
+
+        ActivationDialog(self.winfo_toplevel())
+
+    def _open_subscribe(self) -> None:
+        # Prefer the per-customer signed URL the heartbeat returns; fall
+        # back to the public marketing page when none is set yet.
+        snap = license_manager().snapshot()
+        url = snap.subscription_url or PORTAL_FALLBACK_URL
+        webbrowser.open(url)
 
     def _show_diagnostics(self) -> None:
         from modules.phantom_cast.ui.settings_panel import open_settings_panel

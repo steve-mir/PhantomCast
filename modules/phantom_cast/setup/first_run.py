@@ -16,11 +16,7 @@ log = get("setup.first_run")
 
 
 def is_first_run() -> bool:
-    # === TEMP TEST OVERRIDE — REVERT TO NORMAL ===
-    # Original line:
-    #     return not first_run_marker().is_file()
-    return True
-    # === END TEMP TEST OVERRIDE ===
+    return not first_run_marker().is_file()
 
 
 def run_first_run(root: tk.Misc, on_complete: Optional[Callable[[], None]] = None) -> None:

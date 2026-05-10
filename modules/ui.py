@@ -141,6 +141,13 @@ _active_lut_path: str | None = None
 # changer / camera refresh can reach it without restarting the threads.
 _active_capturer: VideoCapturer | None = None
 
+# Active LiveRecorder for the running webcam preview, when the user has
+# enabled "Record live output". Set in ``create_webcam_preview`` and
+# torn down in its ``_cleanup``. Read from ``_present_processed_frame``
+# to feed each post-LUT frame to the writer.
+_active_recorder = None  # type: ignore[assignment]
+record_status_label = None
+
 img_ft, vid_ft = modules.globals.file_types
 
 
@@ -185,6 +192,7 @@ def save_switch_states():
         "enable_interpolation": modules.globals.enable_interpolation,
         "interpolation_weight": modules.globals.interpolation_weight,
         "virtual_cam_enabled": modules.globals.virtual_cam_enabled,
+        "record_live_enabled": modules.globals.record_live_enabled,
         "live_resolution": modules.globals.live_resolution,
         "optimized_rendering": modules.globals.optimized_rendering,
         "lut_path": modules.globals.lut_path,
@@ -255,6 +263,9 @@ def load_switch_states():
         # Camera / Output / UI (2.7 parity)
         modules.globals.virtual_cam_enabled = bool(
             switch_states.get("virtual_cam_enabled", False)
+        )
+        modules.globals.record_live_enabled = bool(
+            switch_states.get("record_live_enabled", False)
         )
         modules.globals.live_resolution = switch_states.get(
             "live_resolution", "Auto"
@@ -1546,6 +1557,51 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         ),
     )
 
+    # --- Record live output ---
+    # Saves every processed frame to disk so the user can review the
+    # swap result later without the real-time preview lag they may see
+    # on slower hardware. Takes effect on the next Live start.
+    rec_var = ctk.BooleanVar(value=modules.globals.record_live_enabled)
+
+    def on_record_toggle():
+        modules.globals.record_live_enabled = rec_var.get()
+        save_switch_states()
+        if record_status_label is not None:
+            record_status_label.configure(
+                text=(
+                    _("Recording: arms on next Live start")
+                    if modules.globals.record_live_enabled
+                    else _("Recording: off")
+                )
+            )
+
+    rec_switch = ctk.CTkSwitch(
+        sw_row, text=_("Record live output"),
+        variable=rec_var, cursor="hand2", command=on_record_toggle,
+    )
+    rec_switch.grid(row=2, column=0, sticky="w", pady=6)
+    ToolTip(
+        rec_switch,
+        _(
+            "Save every processed frame to disk as MP4 (with mic audio "
+            "if available). The file plays back at the actual measured "
+            "pipeline FPS so you can review the swap result without the "
+            "real-time preview lag. Takes effect on the next Live start."
+        ),
+    )
+
+    global record_status_label
+    record_status_label = ctk.CTkLabel(
+        sw_row,
+        text=(
+            _("Recording: arms on next Live start")
+            if modules.globals.record_live_enabled
+            else _("Recording: off")
+        ),
+        text_color=TEXT_DIM, font=ctk.CTkFont(size=10), anchor="w",
+    )
+    record_status_label.grid(row=2, column=1, sticky="w", pady=6, padx=(8, 0))
+
     # --- Window Projection buttons ---
     proj_row = ctk.CTkFrame(cam_inner, fg_color="transparent", border_width=0)
     proj_row.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(8, 4))
@@ -2433,6 +2489,14 @@ def _present_processed_frame(bgr_frame):
         except Exception as e:
             print(f"[ui] LUT apply failed: {e}")
 
+    # 1b) Live recorder — write the post-LUT frame to disk so the saved
+    # file matches what the user (would have) seen.
+    if _active_recorder is not None and _active_recorder.is_active:
+        try:
+            _active_recorder.add_frame(bgr_frame)
+        except Exception as e:
+            print(f"[ui] recorder.add_frame failed: {e}")
+
     # 2) Virtual camera — full-resolution, ungraded-by-Tk frames
     if modules.globals.virtual_cam_enabled:
         sink = get_virtual_cam()
@@ -2743,7 +2807,7 @@ def _processing_thread_func(capture_queue, processed_queue, stop_event,
 
 
 def create_webcam_preview(camera_index: int):
-    global preview_label, PREVIEW, _active_capturer
+    global preview_label, PREVIEW, _active_capturer, _active_recorder
 
     cap = VideoCapturer(camera_index)
     # Resolution Switch: honour user-selected target.
@@ -2755,6 +2819,27 @@ def create_webcam_preview(camera_index: int):
     _active_capturer = cap
     camera_fps = cap.actual_fps
     print(f"[webcam] Camera running at {cap.actual_width}x{cap.actual_height}@{camera_fps:.0f}fps")
+
+    # Arm the live-output recorder if the user has enabled it. Imports
+    # are lazy so the optional sounddevice dependency only loads when
+    # someone actually uses the feature.
+    if modules.globals.record_live_enabled:
+        try:
+            from modules.phantom_cast.output.recorder import LiveRecorder
+            _active_recorder = LiveRecorder(record_audio=True)
+            _active_recorder.start()
+            modules.globals.record_live_active = True
+            audio_note = "" if _active_recorder.record_audio else " (video only — mic unavailable)"
+            update_status(f"Recording started{audio_note}")
+            if record_status_label is not None:
+                record_status_label.configure(
+                    text=_("Recording: capturing…{}").format(audio_note)
+                )
+        except Exception as e:
+            print(f"[ui] failed to start recorder: {e}")
+            _active_recorder = None
+            modules.globals.record_live_active = False
+            update_status(f"Recorder failed to start: {e}")
 
     preview_label.configure(width=PREVIEW_DEFAULT_WIDTH, height=PREVIEW_DEFAULT_HEIGHT)
 
@@ -2791,7 +2876,7 @@ def create_webcam_preview(camera_index: int):
 
     # Cleanup helper called from the display loop when preview closes
     def _cleanup():
-        global _active_capturer
+        global _active_capturer, _active_recorder
         stop_event.set()
         cap_thread.join(timeout=2.0)
         proc_thread.join(timeout=2.0)
@@ -2804,6 +2889,36 @@ def create_webcam_preview(camera_index: int):
         if sink.is_open:
             sink.close()
             modules.globals.virtual_cam_active = False
+        # Finalise the live recording, if one is running. Done after the
+        # capture/processing threads have joined so no more frames will
+        # arrive while the writer is being closed.
+        if _active_recorder is not None:
+            try:
+                final = _active_recorder.stop()
+                fps = _active_recorder.measured_fps
+                frames = _active_recorder.frames_written
+                if final is not None:
+                    modules.globals.record_last_path = str(final)
+                    update_status(
+                        f"Recording saved: {final.name} "
+                        f"({frames} frames @ {fps:.1f} fps)"
+                    )
+                    if record_status_label is not None:
+                        record_status_label.configure(
+                            text=_("Recording: saved → {}").format(final.name)
+                        )
+                else:
+                    update_status("Recording: nothing was captured")
+                    if record_status_label is not None:
+                        record_status_label.configure(
+                            text=_("Recording: empty (no frames)")
+                        )
+            except Exception as e:
+                print(f"[ui] recorder.stop failed: {e}")
+                update_status(f"Recording failed to finalise: {e}")
+            finally:
+                _active_recorder = None
+                modules.globals.record_live_active = False
 
     # Poll at ~2x camera FPS (Nyquist) so we pick up frames promptly
     # without burning CPU.  Clamped to [1, 16] ms.

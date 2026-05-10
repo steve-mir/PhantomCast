@@ -129,6 +129,14 @@ virtual_cam_enabled: bool = False
 virtual_cam_active: bool = False    # runtime: did we actually open the device?
 virtual_cam_backend: str = ""       # runtime: backend name, e.g. "obs" / "v4l2"
 
+# Live Recorder — save every processed frame to disk so users can review
+# the swap output later without the real-time preview lag they may see
+# on slower hardware (e.g. Apple Silicon Macs). Saved at the actual
+# measured pipeline FPS so playback runs at real-time speed.
+record_live_enabled: bool = False
+record_live_active: bool = False    # runtime: did we open a writer?
+record_last_path: str = ""          # runtime: last finalised file path
+
 # Resolution Switch — preferred capture resolution for the live cam.
 # "Auto" uses the legacy 1920x1080@60 request and lets the camera pick.
 live_resolution: str = "Auto"       # one of: Auto, 480p, 720p, 1080p, 1440p, 4K

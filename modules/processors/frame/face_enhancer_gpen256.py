@@ -36,10 +36,7 @@ THREAD_LOCK = threading.Lock()
 # inference runs to keep FPS high.
 _LIVE_CACHE: dict = {'enhanced': None, 'frame_count': 0}
 
-abs_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(abs_dir))), "models"
-)
+from modules.paths import MODELS_DIR as models_dir
 
 
 def pre_check() -> bool:

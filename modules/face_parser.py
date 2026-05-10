@@ -44,8 +44,7 @@ PARSER_SESSION: Optional[onnxruntime.InferenceSession] = None
 _LOCK = threading.Lock()
 _SEMA = threading.Semaphore()
 
-abs_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.join(os.path.dirname(abs_dir), "models")
+from modules.paths import MODELS_DIR as models_dir
 
 
 def pre_check() -> bool:

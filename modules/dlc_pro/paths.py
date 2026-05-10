@@ -39,9 +39,21 @@ def cuda_bin_dir() -> Path:
 
 
 def models_dir() -> Path:
-    """Where ONNX models live. Source tree uses ``models/``; installed builds
-    keep the same relative path for compatibility with the existing code."""
-    return install_root() / "models"
+    """Where ONNX models live.
+
+    Frozen (installer) builds land under ``%ProgramFiles%\\DeepLiveCamPro``,
+    which standard users can't write to — model downloads would die with
+    ``[WinError 5] Access is denied``. So when frozen we route to a
+    per-user writable directory under ``state_dir()`` (already covered by
+    the installer's ``[UninstallDelete]`` block). Source checkouts keep
+    using the in-tree ``models/`` for parity with existing tooling.
+    """
+    if getattr(sys, "frozen", False):
+        p = state_dir() / "models"
+    else:
+        p = install_root() / "models"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
 
 
 def state_dir() -> Path:

@@ -1,6 +1,6 @@
 """Modal "update available" dialog with inline download + install flow.
 
-Shown when ``modules.dlc_pro.updater.check_for_update()`` returns a newer
+Shown when ``modules.phantom_cast.updater.check_for_update()`` returns a newer
 release. Three buttons:
     Install          → download asset, run installer, exit app.
     Remind me later  → close dialog; re-prompt next launch.
@@ -19,15 +19,15 @@ from typing import Optional
 
 import customtkinter as ctk
 
-from modules.dlc_pro import updater
-from modules.dlc_pro.updater import UpdateInfo, UpdaterState
+from modules.phantom_cast import updater
+from modules.phantom_cast.updater import UpdateInfo, UpdaterState
 
 try:
-    from modules.dlc_pro.logger import get
+    from modules.phantom_cast.logger import get
     log = get("ui.update")
 except Exception:  # pragma: no cover
     import logging
-    log = logging.getLogger("dlc_pro.ui.update")
+    log = logging.getLogger("phantom_cast.ui.update")
 
 
 def _human_bytes(n: Optional[int]) -> str:
@@ -144,7 +144,7 @@ class UpdateDialog(ctk.CTkToplevel):
         self._progress.pack(fill="x", padx=20, pady=(2, 12))
         self._set_progress(0, self._info.asset_size or 1)
 
-        target = Path(tempfile.gettempdir()) / (self._info.asset_name or "DeepLiveCamPro-installer.exe")
+        target = Path(tempfile.gettempdir()) / (self._info.asset_name or "PhantomCast-installer.exe")
 
         def _progress(done: int, total: int) -> None:
             # Marshal back to main thread.

@@ -12,11 +12,11 @@ from typing import Any, Callable, Optional
 
 import customtkinter as ctk
 
-from modules.dlc_pro.license import LicenseError, LicenseStatus, license_manager
-from modules.dlc_pro.ui import toast
+from modules.phantom_cast.license import LicenseError, LicenseStatus, license_manager
+from modules.phantom_cast.ui import toast
 
 
-BUY_URL = "https://deeplivecam.pro/buy"
+BUY_URL = "https://phantomcast.space/buy.html"
 
 
 class ActivationDialog(ctk.CTkToplevel):
@@ -58,7 +58,7 @@ class ActivationDialog(ctk.CTkToplevel):
 
         self._entry = ctk.CTkEntry(
             self, width=380, height=36, justify="center",
-            placeholder_text="DLC-XXXX-XXXX-XXXX-XXXX",
+            placeholder_text="PC-XXXX-XXXX-XXXX-XXXX",
         )
         self._entry.pack(pady=(0, 8))
         self._entry.focus_set()

@@ -34,9 +34,9 @@ from contextlib import contextmanager
 from threading import Lock
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, TypeVar
 
-from modules.dlc_pro.async_runner import runner
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.subscription import claims as claims_mod
+from modules.phantom_cast.async_runner import runner
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.subscription import claims as claims_mod
 
 log = get("subscription.gate")
 
@@ -62,7 +62,7 @@ class FeatureLocked(Exception):
 def _entitlements() -> List[str]:
     """Resolve the union of currently-granted feature flags."""
     # Lazy import: avoid circular dep with license.manager.
-    from modules.dlc_pro.license.manager import LicenseStatus, license_manager
+    from modules.phantom_cast.license.manager import LicenseStatus, license_manager
 
     mgr = license_manager()
     snap = mgr.snapshot()
@@ -79,7 +79,7 @@ def _entitlements() -> List[str]:
 
 
 def current_plan() -> str:
-    from modules.dlc_pro.license.manager import license_manager
+    from modules.phantom_cast.license.manager import license_manager
 
     return license_manager().snapshot().plan or "free"
 
@@ -289,6 +289,6 @@ def refresh_claims_async() -> None:
         return
     _LAST_HEARTBEAT = now
 
-    from modules.dlc_pro.license.manager import license_manager
+    from modules.phantom_cast.license.manager import license_manager
 
     runner().run(license_manager().heartbeat)

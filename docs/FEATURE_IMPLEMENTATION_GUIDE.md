@@ -201,7 +201,7 @@ torch.onnx.export(
 
 Validate the ONNX with `onnx.checker.check_model` and a 256² parity test (PyTorch vs. `onnxruntime`) before shipping.
 
-**Where to host the converted weights:** add `fran_reage_256.onnx` to your existing Hugging Face mirror at `huggingface.co/<your-org>/deep-live-cam`, alongside the inswapper/GFPGAN files. Update `models/instructions.txt` with the URL.
+**Where to host the converted weights:** add `fran_reage_256.onnx` to your existing Hugging Face mirror at `huggingface.co/<your-org>/phantom-cast`, alongside the inswapper/GFPGAN files. Update `models/instructions.txt` with the URL.
 
 ### Step 2 — Build the processor
 
@@ -430,8 +430,8 @@ You currently use `models/instructions.txt` and ask users to download manually. 
 # modules/model_manager.py
 MODELS = {
     "real_esrgan_x2":   ("https://huggingface.co/onnx-community/real-esrgan-x2/resolve/main/realesrgan-x2.onnx",            "models/real_esrgan_x2.onnx",   "<sha256>"),
-    "fran_reage_256":   ("https://huggingface.co/<your-org>/deep-live-cam/resolve/main/fran_reage_256.onnx",                 "models/fran_reage_256.onnx",   "<sha256>"),
-    "sd_turbo_engine":  ("https://huggingface.co/<your-org>/deep-live-cam/resolve/main/sd_turbo_512_sm89.engine",            "models/engines/sd_turbo_512.engine", "<sha256>"),
+    "fran_reage_256":   ("https://huggingface.co/<your-org>/phantom-cast/resolve/main/fran_reage_256.onnx",                 "models/fran_reage_256.onnx",   "<sha256>"),
+    "sd_turbo_engine":  ("https://huggingface.co/<your-org>/phantom-cast/resolve/main/sd_turbo_512_sm89.engine",            "models/engines/sd_turbo_512.engine", "<sha256>"),
 }
 
 def ensure(model_key: str) -> Path:
@@ -443,7 +443,7 @@ def ensure(model_key: str) -> Path:
     return Path(dest)
 ```
 
-Hook it into the existing setup wizard at `modules/dlc_pro/ui/setup_wizard.py` — show progress bars for each missing model.
+Hook it into the existing setup wizard at `modules/phantom_cast/ui/setup_wizard.py` — show progress bars for each missing model.
 
 ## Settings persistence
 
@@ -451,7 +451,7 @@ Add the new flags to `switch_states.json` save/load. Existing pattern at `module
 
 ## License gating (Pro features)
 
-Your Pro layer (`modules/dlc_pro/license/`) already gates inswapper. The three new features are good candidates for the same gate — especially Lucy API access (which costs you per-minute money) and the StreamDiffusion stack (large download). Check `modules.dlc_pro.license.is_active()` before enabling.
+Your Pro layer (`modules/phantom_cast/license/`) already gates inswapper. The three new features are good candidates for the same gate — especially Lucy API access (which costs you per-minute money) and the StreamDiffusion stack (large download). Check `modules.phantom_cast.license.is_active()` before enabling.
 
 ## Telemetry / kill switch
 

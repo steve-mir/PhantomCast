@@ -21,7 +21,7 @@ from modules.utilities import (
 FACE_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
 THREAD_LOCK = threading.Lock()
-NAME = "DLC.FACE-ENHANCER"
+NAME = "PCAST.FACE-ENHANCER"
 
 from modules.paths import MODELS_DIR as models_dir
 

@@ -2,7 +2,7 @@
 
 Public surface (used throughout the app):
 
-    from modules.dlc_pro.subscription import (
+    from modules.phantom_cast.subscription import (
         require_feature,
         has_feature,
         current_plan,
@@ -12,7 +12,7 @@ Public surface (used throughout the app):
     )
 """
 
-from modules.dlc_pro.subscription.gate import (
+from modules.phantom_cast.subscription.gate import (
     FeatureLocked,
     TrialBudget,
     current_plan,

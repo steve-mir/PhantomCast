@@ -1,8 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec for Phantom-Cast Pro — GPU-first build.
+"""PyInstaller spec for Phantom Cast — GPU-first build.
 
 Run from the repo root with:
-    pyinstaller build/DeepLiveCamPro.spec --clean --noconfirm
+    pyinstaller build/PhantomCast.spec --clean --noconfirm
 
 The CUDA / cuDNN runtime is collected from the venv's pip-installed
 nvidia-* wheels (and torch/lib) so the resulting onefolder build has
@@ -15,7 +15,7 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 ROOT = Path(os.getcwd())
-APP_NAME = "DeepLiveCamPro"
+APP_NAME = "PhantomCast"
 
 # ---------- collect CUDA / cuDNN payload ----------
 import site
@@ -46,7 +46,7 @@ datas += collect_data_files("insightface")
 datas += collect_data_files("customtkinter")
 
 # Project assets shipped alongside the EXE.
-for rel in ("locales", "media", "modules/processors", "modules/dlc_pro/setup"):
+for rel in ("locales", "media", "modules/processors", "modules/phantom_cast/setup"):
     src = ROOT / rel
     if src.is_dir():
         for f in src.rglob("*"):
@@ -56,7 +56,7 @@ for rel in ("locales", "media", "modules/processors", "modules/dlc_pro/setup"):
 # Hidden imports that PyInstaller's static analysis misses.
 hiddenimports = []
 hiddenimports += collect_submodules("modules.processors.frame")
-hiddenimports += collect_submodules("modules.dlc_pro")
+hiddenimports += collect_submodules("modules.phantom_cast")
 hiddenimports += ["onnxruntime", "onnxruntime.capi", "tkinter", "customtkinter"]
 
 
@@ -89,7 +89,7 @@ exe = EXE(
     strip=False,
     upx=False,            # UPX breaks CUDA DLL load on some Windows builds
     console=False,        # GUI app
-    icon=str(ROOT / "media" / "DLC.ico") if (ROOT / "media" / "DLC.ico").is_file() else None,
+    icon=str(ROOT / "media" / "PhantomCast.ico") if (ROOT / "media" / "PhantomCast.ico").is_file() else None,
     version=str(ROOT / "build" / "version_info.txt") if (ROOT / "build" / "version_info.txt").is_file() else None,
 )
 

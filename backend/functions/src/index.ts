@@ -1,5 +1,5 @@
 /**
- * Phantom-Cast Pro — Cloud Functions
+ * Phantom Cast — Cloud Functions
  *
  * Endpoints (HTTPS, JSON):
  *   POST /v1_activate           — bind license to device, return signed claims
@@ -27,7 +27,7 @@ const db = admin.firestore();
 // ---------- Config ----------
 
 // Secret values (Google Secret Manager). Free tier covers 6 active versions.
-const DLC_SIGNING_PRIVATE_KEY = defineSecret("DLC_SIGNING_PRIVATE_KEY"); // RS256 PEM
+const PHANTOMCAST_SIGNING_PRIVATE_KEY = defineSecret("PHANTOMCAST_SIGNING_PRIVATE_KEY"); // RS256 PEM
 const NOWPAY_API_KEY    = defineSecret("NOWPAY_API_KEY");
 const NOWPAY_IPN_SECRET = defineSecret("NOWPAY_IPN_SECRET");
 
@@ -39,7 +39,7 @@ const NOWPAY_PASSWORD = process.env.NOWPAY_PASSWORD ?? "";
 
 // Non-secret config (free). Embedded in JWT headers / sent to NOWPayments — not
 // sensitive. `process.env` is auto-populated from `.env.<projectId>` at deploy.
-const DLC_SIGNING_KID    = "dlc-pro-2026-05";
+const PHANTOMCAST_SIGNING_KID    = "phantomcast-2026-05";
 const NOWPAY_PLAN_PRO    = process.env.NOWPAY_PLAN_PRO    ?? "";
 const NOWPAY_PLAN_STUDIO = process.env.NOWPAY_PLAN_STUDIO ?? "";
 
@@ -112,10 +112,10 @@ function similarityScore(
 function signClaims(payload: Record<string, unknown>): { token: string; exp: number } {
   const iat = Math.floor(Date.now() / 1000);
   const exp = iat + CLAIMS_TTL_SECONDS;
-  const kid = DLC_SIGNING_KID;
+  const kid = PHANTOMCAST_SIGNING_KID;
   const token = jwt.sign(
     { ...payload, iat, exp },
-    DLC_SIGNING_PRIVATE_KEY.value(),
+    PHANTOMCAST_SIGNING_PRIVATE_KEY.value(),
     { algorithm: "RS256", header: { alg: "RS256", kid } }
   );
   return { token, exp };
@@ -143,7 +143,7 @@ function rateLimit(key: string, max: number, windowSec: number): boolean {
 // ---------- v1_activate ----------
 
 export const v1_activate = onRequest(
-  { region: "us-central1", cors: false, secrets: [DLC_SIGNING_PRIVATE_KEY] },
+  { region: "us-central1", cors: false, secrets: [PHANTOMCAST_SIGNING_PRIVATE_KEY] },
   async (req, res) => {
     if (req.method !== "POST") { res.status(405).json({ error: "method" }); return; }
 
@@ -162,7 +162,19 @@ export const v1_activate = onRequest(
       return;
     }
 
-    const licQ = await db.collection("licenses").where("license_key", "==", license_key).limit(1).get();
+    // Tolerate both prefixes during the DLC- → PC- rebrand. New keys are
+    // issued as PC-...; pre-rebrand customers paste their original DLC-...
+    // We try the as-typed value first, then fall back to the alt-prefix
+    // form so a single-prefix DB row matches either way the user pastes.
+    const altKey = license_key.startsWith("DLC-")
+      ? "PC-" + license_key.slice(4)
+      : license_key.startsWith("PC-")
+        ? "DLC-" + license_key.slice(3)
+        : null;
+    let licQ = await db.collection("licenses").where("license_key", "==", license_key).limit(1).get();
+    if (licQ.empty && altKey) {
+      licQ = await db.collection("licenses").where("license_key", "==", altKey).limit(1).get();
+    }
     if (licQ.empty) {
       await audit("activate", false, { ip: hash(ip), reason: "not_found" });
       res.status(401).json({ error: { code: "license_invalid", message: "License not found." } });
@@ -223,7 +235,7 @@ export const v1_activate = onRequest(
       feature_flags: features,
       fingerprint_hash: fingerprint,
       device_id: deviceId,
-      kid: DLC_SIGNING_KID,
+      kid: PHANTOMCAST_SIGNING_KID,
     });
 
     await audit("activate", true, { licenseId: lic.id, deviceId, ip: hash(ip) });
@@ -242,7 +254,7 @@ export const v1_activate = onRequest(
 // ---------- v1_heartbeat ----------
 
 export const v1_heartbeat = onRequest(
-  { region: "us-central1", secrets: [DLC_SIGNING_PRIVATE_KEY] },
+  { region: "us-central1", secrets: [PHANTOMCAST_SIGNING_PRIVATE_KEY] },
   async (req, res) => {
     if (req.method !== "POST") { res.status(405).json({ error: "method" }); return; }
     const { license_id, license_key, fingerprint } = req.body ?? {};
@@ -277,7 +289,7 @@ export const v1_heartbeat = onRequest(
       feature_flags: features,
       fingerprint_hash: data.fingerprintHash,
       device_id: data.deviceId,
-      kid: DLC_SIGNING_KID,
+      kid: PHANTOMCAST_SIGNING_KID,
     });
     res.status(200).json({
       status: "active",
@@ -412,7 +424,7 @@ export const v1_createPayment = onRequest(
     }
 
     const orderId = `dlc-${crypto.randomBytes(8).toString("hex")}`;
-    const orderDescription = `Phantom-Cast Pro — Activation Key (${plan})`;
+    const orderDescription = `Phantom Cast — Activation Key (${plan})`;
 
     let npResp: any;
     try {
@@ -781,7 +793,7 @@ export const v1_nowpayments = onRequest(
     if (nextStatus === "active") {
       const wasActive = existing.status === "active" && existing.license_key;
       if (!wasActive) {
-        issuedKey = `DLC-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
+        issuedKey = `PC-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
         update.license_key = issuedKey;
         update.createdAt = existing.createdAt ?? admin.firestore.FieldValue.serverTimestamp();
       }

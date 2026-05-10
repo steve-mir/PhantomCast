@@ -9,11 +9,11 @@ VC_redist.x64.exe
 
 NVIDIA Driver
     The end user supplies their own NVIDIA driver. NVIDIA's EULA forbids
-    driver redistribution. Our docs (https://deeplivecam.pro/install)
+    driver redistribution. Our docs (https://phantomcast.space/install)
     point users at https://www.nvidia.com/Download/index.aspx with a
     minimum version of 525.60 for CUDA 12.x support.
 
 CUDA 12.8 / cuDNN 8.9.7
-    *Bundled* inside the PyInstaller payload (dist/DeepLiveCamPro/_runtime/cuda/bin
+    *Bundled* inside the PyInstaller payload (dist/PhantomCast/_runtime/cuda/bin
     and torch/lib + nvidia/*/bin). Users do NOT need to install these.
-    See build/DeepLiveCamPro.spec for the collection logic.
+    See build/PhantomCast.spec for the collection logic.

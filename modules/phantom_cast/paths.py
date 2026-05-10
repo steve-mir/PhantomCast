@@ -1,4 +1,4 @@
-"""Canonical filesystem layout for Phantom-Cast Pro.
+"""Canonical filesystem layout for Phantom Cast.
 
 Centralised so installer, wizard, license store, and logger all agree.
 """
@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 
-APP_NAME = "DeepLiveCamPro"
+APP_NAME = "PhantomCast"
 
 
 def _user_local_app_data() -> Path:
@@ -41,7 +41,7 @@ def cuda_bin_dir() -> Path:
 def models_dir() -> Path:
     """Where ONNX models live.
 
-    Frozen (installer) builds land under ``%ProgramFiles%\\DeepLiveCamPro``,
+    Frozen (installer) builds land under ``%ProgramFiles%\\PhantomCast``,
     which standard users can't write to — model downloads would die with
     ``[WinError 5] Access is denied``. So when frozen we route to a
     per-user writable directory under ``state_dir()`` (already covered by

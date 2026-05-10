@@ -34,7 +34,7 @@ import modules.globals
 from modules.face_parser import get_hair_mask
 from modules.typing import Frame, Face
 
-NAME = "DLC.HAIR-SWAP"
+NAME = "PCAST.HAIR-SWAP"
 
 # Source-side cache. Just LAB stats — tiny memory footprint. Keyed on
 # source_path so swapping source images naturally re-extracts.

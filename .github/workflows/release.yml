@@ -43,8 +43,8 @@ jobs:
         shell: pwsh
         run: pwsh -File build_windows.ps1
         env:
-          DLCPRO_FIREBASE_PROJECT: ${{ secrets.FIREBASE_PROJECT }}
-          DLCPRO_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          PHANTOMCAST_FIREBASE_PROJECT: ${{ secrets.FIREBASE_PROJECT }}
+          PHANTOMCAST_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
 
       - name: Sign EXE & installer
         if: env.SIGN_PFX_BASE64 != ''
@@ -54,7 +54,7 @@ jobs:
           $sign = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe"
           & $sign sign /f "$env:RUNNER_TEMP\code.pfx" /p $env:SIGN_PFX_PASSWORD `
                   /tr http://timestamp.digicert.com /td sha256 /fd sha256 `
-                  dist\DeepLiveCamPro\DeepLiveCamPro.exe
+                  dist\PhantomCast\PhantomCast.exe
           Get-ChildItem dist\installer\*.exe | ForEach-Object {
             & $sign sign /f "$env:RUNNER_TEMP\code.pfx" /p $env:SIGN_PFX_PASSWORD `
                     /tr http://timestamp.digicert.com /td sha256 /fd sha256 $_.FullName
@@ -74,7 +74,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: DeepLiveCamPro-installer
+          name: PhantomCast-installer
           path: dist/installer/*.exe
           if-no-files-found: error
 

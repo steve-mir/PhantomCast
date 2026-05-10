@@ -22,8 +22,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, List, Optional
 
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.paths import models_dir
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.paths import models_dir
 
 log = get("setup.models")
 
@@ -51,7 +51,7 @@ REQUIRED_MODELS: List[ModelSpec] = [
         name="inswapper_128 (fp16)",
         filename="inswapper_128_fp16.onnx",
         sha256="REPLACE_WITH_REAL_SHA256_INSWAPPER_FP16",
-        url="https://huggingface.co/hacksider/deep-live-cam/resolve/main/inswapper_128_fp16.onnx",
+        url="https://models.phantomcast.space/inswapper_128_fp16.onnx",
         plan_required="free",
         bytes_estimate=275_000_000,
     ),
@@ -146,7 +146,7 @@ def _download(spec: ModelSpec, target: Path,
     if not url:
         url = _request_signed_url(spec)
 
-    req = urllib.request.Request(url, headers={"User-Agent": "DeepLiveCamPro/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "PhantomCast/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=30) as resp, tmp.open("wb") as out:
             total = int(resp.headers.get("Content-Length") or spec.bytes_estimate or 0)
@@ -177,9 +177,9 @@ def _request_signed_url(spec: ModelSpec) -> str:
 
     Server enforces plan: GPEN-512 only returns for plan in {pro, studio}.
     """
-    from modules.dlc_pro.firebase.client import _post_json
-    from modules.dlc_pro.firebase.config import FUNCTIONS_BASE
-    from modules.dlc_pro.license import license_manager
+    from modules.phantom_cast.firebase.client import _post_json
+    from modules.phantom_cast.firebase.config import FUNCTIONS_BASE
+    from modules.phantom_cast.license import license_manager
 
     snap = license_manager().snapshot()
     resp = _post_json(
@@ -208,7 +208,7 @@ def ensure_models_async(
     """
     def worker():
         try:
-            from modules.dlc_pro.subscription.gate import has_feature
+            from modules.phantom_cast.subscription.gate import has_feature
 
             for spec in REQUIRED_MODELS:
                 target = models_dir() / spec.filename

@@ -1,4 +1,4 @@
-# Feature Gap Analysis — OSS vs. Deep-Live-Cam 2.7 Subscribers Edition
+# Feature Gap Analysis — Open-source baseline vs. premium Subscribers Edition
 
 **Source:** 40-second screen recording (1110×856, 30 fps) of the closed-source "Subscribers Edition" build, demonstrating prompt-driven appearance edits on a live webcam.
 **Analyzed against:** this repository, branch `main`, commit `9463cce`.
@@ -71,9 +71,9 @@ The fact that `long yellow hair` also changes the t-shirt and softens facial fea
 
 ---
 
-## What's already in `modules/dlc_pro/`
+## What's already in `modules/phantom_cast/`
 
-The repository ships a Pro layer (`modules/dlc_pro/`) covering license activation, Firebase backend, paywall dialog, setup wizard, and updater. The **inference and UI** for the three missing features are not present in `dlc_pro/ui/` either — i.e., this isn't a paywalled-but-implemented feature. They need to be built.
+The repository ships a Pro layer (`modules/phantom_cast/`) covering license activation, Firebase backend, paywall dialog, setup wizard, and updater. The **inference and UI** for the three missing features are not present in `phantom_cast/ui/` either — i.e., this isn't a paywalled-but-implemented feature. They need to be built.
 
 ---
 

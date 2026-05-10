@@ -1,4 +1,4 @@
-# Phantom-Cast Pro — Developer Setup
+# Phantom Cast — Developer Setup
 
 End-to-end checklist for working on the Pro layer locally.
 
@@ -19,7 +19,7 @@ nothing to install system-wide.
 
 ```powershell
 git clone <repo>
-cd Phantom-Cast-main
+cd Phantom Cast-main
 py -3.11 -m venv venv
 .\venv\Scripts\pip install -r requirements.txt
 .\venv\Scripts\pip install --extra-index-url https://download.pytorch.org/whl/cu128 `
@@ -39,23 +39,23 @@ cd backend
 firebase login
 firebase use <your-project-id>
 cd functions && npm install
-firebase functions:secrets:set DLC_SIGNING_PRIVATE_KEY DLC_SIGNING_KID \
+firebase functions:secrets:set PHANTOMCAST_SIGNING_PRIVATE_KEY PHANTOMCAST_SIGNING_KID \
     STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET
 npm run build
 firebase deploy --only functions,firestore,storage
 ```
 
 After deploy: copy the project ID + Web API key into
-`modules/dlc_pro/firebase/config.py` (or set `DLCPRO_FIREBASE_PROJECT` and
-`DLCPRO_FIREBASE_API_KEY` in the build environment).
+`modules/phantom_cast/firebase/config.py` (or set `PHANTOMCAST_FIREBASE_PROJECT` and
+`PHANTOMCAST_FIREBASE_API_KEY` in the build environment).
 
 Generate the RS256 signing keypair once:
 
 ```bash
 openssl genpkey -algorithm RSA -out signing.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -in signing.pem -pubout -out signing.pub
-# private -> Functions secret DLC_SIGNING_PRIVATE_KEY
-# public  -> modules/dlc_pro/firebase/config.py PINNED_PUBKEYS
+# private -> Functions secret PHANTOMCAST_SIGNING_PRIVATE_KEY
+# public  -> modules/phantom_cast/firebase/config.py PINNED_PUBKEYS
 ```
 
 Rotate by pinning two kids during the rollover window.

@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Phantom-Cast Pro Firestore security rules.
+// Phantom Cast Firestore security rules.
 //
 // Authority model: every mutation goes through Cloud Functions which run
 // with admin credentials and bypass these rules. The rules only protect

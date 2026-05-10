@@ -203,7 +203,7 @@ def pre_check() -> bool:
     return True
 
 
-def update_status(message: str, scope: str = 'DLC.CORE') -> None:
+def update_status(message: str, scope: str = 'PCAST.CORE') -> None:
     print(f'[{scope}] {message}')
     if not modules.globals.headless:
         ui.update_status(message)

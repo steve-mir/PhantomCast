@@ -11,7 +11,7 @@ import threading
 import traceback
 from typing import Any, Callable, Optional
 
-from modules.dlc_pro.logger import get
+from modules.phantom_cast.logger import get
 
 log = get("async")
 

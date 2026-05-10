@@ -1,7 +1,7 @@
 {
-  "name": "dlc-pro-functions",
+  "name": "phantomcast-functions",
   "version": "1.0.0",
-  "description": "Cloud Functions for Phantom-Cast Pro: license activation, heartbeat, NOWPayments webhook.",
+  "description": "Cloud Functions for Phantom Cast: license activation, heartbeat, NOWPayments webhook.",
   "engines": { "node": "20" },
   "main": "lib/index.js",
   "scripts": {

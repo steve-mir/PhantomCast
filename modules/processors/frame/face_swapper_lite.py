@@ -12,7 +12,7 @@ A deliberately reduced-quality wrapper around ``face_swapper``:
 
 The "lite" pipeline exists so a free user always sees a strictly worse
 output than a Premium user. Premium and 2-minute-preview routing is
-handled in :mod:`modules.dlc_pro.core_bridge`; free callers should be
+handled in :mod:`modules.phantom_cast.core_bridge`; free callers should be
 sent here in place of ``face_swapper``.
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ from modules.processors.frame import face_swapper as _full
 from modules.typing import Face, Frame
 
 
-NAME = "DLC.FACE-SWAPPER-LITE"
+NAME = "PCAST.FACE-SWAPPER-LITE"
 
 # Long-side resolution the swap runs at. Anything below ~256 starts to
 # fail face detection too often; 320 keeps detection reliable while still

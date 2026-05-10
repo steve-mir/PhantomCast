@@ -18,18 +18,18 @@ from typing import Callable, Optional
 
 import customtkinter as ctk
 
-from modules.dlc_pro.gpu import GpuMode, detect
-from modules.dlc_pro.license.manager import LicenseStatus, license_manager
-from modules.dlc_pro.paths import first_run_marker
-from modules.dlc_pro.setup.model_downloader import ensure_models_async
-from modules.dlc_pro.ui import toast
-from modules.dlc_pro.ui.activation_dialog import ActivationDialog
+from modules.phantom_cast.gpu import GpuMode, detect
+from modules.phantom_cast.license.manager import LicenseStatus, license_manager
+from modules.phantom_cast.paths import first_run_marker
+from modules.phantom_cast.setup.model_downloader import ensure_models_async
+from modules.phantom_cast.ui import toast
+from modules.phantom_cast.ui.activation_dialog import ActivationDialog
 
 
 class SetupWizard(ctk.CTkToplevel):
     def __init__(self, parent: tk.Misc, on_complete: Callable[[], None]) -> None:
         super().__init__(parent)
-        self.title("Phantom-Cast Pro — First-time setup")
+        self.title("Phantom Cast — First-time setup")
         self.geometry("520x420")
         self.resizable(False, False)
 

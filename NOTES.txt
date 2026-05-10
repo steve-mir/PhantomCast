@@ -2,4 +2,4 @@ Files with Full in case of building locally
 requirements_full.txt,
 build_windows_full.ps1,
 modules/predicter_full.py,
-build/DeepLiveCamPro_full.spec
+build/PhantomCast_full.spec

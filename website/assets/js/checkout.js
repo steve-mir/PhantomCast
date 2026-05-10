@@ -214,7 +214,7 @@ function renderSuccess(root, invoice, licenseKey) {
       <div class="card p-5 text-left mb-6">
         <div class="text-sm font-semibold mb-2">What happens next</div>
         <ol class="text-sm text-[var(--text-muted)] space-y-1.5 list-decimal list-inside">
-          <li>Download Phantom-Cast Pro from the link below.</li>
+          <li>Download Phantom Cast from the link below.</li>
           <li>On first launch, paste your key into the activation dialog. The app will bind it to this PC.</li>
           <li>You have <strong class="text-white">30 days of full access</strong> to every feature.</li>
           <li>After day 30, your subscription rolls into <strong class="text-white">$${invoice.monthly_after_grace}/mo</strong> billed in BTC.</li>
@@ -222,7 +222,7 @@ function renderSuccess(root, invoice, licenseKey) {
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="download.html" class="btn btn-primary btn-lg"><i data-lucide="download" class="w-5 h-5"></i> Download Phantom-Cast</a>
+        <a href="download.html" class="btn btn-primary btn-lg"><i data-lucide="download" class="w-5 h-5"></i> Download Phantom Cast</a>
         <a href="app/dashboard.html" class="btn btn-secondary btn-lg"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> Go to dashboard</a>
       </div>
     </div>

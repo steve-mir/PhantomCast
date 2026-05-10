@@ -145,7 +145,7 @@ def process_video_in_memory(source_path: str, target_path: str, fps: float) -> b
             source_face = get_one_face(source_img)
             del source_img
         if source_face is None:
-            print("[DLC.CORE] Warning: No face detected in source image. "
+            print("[PCAST.CORE] Warning: No face detected in source image. "
                   "Face swapping will be skipped.")
 
     # --- Collect frame processors & reset per-video state ---
@@ -158,7 +158,7 @@ def process_video_in_memory(source_path: str, target_path: str, fps: float) -> b
     try:
         width, height = get_video_dimensions(target_path)
     except Exception as e:
-        print(f"[DLC.CORE] Failed to get video dimensions: {e}")
+        print(f"[PCAST.CORE] Failed to get video dimensions: {e}")
         return False
 
     total_frames = estimate_frame_count(target_path, fps)
@@ -250,7 +250,7 @@ def process_video_in_memory(source_path: str, target_path: str, fps: float) -> b
             return True
 
         if attempt == 0 and is_hw_encoder:
-            print(f"[DLC.CORE] Hardware encoder '{enc}' failed, "
+            print(f"[PCAST.CORE] Hardware encoder '{enc}' failed, "
                   f"retrying with software encoder...")
 
     return False
@@ -311,7 +311,7 @@ def _run_pipe_pipeline(
             writer_cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
         )
     except Exception as e:
-        print(f"[DLC.CORE] Failed to start FFmpeg pipes: {e}")
+        print(f"[PCAST.CORE] Failed to start FFmpeg pipes: {e}")
         for proc in (reader, writer):
             if proc:
                 try:
@@ -388,16 +388,16 @@ def _run_pipe_pipeline(
         if writer.returncode != 0:
             stderr_out = writer.stderr.read().decode(errors='ignore').strip()
             if stderr_out:
-                print(f"[DLC.CORE] FFmpeg encoder error: {stderr_out}")
+                print(f"[PCAST.CORE] FFmpeg encoder error: {stderr_out}")
             return False
 
         return processed_count > 0 and os.path.isfile(temp_output_path)
 
     except BrokenPipeError:
-        print("[DLC.CORE] FFmpeg pipe broken (encoder may not be available).")
+        print("[PCAST.CORE] FFmpeg pipe broken (encoder may not be available).")
         return False
     except Exception as e:
-        print(f"[DLC.CORE] In-memory processing error: {e}")
+        print(f"[PCAST.CORE] In-memory processing error: {e}")
         return False
     finally:
         for proc in (reader, writer):

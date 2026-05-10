@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Phantom-Cast Pro bootstrapper.
+"""Phantom Cast bootstrapper.
 
 This is the *only* entry point for the installed product. It:
 
-    1. Configures logging into %LOCALAPPDATA%/DeepLiveCamPro/logs.
+    1. Configures logging into %LOCALAPPDATA%/PhantomCast/logs.
     2. Primes CUDA / cuDNN DLL search paths *before* anything imports
        onnxruntime or torch.
     3. Runs the GPU detector cascade and decides CUDA vs CPU.
@@ -31,21 +31,21 @@ def _project_root_to_path() -> None:
 
 
 def _configure_logger() -> None:
-    from modules.dlc_pro.logger import configure
+    from modules.phantom_cast.logger import configure
 
     configure()
 
 
 def _prime_environment() -> None:
     """PATH + DLL directories. Must run before onnxruntime / torch import."""
-    from modules.dlc_pro.gpu.bootstrap import prime_paths
+    from modules.phantom_cast.gpu.bootstrap import prime_paths
 
     prime_paths()
 
 
 def _run_first_run_if_needed(on_done) -> bool:
     """Returns True if the wizard handled startup; False to continue immediately."""
-    from modules.dlc_pro.setup.first_run import is_first_run
+    from modules.phantom_cast.setup.first_run import is_first_run
 
     if not is_first_run():
         return False
@@ -61,7 +61,7 @@ def _run_first_run_if_needed(on_done) -> bool:
     # registered before any CTkToplevel is parented to it. Without this,
     # the wizard Toplevel can come up with no rendered children.
     boot_root.update_idletasks()
-    from modules.dlc_pro.setup.first_run import run_first_run
+    from modules.phantom_cast.setup.first_run import run_first_run
 
     def cont():
         try:
@@ -83,8 +83,8 @@ def _wrap_legacy_ui_init() -> None:
     Tk's default root and bootstrap our extras.
     """
     import modules.ui as legacy_ui
-    from modules.dlc_pro.logger import get
-    from modules.dlc_pro.ui import bootstrap_ui
+    from modules.phantom_cast.logger import get
+    from modules.phantom_cast.ui import bootstrap_ui
 
     log = get("launch")
     original_init = legacy_ui.init
@@ -114,10 +114,10 @@ def _kick_off_cuda_warning(root) -> None:
     checked 'don't show again'. Failure is silent — a missing reminder
     is never worth blocking the app over.
     """
-    from modules.dlc_pro.logger import get
+    from modules.phantom_cast.logger import get
     log = get("launch.cuda_warning")
     try:
-        from modules.dlc_pro.ui.cuda_warning import show_if_needed
+        from modules.phantom_cast.ui.cuda_warning import show_if_needed
         show_if_needed(root)
     except Exception:  # noqa: BLE001
         log.exception("cuda warning init failed")
@@ -129,11 +129,11 @@ def _kick_off_update_check(root) -> None:
     Always silently tolerates failure — an update bug should never block
     the user from running the app they already have.
     """
-    from modules.dlc_pro.logger import get
+    from modules.phantom_cast.logger import get
     log = get("launch.updater")
     try:
-        from modules.dlc_pro import updater
-        from modules.dlc_pro.ui.update_dialog import show_if_available
+        from modules.phantom_cast import updater
+        from modules.phantom_cast.ui.update_dialog import show_if_available
 
         def _on_available(info) -> None:
             # Marshal back to tk main loop before constructing widgets.
@@ -156,8 +156,8 @@ def _ensure_models_background() -> None:
     subsequent launches where models were deleted or never finished, it
     self-heals before the user hits a processor's lazy `pre_check()`.
     """
-    from modules.dlc_pro.logger import get
-    from modules.dlc_pro.setup.model_downloader import (
+    from modules.phantom_cast.logger import get
+    from modules.phantom_cast.setup.model_downloader import (
         ensure_models_async,
         verify_models,
     )
@@ -186,7 +186,7 @@ def _ensure_models_background() -> None:
 
 
 def _run_core() -> None:
-    from modules.dlc_pro.core_bridge import apply
+    from modules.phantom_cast.core_bridge import apply
     apply()
     _wrap_legacy_ui_init()
 
@@ -198,7 +198,7 @@ def _run_core() -> None:
     except Exception:  # noqa: BLE001
         # Never block app startup on the self-heal path — per-processor
         # `pre_check()` is the authoritative fallback.
-        from modules.dlc_pro.logger import get
+        from modules.phantom_cast.logger import get
         get("launch.models").exception("startup model self-heal aborted")
 
     from modules import core as legacy_core
@@ -210,14 +210,14 @@ def _crash_dialog(exc: BaseException) -> None:
     try:
         import tkinter.messagebox as mb
         mb.showerror(
-            "Phantom-Cast Pro — fatal error",
+            "Phantom Cast — fatal error",
             f"{exc.__class__.__name__}: {exc}\n\nDiagnostics copied to clipboard.\n"
-            f"See logs in %LOCALAPPDATA%\\DeepLiveCamPro\\logs",
+            f"See logs in %LOCALAPPDATA%\\PhantomCast\\logs",
         )
     except Exception:  # noqa: BLE001
         sys.stderr.write(msg)
     try:
-        from modules.dlc_pro.logger import get
+        from modules.phantom_cast.logger import get
         get("launch").error("fatal: %s", msg)
     except Exception:  # noqa: BLE001
         pass

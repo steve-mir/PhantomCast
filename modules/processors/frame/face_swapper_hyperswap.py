@@ -46,7 +46,7 @@ from modules.processors.frame.face_masking import (
 )
 from modules.processors.frame import hair_swap as _hair_swap
 
-NAME = "DLC.FACE-SWAPPER-HYPERSWAP"
+NAME = "PCAST.FACE-SWAPPER-HYPERSWAP"
 INPUT_SIZE = 256
 MODEL_FILE = "hyperswap_1a_256.onnx"
 MODEL_URL = (

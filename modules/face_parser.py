@@ -22,7 +22,7 @@ from modules.core import update_status
 from modules.utilities import conditional_download
 from modules.typing import Frame
 
-NAME = "DLC.FACE-PARSER"
+NAME = "PCAST.FACE-PARSER"
 
 # zllrunning/face-parsing.PyTorch ordering. Override if a different
 # ONNX export is used.

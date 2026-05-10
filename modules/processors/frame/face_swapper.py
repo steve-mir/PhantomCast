@@ -24,7 +24,7 @@ import time
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
-NAME = "DLC.FACE-SWAPPER"
+NAME = "PCAST.FACE-SWAPPER"
 
 # --- START: Added for Interpolation ---
 PREVIOUS_FRAME_RESULT = None # Stores the final processed frame from the previous step
@@ -52,12 +52,14 @@ def pre_check() -> bool:
         logging.error(f"Failed to create directory {download_directory_path} due to permission error: {e}")
         return False
     
-    # Use the direct download URL from Hugging Face (FP32 model for broad GPU compatibility)
+    # Phantom Cast model mirror. Override via PHANTOMCAST_MODEL_BASE_URL.
+    base = os.environ.get(
+        "PHANTOMCAST_MODEL_BASE_URL",
+        "https://models.phantomcast.space",
+    ).rstrip("/")
     conditional_download(
         download_directory_path,
-        [
-            "https://huggingface.co/hacksider/deep-live-cam/resolve/main/inswapper_128.onnx"
-        ],
+        [f"{base}/inswapper_128.onnx"],
     )
     return True
 

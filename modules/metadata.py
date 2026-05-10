@@ -1,3 +1,3 @@
-name = 'Phantom-Cast'
-version = '2.1.2'
-edition = 'Pro Edition'
+name = 'Phantom Cast'
+version = '0.0.23'
+edition = ''

@@ -1,6 +1,6 @@
-# Phantom-Cast Pro — Production-Ready Windows SaaS Plan
+# Phantom Cast — Production-Ready Windows SaaS Plan
 
-GPU-first commercial distribution of Phantom-Cast: signed Windows installer,
+GPU-first commercial distribution of Phantom Cast: signed Windows installer,
 license-bound activation, monthly subscription, Firebase backend, polished UI.
 
 ---
@@ -9,12 +9,12 @@ license-bound activation, monthly subscription, Firebase backend, polished UI.
 
 ```
 +-----------------------------------------------------------+
-|                  Phantom-Cast Pro (Windows .exe)         |
+|                  Phantom Cast (Windows .exe)         |
 |                                                           |
 |  launch.py  -> Bootstrapper (preflight, env, watchdog)    |
 |     |                                                     |
 |     v                                                     |
-|  modules/dlc_pro/                                         |
+|  modules/phantom_cast/                                         |
 |     setup/        First-run wizard, model downloader      |
 |     gpu/          CUDA detection, validation, fallback    |
 |     license/      Fingerprint, activation, secure store   |
@@ -25,7 +25,7 @@ license-bound activation, monthly subscription, Firebase backend, polished UI.
 |                                                           |
 |  Existing modules/* (face_swap, ui, processors, …)        |
 |                                                           |
-|  Local store: %LOCALAPPDATA%/DeepLiveCamPro/              |
+|  Local store: %LOCALAPPDATA%/PhantomCast/              |
 |     state.bin (DPAPI encrypted)                           |
 |     cache.json (signed claims)                            |
 |     logs/                                                 |
@@ -59,7 +59,7 @@ license-bound activation, monthly subscription, Firebase backend, polished UI.
 
 - **Main thread**: Tk/CTk UI only.
 - **Worker pool**: Existing frame-processor pool (untouched).
-- **`AsyncRunner`** (new in `dlc_pro/util/async_runner.py`): single background thread + queue used by license/subscription/firebase calls. UI subscribes via Tk `after()` callbacks.
+- **`AsyncRunner`** (new in `phantom_cast/util/async_runner.py`): single background thread + queue used by license/subscription/firebase calls. UI subscribes via Tk `after()` callbacks.
 
 ---
 
@@ -97,12 +97,12 @@ Why bundle:
 - Avoids polluting user's CUDA installs (we never write to `%CUDA_PATH%`).
 - Lets us ship a known-good cuDNN/cuBLAS pair without version drift.
 
-PATH injection is handled by `gpu.bootstrap.prime_paths()` called *before* the first `import onnxruntime`. See `modules/dlc_pro/gpu/bootstrap.py`.
+PATH injection is handled by `gpu.bootstrap.prime_paths()` called *before* the first `import onnxruntime`. See `modules/phantom_cast/gpu/bootstrap.py`.
 
 ### 1.4 Fallback semantics
 
 - Any `FAIL` step → enter CPU mode, display non-blocking toast with one-click "Retry GPU" that re-runs the cascade.
-- User can force CPU in Settings → Execution Mode. Stored in registry under `HKCU\Software\DeepLiveCamPro\Execution\ForceCPU`.
+- User can force CPU in Settings → Execution Mode. Stored in registry under `HKCU\Software\PhantomCast\Execution\ForceCPU`.
 
 ---
 
@@ -145,7 +145,7 @@ DPAPI-encrypt + persist                    audit log entry
 
 ### 2.3 Local secure storage
 
-Path: `%LOCALAPPDATA%\DeepLiveCamPro\state.bin`
+Path: `%LOCALAPPDATA%\PhantomCast\state.bin`
 
 ```
 state.bin  =  DPAPI(scope=USER, payload=JSON{
@@ -189,7 +189,7 @@ Plan name → set of feature flags is defined server-side in Firestore at `featu
 
 ```python
 # usage in any module
-from modules.dlc_pro.subscription import require_feature, has_feature
+from modules.phantom_cast.subscription import require_feature, has_feature
 
 @require_feature("hyperswap_full_head")
 def run_hyperswap(...): ...
@@ -269,7 +269,7 @@ Client never writes directly. All mutating paths go through Functions, which enf
 
 ## 5. UI/UX Improvements
 
-New CTk widgets in `modules/dlc_pro/ui/`:
+New CTk widgets in `modules/phantom_cast/ui/`:
 
 - **`StatusBar`** (always visible, bottom of root) — GPU/CPU pill, plan pill, online/offline pill.
 - **`ActivationDialog`** — license key entry, "Buy now" link, error states.
@@ -278,7 +278,7 @@ New CTk widgets in `modules/dlc_pro/ui/`:
 - **`SetupWizard`** — first-run only: GPU check → model download → activation → done.
 - **Loading/Error states** — central `Toast` and `Spinner` overlay; errors carry remediation text and a "Copy diagnostics" button.
 
-The old `modules/ui.py` is *not* rewritten; we wrap its `init()` and add the status bar plus dialog hooks via `dlc_pro.ui.bootstrap_ui(root)`.
+The old `modules/ui.py` is *not* rewritten; we wrap its `init()` and add the status bar plus dialog hooks via `phantom_cast.ui.bootstrap_ui(root)`.
 
 ---
 
@@ -286,7 +286,7 @@ The old `modules/ui.py` is *not* rewritten; we wrap its `init()` and add the sta
 
 | #  | Step                                                | Output                                          |
 | -- | --------------------------------------------------- | ----------------------------------------------- |
-| 1  | Add `modules/dlc_pro/` skeleton + utilities         | async runner, paths, logger                     |
+| 1  | Add `modules/phantom_cast/` skeleton + utilities         | async runner, paths, logger                     |
 | 2  | Implement GPU detector + bootstrap + smoke test     | `gpu/detector.py`, `gpu/bootstrap.py`           |
 | 3  | Replace direct `import onnxruntime` paths to honour bootstrap | Patch `run.py`, `modules/core.py`         |
 | 4  | Implement fingerprint, secure store, license manager| `license/*`                                     |
@@ -304,13 +304,13 @@ The old `modules/ui.py` is *not* rewritten; we wrap its `init()` and add the sta
 ## 7. Folder & File Changes
 
 ```
-Phantom-Cast/
+Phantom Cast/
 ├── docs/PRODUCTION_PLAN.md                       (NEW — this doc)
 ├── launch.py                                     (NEW — bootstrapper entrypoint)
 ├── run.py                                        (MODIFIED — delegates to launch.py)
 ├── requirements.txt                              (MODIFIED — pin cu128 stack)
 ├── modules/
-│   └── dlc_pro/                                  (NEW)
+│   └── phantom_cast/                                  (NEW)
 │       ├── __init__.py
 │       ├── paths.py
 │       ├── async_runner.py
@@ -347,11 +347,11 @@ Phantom-Cast/
 │   │   ├── tsconfig.json
 │   │   └── src/index.ts
 ├── build/
-│   ├── DeepLiveCamPro.spec                       (PyInstaller)
+│   ├── PhantomCast.spec                       (PyInstaller)
 │   ├── runtime_hook_paths.py
 │   └── version_info.txt
 ├── installer/
-│   ├── DeepLiveCamPro.iss                        (Inno Setup)
+│   ├── PhantomCast.iss                        (Inno Setup)
 │   └── prerequisites/
 │       ├── vc_redist.x64.exe                     (placeholder)
 │       └── README.txt                            (CUDA driver guidance)
@@ -363,14 +363,14 @@ Phantom-Cast/
 
 ## 8. Security Considerations
 
-1. **Code signing**: EV cert on `DeepLiveCamPro.exe`, the installer, and the auto-updater payload. Without it, Windows SmartScreen will eat conversion rate.
+1. **Code signing**: EV cert on `PhantomCast.exe`, the installer, and the auto-updater payload. Without it, Windows SmartScreen will eat conversion rate.
 2. **Pinned RS256 keys**: hard-coded `kid → pem` map in `firebase/pubkeys.py`. Token verification refuses unknown kids; rotate via app update.
 3. **Cert-pin Firebase host**: pin the Google Trust Services intermediate; allow rollover by pinning two.
 4. **DPAPI scope = user**: prevents cross-account cloning; combined with fingerprint, prevents disk-image cloning.
 5. **No secrets in the installer**: only public Firebase config + client API key (which is intentionally public per Firebase model). All authority is in custom claims signed by Functions.
 6. **Anti-debug**: not added. Determined attackers will crack any Python app; we focus on preventing casual sharing, not state-actor reverse engineering. Time spent there is better spent on server-side enforcement (license server tracks misuse, suspends keys).
 7. **Server-side enforcement**: every premium ONNX model URL is fetched with a short-lived signed URL gated by `hasCustomClaim('plan' in {pro,studio})`. Cracked clients can't get the model files.
-8. **Telemetry minimisation**: we send fingerprint *hash* only, never raw components. IP is hashed before storage. Logs are user-readable in `%LOCALAPPDATA%\DeepLiveCamPro\logs`.
+8. **Telemetry minimisation**: we send fingerprint *hash* only, never raw components. IP is hashed before storage. Logs are user-readable in `%LOCALAPPDATA%\PhantomCast\logs`.
 9. **Update integrity**: updater verifies SHA-256 + EV signature before swap; falls back to old binary on launch failure.
 
 ---
@@ -382,6 +382,6 @@ Phantom-Cast/
 - **Telemetry opt-in** (Sentry) for crash reports — defaults off, governed by EU privacy.
 - **Per-feature trial unlocks** (3 free 4K exports/month) to soften paywall.
 - **License pool / team plan** with seat allocation in Firestore.
-- **macOS / Linux builds** reusing the same `dlc_pro` core. Substitute DPAPI with Keychain / libsecret.
+- **macOS / Linux builds** reusing the same `phantom_cast` core. Substitute DPAPI with Keychain / libsecret.
 - **Auto-update via Squirrel.Windows** so installer + app share update channel.
 - **Background model pre-warming** during the wizard's last step.

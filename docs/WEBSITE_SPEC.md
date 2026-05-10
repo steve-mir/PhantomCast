@@ -4,12 +4,12 @@
 
 **Product:** Phantom Cast
 **Tagline:** *Real-time face swap, on your GPU. Built for streamers, creators, and producers.*
-**Domain (recommended):** `phantomcast.app` (alt: `phantomcast.io`, `phantomcast.studio`)
+**Domain:** `phantomcast.space`
 **Subdomains:**
-- `dl.phantomcast.app` — installer CDN (Cloudflare R2)
-- `app.phantomcast.app` — customer portal (login, subscription, license keys)
-- `docs.phantomcast.app` — user docs (optional, can be a `/docs` path instead)
-- `status.phantomcast.app` — public status page (Better Stack / Instatus)
+- `dl.phantomcast.space` — installer CDN (Cloudflare R2)
+- `app.phantomcast.space` — customer portal (login, subscription, license keys)
+- `docs.phantomcast.space` — user docs (optional, can be a `/docs` path instead)
+- `status.phantomcast.space` — public status page (Better Stack / Instatus)
 
 ---
 
@@ -56,7 +56,7 @@ Recommended (in order of pragmatism):
 | Forms / support | **Plain** or **Crisp** | Live chat + ticketing |
 
 Hosted on Vercel for the marketing site; the customer portal at
-`app.phantomcast.app` can be the same Next.js app under an `(app)`
+`app.phantomcast.space` can be the same Next.js app under an `(app)`
 route group with auth-gating, or a separate Next.js project.
 
 ---
@@ -64,7 +64,7 @@ route group with auth-gating, or a separate Next.js project.
 ## 3. Sitemap
 
 ```
-phantomcast.app/
+phantomcast.space/
 ├── /                                    Homepage
 ├── /features                            Features deep-dive
 ├── /pricing                             Pricing + plan compare
@@ -92,7 +92,7 @@ phantomcast.app/
 ├── /press                               Press kit (logos, screenshots, founder bio)
 └── /sitemap.xml + /robots.txt + /llms.txt
 
-app.phantomcast.app/                     (auth-gated)
+app.phantomcast.space/                     (auth-gated)
 ├── /login
 ├── /signup
 ├── /forgot-password
@@ -173,7 +173,7 @@ Each "Buy" button kicks off Stripe Checkout. Success redirects to
 ### 4.4 Download (`/download`)
 
 ```
-┌─ Download Phantom Cast 1.4.2 ────────────────┐
+┌─ Download Phantom Cast 0.0.23 ────────────────┐
 │  Released May 6, 2026 · 1.4 GB · SHA-256 ... │
 │                                              │
 │  [ Download for Windows 10/11 (x64) ]        │
@@ -190,7 +190,7 @@ Each "Buy" button kicks off Stripe Checkout. Success redirects to
 └──────────────────────────────────────────────┘
 ```
 
-Server component fetches `https://dl.phantomcast.app/win/latest.json`
+Server component fetches `https://dl.phantomcast.space/win/latest.json`
 and renders version + URL. Cache with `revalidate: 60` so a release
 shows up within a minute.
 
@@ -217,7 +217,7 @@ Each article ends with a "Was this helpful?" widget logged to PostHog.
 
 FAQ accordion (10-15 questions) + contact form. Form submits to Plain
 or Crisp; auto-tags by selected category. Show a status banner at the
-top if `status.phantomcast.app` reports an active incident (consume the
+top if `status.phantomcast.space` reports an active incident (consume the
 status page's JSON feed at build time + runtime poll).
 
 ### 4.8 Legal pages
@@ -240,7 +240,7 @@ status page's JSON feed at build time + runtime poll).
 - **Refund Policy** — 14-day no-questions refund; clearly stated
 - **DPA (Data Processing Addendum)** — for B2B / studio customers
 
-### 4.9 Customer portal (`app.phantomcast.app/dashboard`)
+### 4.9 Customer portal (`app.phantomcast.space/dashboard`)
 
 Authenticated with Firebase Auth. Sections:
 
@@ -365,11 +365,11 @@ go through Git.
 
 ```
 [ ] Domain registered + Cloudflare DNS configured
-[ ] Vercel project deployed at phantomcast.app
-[ ] Customer portal at app.phantomcast.app live + auth-gated
+[ ] Vercel project deployed at phantomcast.space
+[ ] Customer portal at app.phantomcast.space live + auth-gated
 [ ] Stripe products created (Pro $19/mo, Pro $190/yr, Studio $49/mo, Studio $490/yr)
 [ ] Stripe webhook → v1_stripe Cloud Function endpoint registered
-[ ] latest.json reachable at dl.phantomcast.app/win/latest.json
+[ ] latest.json reachable at dl.phantomcast.space/win/latest.json
 [ ] Code-signed installer downloadable from /download
 [ ] Resend domain verified (SPF + DKIM)
 [ ] All legal pages drafted by counsel (or at least templated + reviewed)
@@ -393,4 +393,4 @@ go through Git.
 - **Web preview** — drag a video to a `/preview` page that uses a hosted GPU to produce a 5-second watermarked sample (lead magnet, paid per minute on RunPod / Modal)
 - **API access (Studio+)** — REST endpoint that takes a video URL and returns a swapped video; metered per minute of output
 - **Localization** — start with ES, PT-BR, JA, ZH-CN; use Next.js i18n routing
-- **Comparison microsites** — `vs.phantomcast.app/deepfacelab` etc. for SEO long-tail capture
+- **Comparison microsites** — `vs.phantomcast.space/deepfacelab` etc. for SEO long-tail capture

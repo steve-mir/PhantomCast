@@ -27,10 +27,10 @@ from enum import Enum
 from threading import Lock
 from typing import Any, Callable, Dict, List, Optional
 
-from modules.dlc_pro.async_runner import runner
-from modules.dlc_pro.license import fingerprint, secure_store
-from modules.dlc_pro.license.dev_mode import is_dev_mode
-from modules.dlc_pro.logger import get
+from modules.phantom_cast.async_runner import runner
+from modules.phantom_cast.license import fingerprint, secure_store
+from modules.phantom_cast.license.dev_mode import is_dev_mode
+from modules.phantom_cast.logger import get
 
 log = get("license.manager")
 
@@ -83,7 +83,7 @@ class LicenseState:
     subscribed: bool = False             # Stripe sub active (set by heartbeat)
     subscription_url: str = ""           # short-lived portal/checkout URL from server
     # --- Dev-mode tag — fake activations carry this so they're rejected
-    # if the next launch happens without DLC_DEV_MODE.
+    # if the next launch happens without PHANTOMCAST_DEV_MODE.
     dev_mode: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -200,7 +200,7 @@ class LicenseManager:
                 state = LicenseState.from_dict(d)
             # Reject stale dev-mode state when running outside dev mode.
             if state.dev_mode and not is_dev_mode():
-                log.warning("dev-mode activation found but DLC_DEV_MODE is off; clearing")
+                log.warning("dev-mode activation found but PHANTOMCAST_DEV_MODE is off; clearing")
                 secure_store.clear()
                 return
             with self._lock:
@@ -232,7 +232,7 @@ class LicenseManager:
 
         # Dev mode: skip Firebase entirely, grant Premium locally.
         if is_dev_mode():
-            log.info("DLC_DEV_MODE active — accepting any key as Premium")
+            log.info("PHANTOMCAST_DEV_MODE active — accepting any key as Premium")
             snap = self._activate_dev(license_key)
             self._emit()
             if on_done:
@@ -294,7 +294,7 @@ class LicenseManager:
             return LicenseState.from_dict(self._state.to_dict())
 
     def _do_activate(self, license_key: str) -> LicenseState:
-        from modules.dlc_pro.firebase.client import FirebaseClient
+        from modules.phantom_cast.firebase.client import FirebaseClient
 
         fp = fingerprint.collect()
         client = FirebaseClient()
@@ -366,7 +366,7 @@ class LicenseManager:
         )
 
     def _do_heartbeat(self, snap: LicenseState) -> bool:
-        from modules.dlc_pro.firebase.client import FirebaseClient
+        from modules.phantom_cast.firebase.client import FirebaseClient
 
         client = FirebaseClient()
         resp = client.heartbeat(
@@ -426,7 +426,7 @@ class LicenseManager:
         )
 
     def _do_deactivate(self, snap: LicenseState) -> None:
-        from modules.dlc_pro.firebase.client import FirebaseClient
+        from modules.phantom_cast.firebase.client import FirebaseClient
 
         if snap.license_id and snap.license_key:
             try:

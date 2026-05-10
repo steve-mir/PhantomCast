@@ -1,4 +1,4 @@
-from modules.dlc_pro.license.manager import (
+from modules.phantom_cast.license.manager import (
     LicenseManager,
     LicenseError,
     LicenseStatus,

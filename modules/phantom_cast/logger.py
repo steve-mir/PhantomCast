@@ -1,7 +1,7 @@
-"""Rotating file logger plus stderr mirror for Phantom-Cast Pro.
+"""Rotating file logger plus stderr mirror for Phantom Cast.
 
-Used for everything in dlc_pro. Keeps logs in
-``%LOCALAPPDATA%/DeepLiveCamPro/logs`` so the user can grab a diagnostics
+Used for everything in phantom_cast. Keeps logs in
+``%LOCALAPPDATA%/PhantomCast/logs`` so the user can grab a diagnostics
 bundle from the UI's "Copy diagnostics" button.
 """
 from __future__ import annotations
@@ -10,7 +10,7 @@ import logging
 import sys
 from logging.handlers import RotatingFileHandler
 
-from modules.dlc_pro.paths import logs_dir
+from modules.phantom_cast.paths import logs_dir
 
 
 _CONFIGURED = False
@@ -28,14 +28,14 @@ def configure(level: int = logging.INFO) -> None:
     )
 
     file_h = RotatingFileHandler(
-        logs_dir() / "dlc_pro.log", maxBytes=2_000_000, backupCount=5, encoding="utf-8"
+        logs_dir() / "phantom_cast.log", maxBytes=2_000_000, backupCount=5, encoding="utf-8"
     )
     file_h.setFormatter(fmt)
 
     stream_h = logging.StreamHandler(sys.stderr)
     stream_h.setFormatter(fmt)
 
-    root = logging.getLogger("dlc_pro")
+    root = logging.getLogger("phantom_cast")
     root.setLevel(level)
     root.addHandler(file_h)
     root.addHandler(stream_h)
@@ -44,4 +44,4 @@ def configure(level: int = logging.INFO) -> None:
 
 def get(name: str) -> logging.Logger:
     configure()
-    return logging.getLogger(f"dlc_pro.{name}")
+    return logging.getLogger(f"phantom_cast.{name}")

@@ -1,4 +1,4 @@
-"""Glue between the dlc_pro production layer and the legacy ``modules.core``.
+"""Glue between the phantom_cast production layer and the legacy ``modules.core``.
 
 The legacy code keeps its own ``--execution-provider`` argparse flag and its
 own ``modules.globals.execution_providers`` list. We override both so:
@@ -20,10 +20,10 @@ from __future__ import annotations
 import sys
 from typing import List
 
-from modules.dlc_pro.gpu import GpuMode, selected_mode
-from modules.dlc_pro.gpu.bootstrap import prime_paths
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.subscription.gate import FeatureLocked, has_feature
+from modules.phantom_cast.gpu import GpuMode, selected_mode
+from modules.phantom_cast.gpu.bootstrap import prime_paths
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.subscription.gate import FeatureLocked, has_feature
 
 log = get("core_bridge")
 
@@ -167,7 +167,7 @@ def _ensure_watermark_patched() -> None:
         log.warning("face_swapper still not importable; watermark deferred: %s", e)
         return
 
-    from modules.dlc_pro.output.watermark import watermark_if_free
+    from modules.phantom_cast.output.watermark import watermark_if_free
 
     original_app = fs.apply_post_processing
 
@@ -237,7 +237,7 @@ def _patch_live_webcam_gate() -> None:
     def gated_preview(*args, **kwargs):
         if not has_feature("live_webcam"):
             try:
-                from modules.dlc_pro.ui.paywall_dialog import PaywallDialog
+                from modules.phantom_cast.ui.paywall_dialog import PaywallDialog
                 # Find any tk root we can parent to.
                 parent = getattr(legacy_ui, "ROOT", None)
                 if parent is not None:

@@ -12,7 +12,7 @@ Flow:
 
 Dependencies: stdlib only. Network calls are wrapped in narrow try/except so
 update failures never block app startup. A user-facing 'skip this version'
-preference is persisted in ``%LOCALAPPDATA%/DeepLiveCamPro/updater.json``.
+preference is persisted in ``%LOCALAPPDATA%/PhantomCast/updater.json``.
 """
 from __future__ import annotations
 
@@ -33,11 +33,11 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 try:
-    from modules.dlc_pro.logger import get
+    from modules.phantom_cast.logger import get
     log = get("updater")
 except Exception:  # pragma: no cover — fallback when logger isn't initialized
     import logging
-    log = logging.getLogger("dlc_pro.updater")
+    log = logging.getLogger("phantom_cast.updater")
 
 # ----------------------------------------------------------------------- config
 
@@ -45,15 +45,15 @@ GITHUB_OWNER = "steve-mir"
 GITHUB_REPO  = "PhantomCast"
 GITHUB_API   = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/latest"
 
-# Override via env for staging / forks: e.g. DLCPRO_UPDATE_REPO=foo/bar
-_REPO_OVERRIDE = os.environ.get("DLCPRO_UPDATE_REPO", "")
+# Override via env for staging / forks: e.g. PHANTOMCAST_UPDATE_REPO=foo/bar
+_REPO_OVERRIDE = os.environ.get("PHANTOMCAST_UPDATE_REPO", "")
 if _REPO_OVERRIDE and "/" in _REPO_OVERRIDE:
     GITHUB_OWNER, GITHUB_REPO = _REPO_OVERRIDE.split("/", 1)
     GITHUB_API = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/latest"
 
 REQUEST_TIMEOUT_SECONDS = 10
 DOWNLOAD_CHUNK_BYTES = 256 * 1024
-USER_AGENT = "DeepLiveCamPro-updater/1.0 (+https://github.com/steve-mir/PhantomCast)"
+USER_AGENT = "PhantomCast-updater/1.0 (+https://github.com/steve-mir/PhantomCast)"
 
 # Asset matchers in priority order: prefer the installer over the loose .exe.
 _ASSET_PATTERNS = (
@@ -70,7 +70,7 @@ def _state_path() -> Path:
         base = Path.home() / "Library" / "Application Support"
     else:
         base = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state"))
-    p = base / "DeepLiveCamPro"
+    p = base / "PhantomCast"
     p.mkdir(parents=True, exist_ok=True)
     return p / "updater.json"
 
@@ -119,7 +119,7 @@ def is_newer(latest: str, current: str) -> bool:
 
 def current_version() -> str:
     try:
-        from modules.dlc_pro import __version__
+        from modules.phantom_cast import __version__
         return __version__
     except Exception:
         return "0.0.0"

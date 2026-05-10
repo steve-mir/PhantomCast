@@ -2,7 +2,7 @@
 
 Order matters: this hook needs to extend PATH and register DLL directories
 *before* PyInstaller's own loader pulls in onnxruntime / torch / nvidia
-extensions. We therefore avoid importing dlc_pro here (it depends on
+extensions. We therefore avoid importing phantom_cast here (it depends on
 logging which depends on filesystem locations); we duplicate the minimum
 search-path priming inline.
 """

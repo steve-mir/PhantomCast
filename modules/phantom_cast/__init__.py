@@ -1,4 +1,4 @@
-"""Phantom-Cast Pro: production layer.
+"""Phantom Cast: production layer.
 
 GPU-first execution, license activation, subscription gating, Firebase backend,
 and packaging glue. Imported by ``launch.py`` *before* the legacy

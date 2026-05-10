@@ -1,6 +1,6 @@
 """Firebase REST/Functions client wrapper used by license + subscription."""
 
-from modules.dlc_pro.firebase.client import (
+from modules.phantom_cast.firebase.client import (
     DeviceMismatch,
     FirebaseClient,
     FirebaseError,

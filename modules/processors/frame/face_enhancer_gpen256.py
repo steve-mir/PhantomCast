@@ -22,7 +22,7 @@ from modules.processors.frame._onnx_enhancer import (
     enhance_face_onnx,
 )
 
-NAME = "DLC.FACE-ENHANCER-GPEN256"
+NAME = "PCAST.FACE-ENHANCER-GPEN256"
 INPUT_SIZE = 256
 MODEL_URL = "https://github.com/harisreedhar/Face-Upscalers-ONNX/releases/download/Models/GPEN-BFR-256.onnx"
 MODEL_FILE = "GPEN-BFR-256.onnx"

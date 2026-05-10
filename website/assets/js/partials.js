@@ -4,7 +4,7 @@
 
 (function () {
   const APP_NAME = 'Phantom Cast';
-  const VERSION = '1.4.2';
+  const VERSION = '0.0.23';
   const RELEASED = 'May 6, 2026';
 
   // Resolve relative path back to root depending on current page depth.

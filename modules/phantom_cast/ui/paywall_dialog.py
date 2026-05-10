@@ -12,8 +12,8 @@ from typing import Optional
 
 import customtkinter as ctk
 
-from modules.dlc_pro.firebase.config import PORTAL_FALLBACK_URL
-from modules.dlc_pro.subscription.gate import FeatureLocked, current_plan
+from modules.phantom_cast.firebase.config import PORTAL_FALLBACK_URL
+from modules.phantom_cast.subscription.gate import FeatureLocked, current_plan
 
 
 PLANS = [
@@ -67,7 +67,7 @@ class PaywallDialog(ctk.CTkToplevel):
         self._build(feature)
 
     def _build(self, feature: Optional[str]) -> None:
-        title = "Unlock more with Phantom-Cast Pro"
+        title = "Unlock more with Phantom Cast"
         if feature:
             human = feature.replace("_", " ").title()
             title = f"{human} requires an upgrade"

@@ -1,10 +1,10 @@
-# Phantom-Cast Pro - end-to-end Windows build
+# Phantom Cast - end-to-end Windows build
 # Usage:
 #     pwsh -File build_windows.ps1 -Sign $true
 #
 # What it does:
 #   1. Creates / activates the build venv with cu128 deps pinned.
-#   2. Runs PyInstaller on build/DeepLiveCamPro.spec (onefolder).
+#   2. Runs PyInstaller on build/PhantomCast.spec (onefolder).
 #   3. Optionally code-signs the EXE with the EV cert from the secure store.
 #   4. Builds the Inno Setup installer.
 #   5. Optionally signs the installer.
@@ -13,7 +13,7 @@
 param(
     [switch]$SkipDeps,
     [switch]$Sign,
-    [string]$CertSubject = "Phantom-Cast Pro",
+    [string]$CertSubject = "Phantom Cast",
     [string]$TimestampUrl = "http://timestamp.digicert.com",
     [string]$InnoSetupCompiler = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 )
@@ -86,16 +86,16 @@ if (-not $SkipDeps) {
 # 2. PyInstaller
 Step "Running PyInstaller"
 Remove-Item -Recurse -Force dist, build/__pycache__ -ErrorAction SilentlyContinue
-Run "$python -m PyInstaller build/DeepLiveCamPro.spec --clean --noconfirm"
+Run "$python -m PyInstaller build/PhantomCast.spec --clean --noconfirm"
 
-if (-not (Test-Path "dist\DeepLiveCamPro\DeepLiveCamPro.exe")) {
+if (-not (Test-Path "dist\PhantomCast\PhantomCast.exe")) {
     throw "PyInstaller output missing - aborting."
 }
 
 # 3. Sign EXE (optional)
 if ($Sign) {
     Step "Signing EXE"
-    Run "signtool sign /n `"$CertSubject`" /tr $TimestampUrl /td sha256 /fd sha256 dist\DeepLiveCamPro\DeepLiveCamPro.exe"
+    Run "signtool sign /n `"$CertSubject`" /tr $TimestampUrl /td sha256 /fd sha256 dist\PhantomCast\PhantomCast.exe"
 }
 
 # 4. Inno Setup
@@ -122,7 +122,7 @@ if (-not (Test-Path $vcRedist)) {
     Write-Host "    downloaded $sizeMB MB" -ForegroundColor DarkGray
 }
 
-Run "& `"$InnoSetupCompiler`" installer\DeepLiveCamPro.iss"
+Run "& `"$InnoSetupCompiler`" installer\PhantomCast.iss"
 
 # 5. Sign installer (optional)
 if ($Sign) {

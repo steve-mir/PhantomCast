@@ -18,8 +18,8 @@ import sys
 from pathlib import Path
 from typing import List
 
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.paths import cuda_bin_dir, install_root
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.paths import cuda_bin_dir, install_root
 
 log = get("gpu.bootstrap")
 

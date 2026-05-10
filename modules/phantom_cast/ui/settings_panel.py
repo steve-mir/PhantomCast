@@ -14,17 +14,17 @@ from typing import Optional
 
 import customtkinter as ctk
 
-from modules.dlc_pro.gpu import GpuMode, detect, set_user_override
-from modules.dlc_pro.license import license_manager
-from modules.dlc_pro.paths import logs_dir
-from modules.dlc_pro.ui import toast
-from modules.dlc_pro.ui.activation_dialog import ActivationDialog
+from modules.phantom_cast.gpu import GpuMode, detect, set_user_override
+from modules.phantom_cast.license import license_manager
+from modules.phantom_cast.paths import logs_dir
+from modules.phantom_cast.ui import toast
+from modules.phantom_cast.ui.activation_dialog import ActivationDialog
 
 
 class SettingsPanel(ctk.CTkToplevel):
     def __init__(self, parent: tk.Misc) -> None:
         super().__init__(parent)
-        self.title("Settings — Phantom-Cast Pro")
+        self.title("Settings — Phantom Cast")
         self.geometry("640x520")
 
         # macOS: transient/grab_set against a withdrawn root produces a
@@ -75,7 +75,7 @@ class SettingsPanel(ctk.CTkToplevel):
         self._mode_status.pack(anchor="w", padx=10)
 
     def _current_override(self) -> str:
-        from modules.dlc_pro.gpu.detector import _user_override
+        from modules.phantom_cast.gpu.detector import _user_override
 
         return _user_override().value
 

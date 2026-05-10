@@ -1,4 +1,4 @@
-"""Runtime GPU detection cascade for Phantom-Cast Pro.
+"""Runtime GPU detection cascade for Phantom Cast.
 
 Five-stage probe that decides whether to run on CUDA or fall back to CPU:
 
@@ -27,9 +27,9 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import List, Optional
 
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.paths import settings_file
-from modules.dlc_pro.gpu.bootstrap import prime_paths
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.paths import settings_file
+from modules.phantom_cast.gpu.bootstrap import prime_paths
 
 log = get("gpu.detector")
 
@@ -250,7 +250,7 @@ def _probe_runtime(result: GpuProbeResult) -> None:
                 "runtime",
                 Severity.FAIL,
                 "Missing CUDA/cuDNN DLLs: " + ", ".join(missing),
-                "Reinstall Phantom-Cast Pro to restore the bundled CUDA runtime, "
+                "Reinstall Phantom Cast to restore the bundled CUDA runtime, "
                 "or install CUDA 12.8 + cuDNN 8.9.7 manually.",
             )
         )

@@ -10,10 +10,10 @@ Usage:
     python fingerprint_and_activate.py
         # just print the fingerprint, no network call
 
-    python fingerprint_and_activate.py --license-key DLC-XXXXXXXXXXXXXXXX
+    python fingerprint_and_activate.py --license-key PC-XXXXXXXXXXXXXXXX
         # also POST to v1_activate and print the response
 
-    python fingerprint_and_activate.py --license-key DLC-... --endpoint https://...
+    python fingerprint_and_activate.py --license-key PC-... --endpoint https://...
         # override the activation endpoint (defaults to diivix1)
 """
 from __future__ import annotations
@@ -126,7 +126,7 @@ def collect_components() -> dict[str, str]:
 
 
 def fingerprint_hash(components: dict[str, str]) -> str:
-    """Composite hash matching modules/dlc_pro/license/fingerprint.py — JSON
+    """Composite hash matching modules/phantom_cast/license/fingerprint.py — JSON
     dump of the components dict with sorted keys, sha256."""
     canon = json.dumps(components, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canon.encode("utf-8")).hexdigest()

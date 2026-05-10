@@ -14,7 +14,7 @@ Claim shape:
       "fingerprint_hash": "...",
       "iat": <unix>,
       "exp": <unix>,
-      "kid": "dlc-pro-2026-01"
+      "kid": "phantomcast-2026-01"
     }
 """
 from __future__ import annotations
@@ -26,9 +26,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from modules.dlc_pro.firebase.config import PINNED_PUBKEYS
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.paths import claims_cache_file
+from modules.phantom_cast.firebase.config import PINNED_PUBKEYS
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.paths import claims_cache_file
 
 log = get("subscription.claims")
 

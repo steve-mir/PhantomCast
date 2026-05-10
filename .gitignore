@@ -71,8 +71,8 @@ build/*.7z
 *.manifest
 # Keep build/*.spec, build/*.py, build/*.txt source files tracked
 # but ignore the generated dist tree
-DeepLiveCamPro/
-DeepLiveCamPro-*.exe
+PhantomCast/
+PhantomCast-*.exe
 
 # Inno Setup output
 # Output/

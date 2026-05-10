@@ -48,7 +48,7 @@ def resolution_map(name: str) -> Tuple[int, int, int]:
     """
     label = name
     try:
-        from modules.dlc_pro.subscription.gate import has_feature
+        from modules.phantom_cast.subscription.gate import has_feature
         if name in ("4K", "1440p") and not has_feature("export_4k"):
             label = "1080p"
     except Exception:

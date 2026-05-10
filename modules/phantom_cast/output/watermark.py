@@ -133,7 +133,7 @@ def watermark_if_free(frame: Frame) -> Frame:
     """Apply :func:`draw_watermark` iff the user lacks ``no_watermark``."""
     # Lazy import: keeps this module importable from low-level processors
     # without dragging in the licence stack at module load.
-    from modules.dlc_pro.subscription.gate import has_feature
+    from modules.phantom_cast.subscription.gate import has_feature
 
     if has_feature("no_watermark"):
         return frame

@@ -329,9 +329,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     root = ctk.CTk()
     root.geometry(f"760x980")
     root.minsize(680, 820)
-    root.title(
-        f"Phantom Cast {modules.metadata.version} — {modules.metadata.edition}"
-    )
+    root.title(f"Phantom Cast {modules.metadata.version}")
     root.configure(fg_color=BG)
     root.protocol("WM_DELETE_WINDOW", lambda: destroy())
 
@@ -385,14 +383,14 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
 
     donate_label = ctk.CTkLabel(
         footer,
-        text="deeplivecam.net",
+        text="phantomcast.space",
         cursor="hand2",
         text_color=CYAN,
         font=ctk.CTkFont(size=11, underline=True),
     )
     donate_label.pack(side="right")
     donate_label.bind(
-        "<Button>", lambda event: webbrowser.open("https://deeplivecam.net")
+        "<Button>", lambda event: webbrowser.open("https://phantomcast.space")
     )
 
     status_label = ctk.CTkLabel(
@@ -1886,7 +1884,7 @@ def fetch_random_face() -> None:
         )
         response.raise_for_status()
         temp_dir = tempfile.gettempdir()
-        temp_path = os.path.join(temp_dir, "deep_live_cam_random_face.jpg")
+        temp_path = os.path.join(temp_dir, "phantom_cast_random_face.jpg")
         with open(temp_path, "wb") as f:
             f.write(response.content)
         modules.globals.source_path = temp_path
@@ -2120,7 +2118,7 @@ def webcam_preview(root: ctk.CTk, camera_index: int):
         # Warm whichever swapper is currently selected so the first frame
         # doesn't pay the model-load latency.
         for fp in active:
-            if fp.NAME in ("DLC.FACE-SWAPPER", "DLC.FACE-SWAPPER-HYPERSWAP"):
+            if fp.NAME in ("PCAST.FACE-SWAPPER", "PCAST.FACE-SWAPPER-HYPERSWAP"):
                 getter = getattr(fp, "get_face_swapper", None)
                 if callable(getter):
                     try:
@@ -2641,19 +2639,19 @@ def _processing_thread_func(capture_queue, processed_queue, stop_event,
                 _cached_faces = [cached_target_face]
 
             for frame_processor in frame_processors:
-                if frame_processor.NAME == "DLC.FACE-ENHANCER":
+                if frame_processor.NAME == "PCAST.FACE-ENHANCER":
                     if modules.globals.fp_ui["face_enhancer"]:
                         temp_frame = frame_processor.process_frame(
                             None, temp_frame, detected_faces=_cached_faces)
-                elif frame_processor.NAME == "DLC.FACE-ENHANCER-GPEN256":
+                elif frame_processor.NAME == "PCAST.FACE-ENHANCER-GPEN256":
                     if modules.globals.fp_ui.get("face_enhancer_gpen256", False):
                         temp_frame = frame_processor.process_frame(
                             None, temp_frame, detected_faces=_cached_faces)
-                elif frame_processor.NAME == "DLC.FACE-ENHANCER-GPEN512":
+                elif frame_processor.NAME == "PCAST.FACE-ENHANCER-GPEN512":
                     if modules.globals.fp_ui.get("face_enhancer_gpen512", False):
                         temp_frame = frame_processor.process_frame(
                             None, temp_frame, detected_faces=_cached_faces)
-                elif frame_processor.NAME in ("DLC.FACE-SWAPPER", "DLC.FACE-SWAPPER-HYPERSWAP"):
+                elif frame_processor.NAME in ("PCAST.FACE-SWAPPER", "PCAST.FACE-SWAPPER-HYPERSWAP"):
                     # Use cached face positions from detection thread
                     swapped_bboxes = []
                     if modules.globals.many_faces and cached_many_faces:
@@ -2688,10 +2686,10 @@ def _processing_thread_func(capture_queue, processed_queue, stop_event,
         else:
             modules.globals.target_path = None
             for frame_processor in frame_processors:
-                if frame_processor.NAME == "DLC.FACE-ENHANCER":
+                if frame_processor.NAME == "PCAST.FACE-ENHANCER":
                     if modules.globals.fp_ui["face_enhancer"]:
                         temp_frame = frame_processor.process_frame_v2(temp_frame)
-                elif frame_processor.NAME in ("DLC.FACE-ENHANCER-GPEN256", "DLC.FACE-ENHANCER-GPEN512"):
+                elif frame_processor.NAME in ("PCAST.FACE-ENHANCER-GPEN256", "PCAST.FACE-ENHANCER-GPEN512"):
                     fp_key = frame_processor.NAME.split(".")[-1].lower().replace("-", "_")
                     if modules.globals.fp_ui.get(fp_key, False):
                         temp_frame = frame_processor.process_frame_v2(temp_frame)

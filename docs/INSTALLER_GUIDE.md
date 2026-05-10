@@ -1,6 +1,6 @@
 # Build & Distribute the Windows Installer
 
-End-to-end steps to produce a signed, GPU-enabled `DeepLiveCamPro-Setup-X.Y.Z.exe`.
+End-to-end steps to produce a signed, GPU-enabled `PhantomCast-Setup-X.Y.Z.exe`.
 
 ## Prerequisites (build machine, one-time)
 
@@ -19,24 +19,24 @@ End-to-end steps to produce a signed, GPU-enabled `DeepLiveCamPro-Setup-X.Y.Z.ex
 
 ```powershell
 git clone <repo>
-cd Phantom-Cast
+cd Phantom Cast
 pwsh -File build_windows.ps1
 ```
 
 Outputs:
-- `dist\DeepLiveCamPro\DeepLiveCamPro.exe` and the onefolder runtime
-- `dist\installer\DeepLiveCamPro-Setup-1.0.0.exe`
+- `dist\PhantomCast\PhantomCast.exe` and the onefolder runtime
+- `dist\installer\PhantomCast-Setup-1.0.0.exe`
 
 ## What the installer does on the user's machine
 
 1. Asks for admin rights.
-2. Lays the onefolder build into `%ProgramFiles%\DeepLiveCamPro\`.
+2. Lays the onefolder build into `%ProgramFiles%\PhantomCast\`.
 3. Drops VC++ 2015-2022 redistributable if missing.
 4. Creates Start-menu + (optional) desktop shortcuts.
-5. Launches `DeepLiveCamPro.exe`.
+5. Launches `PhantomCast.exe`.
 
-On first launch the bootstrapper (`launch.py` → `DeepLiveCamPro.exe`):
-1. Configures the rotating log in `%LOCALAPPDATA%\DeepLiveCamPro\logs`.
+On first launch the bootstrapper (`launch.py` → `PhantomCast.exe`):
+1. Configures the rotating log in `%LOCALAPPDATA%\PhantomCast\logs`.
 2. Runs `prime_paths()` which prepends `_runtime/cuda/bin`, `torch/lib`, and
    each `nvidia/<pkg>/bin` to `PATH` *and* `os.add_dll_directory`.
 3. Runs the GPU detection cascade (hardware → driver → DLLs → onnxruntime

@@ -9,8 +9,8 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Callable, Optional
 
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.paths import first_run_marker
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.paths import first_run_marker
 
 log = get("setup.first_run")
 
@@ -30,7 +30,7 @@ def run_first_run(root: tk.Misc, on_complete: Optional[Callable[[], None]] = Non
             on_complete()
         return
 
-    from modules.dlc_pro.ui.setup_wizard import SetupWizard
+    from modules.phantom_cast.ui.setup_wizard import SetupWizard
 
     log.info("starting first-run wizard")
     SetupWizard(root, on_complete=lambda: (on_complete() if on_complete else None))

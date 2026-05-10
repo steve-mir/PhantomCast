@@ -1,6 +1,6 @@
 """Friendly post-install reminder when CUDA isn't usable on Windows.
 
-The first-run wizard (modules/dlc_pro/ui/setup_wizard.py) already shows
+The first-run wizard (modules/phantom_cast/ui/setup_wizard.py) already shows
 the full GPU probe report once. This module covers the *subsequent*
 launches where the user dismissed without installing CUDA — without it
 they'd just silently run on CPU forever and not know why processing is
@@ -21,9 +21,9 @@ import webbrowser
 
 import customtkinter as ctk
 
-from modules.dlc_pro.gpu import GpuMode, detect, selected_mode
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.paths import settings_file
+from modules.phantom_cast.gpu import GpuMode, detect, selected_mode
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.paths import settings_file
 
 log = get("ui.cuda_warning")
 
@@ -91,7 +91,7 @@ def show(parent: tk.Misc) -> None:
         if s.severity.value in ("warn", "fail")
     ]
     detail_text = (
-        "Phantom-Cast Pro will run, but processing falls back to CPU\n"
+        "Phantom Cast will run, but processing falls back to CPU\n"
         "(noticeably slower — minutes per frame instead of real-time).\n\n"
         "To enable GPU acceleration:\n"
         "  1. Install the latest NVIDIA driver (525.60+)\n"

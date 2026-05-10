@@ -25,7 +25,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from modules.dlc_pro.logger import get
+from modules.phantom_cast.logger import get
 
 log = get("license.fingerprint")
 

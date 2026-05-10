@@ -24,8 +24,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.paths import state_file
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.paths import state_file
 
 log = get("license.store")
 
@@ -46,7 +46,7 @@ def _dpapi_protect(blob: bytes) -> bytes:
     in_blob = DATA_BLOB(len(blob), ctypes.cast(ctypes.c_char_p(blob), ctypes.POINTER(ctypes.c_char)))
     out_blob = DATA_BLOB()
     ok = crypt32.CryptProtectData(
-        ctypes.byref(in_blob), "DLCPro", None, None, None, 0, ctypes.byref(out_blob)
+        ctypes.byref(in_blob), "PhantomCast", None, None, None, 0, ctypes.byref(out_blob)
     )
     if not ok:
         raise OSError("CryptProtectData failed")
@@ -83,10 +83,10 @@ def _dpapi_unprotect(blob: bytes) -> bytes:
 
 
 def _portable_key() -> bytes:
-    from modules.dlc_pro.license.fingerprint import collect
+    from modules.phantom_cast.license.fingerprint import collect
 
     fp = collect().composite()
-    salt = b"dlc-pro-store-v1"
+    salt = b"phantomcast-store-v1"
     # Lazy import to avoid hard dep when DPAPI works.
     import hashlib
     return hashlib.scrypt(fp.encode(), salt=salt, n=2 ** 14, r=8, p=1, dklen=32)

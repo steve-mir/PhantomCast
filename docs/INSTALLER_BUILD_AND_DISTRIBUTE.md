@@ -7,13 +7,7 @@ the person responsible for releases — not the development team.
 **Product name:** Phantom Cast
 **Binary name:** `PhantomCast.exe`
 **Installer name:** `PhantomCast-Setup-X.Y.Z.exe`
-**Internal AppId:** `{4A4F8E6C-4B0F-4F4D-9A76-DLC-PRO-2026}` (do **not** change between minor versions — Inno Setup uses it to upgrade in place)
-
-> ⚠ The repo currently uses the working title **DeepLiveCamPro** in code.
-> Before the first public release, do a single global rename pass:
-> `DeepLiveCamPro` → `PhantomCast`, `Deep-Live-Cam Pro` → `Phantom Cast`,
-> `dlc_pro` → `phantomcast`. The build pipeline below assumes the rename
-> is done; commands work identically for either name.
+**Internal AppId:** `{4A4F8E6C-4B0F-4F4D-9A76-PCAST2026A001}` (do **not** change between minor versions — Inno Setup uses it to upgrade in place)
 
 ---
 
@@ -63,13 +57,13 @@ Follow `docs/SETUP.md` §3 to deploy Cloud Functions and Firestore rules.
 Keep these secrets out of the repo:
 
 ```
-DLC_SIGNING_PRIVATE_KEY    # RS256 PEM, signs claims JWTs
-DLC_SIGNING_KID            # e.g. "phantomcast-2026-01"
+PHANTOMCAST_SIGNING_PRIVATE_KEY    # RS256 PEM, signs claims JWTs
+PHANTOMCAST_SIGNING_KID            # e.g. "phantomcast-2026-01"
 STRIPE_SECRET_KEY          # sk_live_...
 STRIPE_WEBHOOK_SECRET      # whsec_...
 ```
 
-Pin the matching public key in `modules/dlc_pro/firebase/config.py:PINNED_PUBKEYS`
+Pin the matching public key in `modules/phantom_cast/firebase/config.py:PINNED_PUBKEYS`
 **before** building. Forgetting this means clients reject every claims token.
 
 ---
@@ -80,25 +74,25 @@ Use semantic versioning for the user-facing version, and a build number
 for internal traceability.
 
 ```
-1.4.2          public version (semver)
-1.4.2.387      version+build  (387 = monotonic build counter)
+0.0.23          public version (semver)
+0.0.23.387      version+build  (387 = monotonic build counter)
 ```
 
 Update **all four** of these in lockstep:
 
 | File | Field |
 |---|---|
-| `modules/dlc_pro/__init__.py` | `__version__ = "1.4.2"` |
-| `installer/PhantomCast.iss` | `#define MyAppVersion "1.4.2"` |
+| `modules/phantom_cast/__init__.py` | `__version__ = "0.0.23"` |
+| `installer/PhantomCast.iss` | `#define MyAppVersion "0.0.23"` |
 | `build/version_info.txt` | `filevers=(1,4,2,387)` and `prodvers=(1,4,2,387)` |
-| `backend/functions/package.json` | `"version": "1.4.2"` (only matters for Functions deploy) |
+| `backend/functions/package.json` | `"version": "0.0.23"` (only matters for Functions deploy) |
 
 A 30-second pre-flight script catches drift:
 
 ```powershell
 # scripts\check-version.ps1
-$expected = "1.4.2"
-$pyVer = (Get-Content modules\dlc_pro\__init__.py | Select-String '__version__').ToString()
+$expected = "0.0.23"
+$pyVer = (Get-Content modules\phantom_cast\__init__.py | Select-String '__version__').ToString()
 $issVer = (Get-Content installer\PhantomCast.iss | Select-String 'MyAppVersion').ToString()
 if (-not ($pyVer -match $expected)) { throw "py version drift" }
 if (-not ($issVer -match $expected)) { throw "iss version drift" }
@@ -134,7 +128,7 @@ dist\
 │   ├── _runtime\cuda\bin\               (CUDA 12.8 + cuDNN 8.9.7 DLLs)
 │   └── ...
 └── installer\
-    └── PhantomCast-Setup-1.4.2.exe        ← ~1.4 GB compressed (LZMA2 ultra64)
+    └── PhantomCast-Setup-0.0.23.exe        ← ~1.4 GB compressed (LZMA2 ultra64)
 ```
 
 ### 2.2 Build with signing
@@ -148,7 +142,7 @@ pwsh -File build_windows.ps1 -Sign $true -CertSubject "Your Company LLC"
 The script signs both `PhantomCast.exe` and the installer. Verify:
 
 ```powershell
-signtool verify /pa /v dist\installer\PhantomCast-Setup-1.4.2.exe
+signtool verify /pa /v dist\installer\PhantomCast-Setup-0.0.23.exe
 ```
 
 Expected output: `Successfully verified` and `EV` in the description.
@@ -158,8 +152,8 @@ Expected output: `Successfully verified` and `EV` in the description.
 Tag the release commit and push:
 
 ```bash
-git tag v1.4.2
-git push origin v1.4.2
+git tag v0.0.23
+git push origin v0.0.23
 ```
 
 `.github/workflows/release.yml` will:
@@ -244,8 +238,8 @@ wrangler login
 wrangler r2 bucket create phantomcast-releases
 
 # 2. upload installer
-wrangler r2 object put phantomcast-releases/win/1.4.2/PhantomCast-Setup-1.4.2.exe \
-    --file dist/installer/PhantomCast-Setup-1.4.2.exe \
+wrangler r2 object put phantomcast-releases/win/0.0.23/PhantomCast-Setup-0.0.23.exe \
+    --file dist/installer/PhantomCast-Setup-0.0.23.exe \
     --content-type application/x-msdownload
 
 # 3. upload manifest (used by auto-updater + website "latest" link)
@@ -255,11 +249,11 @@ wrangler r2 object put phantomcast-releases/win/latest.json \
 ```
 
 Connect the bucket to a custom subdomain via Cloudflare Dashboard →
-R2 → bucket → Settings → Custom Domains → add `dl.phantomcast.app`.
+R2 → bucket → Settings → Custom Domains → add `dl.phantomcast.space`.
 Now the installer URL is:
 
 ```
-https://dl.phantomcast.app/win/1.4.2/PhantomCast-Setup-1.4.2.exe
+https://dl.phantomcast.space/win/0.0.23/PhantomCast-Setup-0.0.23.exe
 ```
 
 ### 4.3 Generate the release manifest
@@ -270,19 +264,19 @@ Auto-update + the website's "Download" button both consume `latest.json`:
 {
   "product": "PhantomCast",
   "channel": "stable",
-  "version": "1.4.2",
+  "version": "0.0.23",
   "build": 387,
   "released_at": "2026-05-06T18:00:00Z",
   "platforms": {
     "win-x64": {
-      "url": "https://dl.phantomcast.app/win/1.4.2/PhantomCast-Setup-1.4.2.exe",
+      "url": "https://dl.phantomcast.space/win/0.0.23/PhantomCast-Setup-0.0.23.exe",
       "size_bytes": 1487654321,
       "sha256": "<hex>",
       "sig": "<base64 RSA-PSS sig over sha256, kid=phantomcast-2026-01>",
       "min_version_for_delta": "1.4.0"
     }
   },
-  "release_notes_url": "https://phantomcast.app/changelog/1.4.2",
+  "release_notes_url": "https://phantomcast.space/changelog/0.0.23",
   "min_supported_os": "10.0.19041"
 }
 ```
@@ -302,7 +296,7 @@ $size = (Get-Item $exe).Length
   released_at = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ" -AsUTC)
   platforms = @{
     "win-x64" = @{
-      url = "https://dl.phantomcast.app/win/$Version/PhantomCast-Setup-$Version.exe"
+      url = "https://dl.phantomcast.space/win/$Version/PhantomCast-Setup-$Version.exe"
       size_bytes = $size
       sha256 = $sha
     }
@@ -325,9 +319,9 @@ Even with Cloudflare R2 you want a mirror for the rare R2 outage. The
 cheapest option: **GitHub Releases**. After R2 upload, also:
 
 ```bash
-gh release create v1.4.2 dist/installer/PhantomCast-Setup-1.4.2.exe \
-    --title "Phantom Cast 1.4.2" \
-    --notes-file CHANGELOG-1.4.2.md
+gh release create v0.0.23 dist/installer/PhantomCast-Setup-0.0.23.exe \
+    --title "Phantom Cast 0.0.23" \
+    --notes-file CHANGELOG-0.0.23.md
 ```
 
 Document both URLs in the release-notes page; the website "Download"
@@ -344,7 +338,7 @@ available" toast → on click, downloads in background, verifies SHA-256
 + RSA-PSS signature, then runs the new installer with `/SILENT
 /CLOSEAPPLICATIONS=force`.
 
-Implementation lives in `modules/dlc_pro/setup/auto_update.py` (to be
+Implementation lives in `modules/phantom_cast/setup/auto_update.py` (to be
 written in v1.1; v1.0 ships without auto-update and asks users to
 download manually). Until then, the website should show the "Update
 available" banner via the same `latest.json`.
@@ -356,7 +350,7 @@ phantomcast-releases/
 ├── win/
 │   ├── latest.json                            # stable channel
 │   ├── beta.json                              # beta channel (opt-in)
-│   ├── 1.4.2/PhantomCast-Setup-1.4.2.exe
+│   ├── 0.0.23/PhantomCast-Setup-0.0.23.exe
 │   ├── 1.4.1/PhantomCast-Setup-1.4.1.exe
 │   └── 1.4.0/PhantomCast-Setup-1.4.0.exe
 ```
@@ -384,7 +378,7 @@ immediately:
 curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/purge_cache" \
      -H "Authorization: Bearer $CF_API_TOKEN" \
      -H "Content-Type: application/json" \
-     --data '{"files":["https://dl.phantomcast.app/win/latest.json"]}'
+     --data '{"files":["https://dl.phantomcast.space/win/latest.json"]}'
 ```
 
 ---
@@ -420,7 +414,7 @@ Distribute
 [ ] Cloudflare cache purge for /win/latest.json
 
 Post-release
-[ ] Verify https://dl.phantomcast.app/win/latest.json returns the new version
+[ ] Verify https://dl.phantomcast.space/win/latest.json returns the new version
 [ ] Download from incognito browser, run, verify SmartScreen does NOT warn (EV cert)
 [ ] Tweet / email announcement
 [ ] Monitor Firebase activation rate for 24h — if drop > 20% vs N-1 baseline, roll back

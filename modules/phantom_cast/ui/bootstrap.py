@@ -12,13 +12,13 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Any, Optional
 
-from modules.dlc_pro.license import license_manager
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.subscription.gate import FeatureLocked, refresh_claims_async
-from modules.dlc_pro.ui import toast
-from modules.dlc_pro.ui.paywall_dialog import PaywallDialog
-from modules.dlc_pro.ui.settings_panel import open_settings_panel
-from modules.dlc_pro.ui.status_bar import StatusBar
+from modules.phantom_cast.license import license_manager
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.subscription.gate import FeatureLocked, refresh_claims_async
+from modules.phantom_cast.ui import toast
+from modules.phantom_cast.ui.paywall_dialog import PaywallDialog
+from modules.phantom_cast.ui.settings_panel import open_settings_panel
+from modules.phantom_cast.ui.status_bar import StatusBar
 
 log = get("ui.bootstrap")
 

@@ -13,9 +13,9 @@ from typing import Any, Optional
 
 import customtkinter as ctk
 
-from modules.dlc_pro.gpu import GpuMode, detect, selected_mode
-from modules.dlc_pro.license.manager import LicenseStatus, license_manager
-from modules.dlc_pro.subscription.gate import current_plan
+from modules.phantom_cast.gpu import GpuMode, detect, selected_mode
+from modules.phantom_cast.license.manager import LicenseStatus, license_manager
+from modules.phantom_cast.subscription.gate import current_plan
 
 
 GREEN = "#15803d"
@@ -116,6 +116,6 @@ class StatusBar(ctk.CTkFrame):
     # ---------- actions ----------
 
     def _show_diagnostics(self) -> None:
-        from modules.dlc_pro.ui.settings_panel import open_settings_panel
+        from modules.phantom_cast.ui.settings_panel import open_settings_panel
 
         open_settings_panel(self.winfo_toplevel())

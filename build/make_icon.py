@@ -1,4 +1,4 @@
-"""Render media/logo.svg into a Windows multi-resolution media/DLC.ico.
+"""Render media/logo.svg into a Windows multi-resolution media/PhantomCast.ico (preserving prior naming convention).
 
 Usage (from repo root):
     venv/Scripts/python build/make_icon.py        # Windows
@@ -17,7 +17,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 SVG = ROOT / "media" / "logo.svg"
-ICO = ROOT / "media" / "DLC.ico"
+ICO = ROOT / "media" / "PhantomCast.ico"
 SIZES = (16, 24, 32, 48, 64, 128, 256)
 
 

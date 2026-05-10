@@ -1,4 +1,4 @@
-"""HTTPS client for Phantom-Cast Pro Cloud Functions.
+"""HTTPS client for Phantom Cast Cloud Functions.
 
 Standard-library only (urllib + ssl) to avoid pulling `requests` into the
 PyInstaller graph and bloating the installer.
@@ -23,16 +23,16 @@ import urllib.error
 import urllib.request
 from typing import Any, Dict, Optional
 
-from modules.dlc_pro import __version__ as APP_VERSION
-from modules.dlc_pro.firebase.config import (
+from modules.phantom_cast import __version__ as APP_VERSION
+from modules.phantom_cast.firebase.config import (
     ACTIVATE_URL,
     CLIENT_NAME,
     DEACTIVATE_URL,
     HEARTBEAT_URL,
     MOVE_LICENSE_URL,
 )
-from modules.dlc_pro.logger import get
-from modules.dlc_pro.subscription import claims as claims_mod
+from modules.phantom_cast.logger import get
+from modules.phantom_cast.subscription import claims as claims_mod
 
 log = get("firebase.client")
 

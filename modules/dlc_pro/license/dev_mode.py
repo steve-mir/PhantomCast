@@ -24,11 +24,11 @@ from __future__ import annotations
 import os
 
 
-# Flip to False (or delete the OR clause in is_dev_mode) when the real
-# Firebase/Stripe activation path is live and you want production behavior
-# from a default-config build. Leaving this True means *any* string typed
-# into the activation dialog grants Premium locally.
-TEST_MODE_ACCEPT_ANY_KEY: bool = True
+# Production: real backend round-trip required. Set DLC_DEV_MODE=1 in the
+# environment for CI / local dev to short-circuit to a fake Premium grant
+# without contacting Firebase. NEVER ship a build with this hardcoded True
+# — that's how unvalidated keys end up active in the wild.
+TEST_MODE_ACCEPT_ANY_KEY: bool = False
 
 _TRUTHY = {"1", "true", "yes", "on", "y"}
 

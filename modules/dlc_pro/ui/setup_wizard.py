@@ -187,9 +187,11 @@ class SetupWizard(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             self._frame, justify="left", wraplength=440,
-            text=("Enter your activation key for Premium — your first month "
-                  "is free, then $29/mo. Or continue on the Free tier "
-                  "(lite swap, watermarked, 480p, CPU only)."),
+            text=("Enter the activation key from your $910 purchase. You get "
+                  "30 days of full access included; after that your plan "
+                  "rolls into a monthly subscription ($19/mo Pro, $49/mo "
+                  "Studio). Or continue on the Free tier (lite swap, "
+                  "watermarked, 480p, CPU only)."),
             font=("Segoe UI", 12), text_color="#475569",
         ).pack(anchor="w", pady=(2, 12))
 

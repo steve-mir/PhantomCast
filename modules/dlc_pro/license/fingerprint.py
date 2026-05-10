@@ -113,8 +113,23 @@ def _motherboard_uuid() -> str:
     return ""
 
 
+def _sysctl(name: str) -> str:
+    try:
+        return subprocess.check_output(
+            ["sysctl", "-n", name], timeout=5, text=True, stderr=subprocess.DEVNULL,
+        ).strip()
+    except (FileNotFoundError, subprocess.TimeoutExpired, subprocess.CalledProcessError):
+        return ""
+
+
 def _cpu_id() -> str:
     # Stable across reboots; vendor + brand + features signature.
+    if sys.platform == "darwin":
+        # Match the format the desktop fingerprint tool writes:
+        # "<machdep.cpu.brand_string>|<hw.cpufamily>".
+        brand = _sysctl("machdep.cpu.brand_string")
+        family = _sysctl("hw.cpufamily")
+        return "|".join(p for p in (brand, family) if p)
     parts = [platform.processor() or "", platform.machine() or ""]
     if sys.platform == "win32":
         parts.append(_wmic("cpu", "ProcessorId"))
@@ -139,6 +154,24 @@ def _disk_serial() -> str:
         if v:
             return v.strip()
         return _wmic("diskdrive", "SerialNumber")
+    elif sys.platform == "darwin":
+        # Volume UUID of the boot volume — survives APFS snapshots & OS
+        # reinstalls that keep the data volume in place. Reformat will
+        # change it, but the similarity score absorbs single-component
+        # drift.
+        try:
+            out = subprocess.check_output(
+                ["diskutil", "info", "/"], timeout=5, text=True,
+            )
+            m = re.search(r"Volume UUID:\s*([0-9A-Fa-f-]+)", out)
+            if m:
+                return m.group(1)
+            m = re.search(r"Disk / Partition UUID:\s*([0-9A-Fa-f-]+)", out)
+            if m:
+                return m.group(1)
+        except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass
+        return ""
     elif sys.platform.startswith("linux"):
         try:
             out = subprocess.check_output(
@@ -165,10 +198,39 @@ def _machine_guid() -> str:
                 return str(v)
         except (ImportError, OSError):
             return ""
+    if sys.platform == "darwin":
+        # Apple-issued IOPlatformSerialNumber — survives OS reinstall and
+        # account changes, only changes on hardware swap.
+        try:
+            out = subprocess.check_output(
+                ["ioreg", "-rd1", "-c", "IOPlatformExpertDevice"],
+                timeout=5, text=True,
+            )
+            m = re.search(r'"IOPlatformSerialNumber" = "([^"]+)"', out)
+            if m:
+                return m.group(1)
+        except (FileNotFoundError, subprocess.TimeoutExpired, subprocess.CalledProcessError):
+            pass
     return ""
 
 
 def _primary_mac() -> str:
+    # macOS: prefer en0's MAC explicitly. uuid.getnode() can pick a virtual
+    # interface (utun, awdl) whose MAC drifts between boots — that would
+    # show up as a fingerprint mismatch on every restart.
+    if sys.platform == "darwin":
+        for ifname in ("en0", "en1"):
+            try:
+                out = subprocess.check_output(
+                    ["ifconfig", ifname], timeout=5, text=True,
+                    stderr=subprocess.DEVNULL,
+                )
+                m = re.search(r"ether\s+([0-9a-f:]+)", out, re.IGNORECASE)
+                if m:
+                    return m.group(1).lower()
+            except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                continue
+        # Fall through to uuid.getnode if no Ethernet interface found.
     # uuid.getnode is stable for the primary MAC on most systems
     n = uuid.getnode()
     # If the OS couldn't resolve a real MAC, getnode sets bit 41

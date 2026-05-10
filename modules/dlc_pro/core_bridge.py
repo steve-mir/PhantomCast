@@ -128,6 +128,24 @@ def _route_fp_ui() -> None:
             fp_ui[src] = False
 
 
+# Toggle-style globals → required entitlement. If a free user has the toggle
+# on but lacks the flag, we silently flip it off at the start of each pipeline
+# run. The user re-enables it from the UI on upgrade — same path as fp_ui.
+_GATED_GLOBAL_TOGGLES = {
+    "map_faces":           "map_faces",
+    "virtual_cam_enabled": "live_webcam",
+    "many_faces":          "map_faces",   # many_faces is a Studio-tier helper
+}
+
+
+def _route_global_toggles() -> None:
+    import modules.globals as g
+    for attr, flag in _GATED_GLOBAL_TOGGLES.items():
+        if getattr(g, attr, False) and not has_feature(flag):
+            log.info("disabling globals.%s (no '%s' entitlement)", attr, flag)
+            setattr(g, attr, False)
+
+
 _WATERMARK_PATCHED = False
 
 
@@ -181,6 +199,7 @@ def _patch_processor_gates() -> None:
     def gated_get(processors: List[str]):
         _ensure_watermark_patched()
         _route_fp_ui()
+        _route_global_toggles()
         rewritten = _route_for_plan(processors)
         for p in rewritten:
             flag = PREMIUM_PROCESSORS.get(p)
@@ -189,6 +208,51 @@ def _patch_processor_gates() -> None:
         return original_get(rewritten)
 
     fp_core.get_frame_processors_modules = gated_get  # type: ignore[assignment]
+
+
+_LIVE_PATCHED = False
+
+
+def _patch_live_webcam_gate() -> None:
+    """Wrap legacy ``modules.ui.webcam_preview`` so a free user clicking the
+    Live button pops the paywall instead of starting the live pipeline.
+
+    Done lazily because ``modules.ui`` imports tkinter and the legacy core,
+    which aren't safe to touch at the moment ``apply()`` runs. We re-attempt
+    the patch the first time the legacy core actually loads the UI; if the
+    import is still incomplete we just no-op and try again later.
+    """
+    global _LIVE_PATCHED
+    if _LIVE_PATCHED:
+        return
+    try:
+        import modules.ui as legacy_ui
+    except ImportError:
+        return
+
+    original_preview = getattr(legacy_ui, "webcam_preview", None)
+    if not callable(original_preview):
+        return
+
+    def gated_preview(*args, **kwargs):
+        if not has_feature("live_webcam"):
+            try:
+                from modules.dlc_pro.ui.paywall_dialog import PaywallDialog
+                # Find any tk root we can parent to.
+                parent = getattr(legacy_ui, "ROOT", None)
+                if parent is not None:
+                    PaywallDialog(parent, FeatureLocked("live_webcam", "free"))
+                    return
+            except Exception:  # noqa: BLE001
+                log.exception("could not open paywall for live_webcam")
+            # Fallback: raise so the bootstrap_ui exception handler (which
+            # already knows how to render a paywall) can pick it up.
+            raise FeatureLocked("live_webcam", "free")
+        return original_preview(*args, **kwargs)
+
+    legacy_ui.webcam_preview = gated_preview  # type: ignore[assignment]
+    _LIVE_PATCHED = True
+    log.info("live webcam gate installed")
 
 
 _APPLIED = False
@@ -203,3 +267,4 @@ def apply() -> None:
     prime_paths()
     _override_argv()
     _patch_processor_gates()
+    _patch_live_webcam_gate()

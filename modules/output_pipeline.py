@@ -43,9 +43,18 @@ def resolution_map(name: str) -> Tuple[int, int, int]:
     """Return (width, height, fps) for the dropdown label *name*.
 
     Unknown labels fall back to ``Auto`` so a corrupted ``switch_states.json``
-    can never break startup.
+    can never break startup. Free users requesting 4K or 1440p get silently
+    downgraded to 1080p — the entitlement gate lives in ``subscription.gate``.
     """
-    return _RES_TABLE.get(name, _RES_TABLE["Auto"])
+    label = name
+    try:
+        from modules.dlc_pro.subscription.gate import has_feature
+        if name in ("4K", "1440p") and not has_feature("export_4k"):
+            label = "1080p"
+    except Exception:
+        # Don't let a gate import error break the export pipeline.
+        pass
+    return _RES_TABLE.get(label, _RES_TABLE["Auto"])
 
 
 def resolution_labels() -> Tuple[str, ...]:

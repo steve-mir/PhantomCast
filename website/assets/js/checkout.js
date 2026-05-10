@@ -1,105 +1,64 @@
-// Phantom Cast — NOWPayments BTC checkout (browser-side demo flow).
+// Phantom Cast — NOWPayments BTC checkout, wired to the diivix1 backend.
 //
-// In production, the create-invoice and status-poll calls MUST be proxied
-// through your own backend so the NOWPayments API key isn't exposed.
-// Recommended endpoints (Cloud Functions / Next.js route handlers):
-//   POST /api/np/invoice      -> creates an invoice via NOWPayments REST API
-//   GET  /api/np/status?id=   -> proxies GET /v1/payment/{id}
-//   POST /api/np/webhook      -> verifies HMAC signature from NOWPayments,
-//                                creates the license, emails the key
+// Flow:
+//   1. Customer picks plan (pro/studio) + enters email → POST /v1_createPayment
+//      Backend creates a $910 NOWPayments invoice and stores a pending license.
+//   2. We display BTC pay_address + amount + QR + status timeline.
+//   3. Poll /v1_paymentStatus every 4s. When license_status flips to "active",
+//      the issued license_key appears in the response — we render the success
+//      screen with a copy button.
 //
-// This file mocks the flow so the static site is fully clickable while the
-// backend wiring is being built. Replace MOCK calls with real fetches once
-// /api endpoints exist.
+// No NOWPayments secrets ever touch the browser; the API key + IPN secret
+// stay in Cloud Functions secret env.
 
+const BACKEND_BASE = (window.PCBackendBase || 'https://us-central1-diivix1.cloudfunctions.net');
+
+// Single-tier activation: $910 buys the activation key + 30 days of full access.
+// After day 30 the customer starts a monthly subscription at their chosen tier.
 const PRICES = {
-  license:      { id: 'PC-LICENSE-770',  amount: 770, label: 'Phantom Cast — Lifetime License' },
-  premium:      { id: 'PC-PREMIUM-30',   amount: 30,  label: 'Premium Add-on (1 month)' },
+  pro:    { id: 'PC-ACT-910-PRO',    amount: 910, label: 'Phantom Cast — Activation Key (Pro)',    monthlyAfterGrace: 19 },
+  studio: { id: 'PC-ACT-910-STUDIO', amount: 910, label: 'Phantom Cast — Activation Key (Studio)', monthlyAfterGrace: 49 },
 };
 const PAY_CURRENCY = 'btc';
+const POLL_INTERVAL_MS = 4000;
+const POLL_MAX_DURATION_MS = 60 * 60 * 1000;
 
-// ---- Mock helpers (replace with real backend calls) ----
+// ---- Backend calls ----
 
-function mockBtcAddress() {
-  // Deterministic-looking but fake testnet-style address for demo display.
-  const chars = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
-  let a = 'bc1q';
-  for (let i = 0; i < 38; i++) a += chars[Math.floor(Math.random() * chars.length)];
-  return a;
+async function createInvoice({ plan, email }) {
+  const r = await fetch(`${BACKEND_BASE}/v1_createPayment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plan, email, pay_currency: PAY_CURRENCY }),
+  });
+  const text = await r.text();
+  let json = {};
+  try { json = JSON.parse(text); } catch { /* ignore */ }
+  if (!r.ok) {
+    const msg = json?.error?.message || text || `HTTP ${r.status}`;
+    throw new Error(msg);
+  }
+  return json;
+}
+
+async function pollStatus(orderId) {
+  const r = await fetch(`${BACKEND_BASE}/v1_paymentStatus?order_id=${encodeURIComponent(orderId)}`);
+  if (!r.ok) throw new Error(`status HTTP ${r.status}`);
+  return await r.json();
 }
 
 async function fetchBtcRate() {
-  // CoinGecko public API (no key) — used only for display estimate.
   try {
     const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
     if (!r.ok) throw new Error('rate fetch failed');
     const j = await r.json();
     return j.bitcoin && j.bitcoin.usd;
   } catch (e) {
-    return 65000; // fallback estimate
+    return null;
   }
 }
 
-async function createInvoice({ plan, email }) {
-  const product = PRICES[plan];
-  if (!product) throw new Error('Unknown plan');
-
-  // === REAL BACKEND CALL (uncomment once /api/np/invoice exists) ===
-  // const r = await fetch('/api/np/invoice', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ price_amount: product.amount, price_currency: 'usd',
-  //     pay_currency: PAY_CURRENCY, order_id: `${product.id}-${Date.now()}`,
-  //     order_description: product.label, customer_email: email })
-  // });
-  // if (!r.ok) throw new Error('invoice creation failed');
-  // return await r.json();
-
-  // === MOCK ===
-  const usdRate = await fetchBtcRate();
-  const payAmount = +(product.amount / usdRate).toFixed(8);
-  return {
-    payment_id: 'np_' + Math.random().toString(36).slice(2, 12),
-    payment_status: 'waiting',
-    pay_address: mockBtcAddress(),
-    price_amount: product.amount,
-    price_currency: 'USD',
-    pay_amount: payAmount,
-    pay_currency: PAY_CURRENCY,
-    network: 'btc',
-    created_at: new Date().toISOString(),
-    expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-    order_id: `${product.id}-${Date.now()}`,
-    order_description: product.label,
-    customer_email: email,
-  };
-}
-
-async function pollStatus(paymentId) {
-  // === REAL ===
-  // const r = await fetch(`/api/np/status?id=${encodeURIComponent(paymentId)}`);
-  // if (!r.ok) throw new Error('status poll failed');
-  // return await r.json();
-
-  // === MOCK: progresses through the lifecycle every few polls ===
-  pollStatus._step = (pollStatus._step || 0) + 1;
-  let status = 'waiting';
-  if (pollStatus._step > 4)  status = 'confirming';
-  if (pollStatus._step > 8)  status = 'confirmed';
-  if (pollStatus._step > 10) status = 'finished';
-  return { payment_id: paymentId, payment_status: status };
-}
-
-// Generate a fake but professional-looking license key for the success screen.
-// Production: this comes from your `v1_stripe`-style webhook (renamed to
-// `v1_np` in NOWPayments world) which writes to Firestore and emails Resend.
-function makeLicenseKey() {
-  const seg = (n) => Array.from({ length: n }, () =>
-    'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
-  return `PC-${seg(5)}-${seg(5)}-${seg(5)}-${seg(5)}`;
-}
-
-// ---- UI bindings ----
+// ---- UI helpers ----
 
 function copy(el, text) {
   navigator.clipboard.writeText(text).then(() => {
@@ -110,7 +69,10 @@ function copy(el, text) {
   });
 }
 
-function fmtBtc(n) { return n.toFixed(8).replace(/0+$/, '').replace(/\.$/, ''); }
+function fmtBtc(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+}
 
 function renderInvoice(invoice, root) {
   const qrData = `bitcoin:${invoice.pay_address}?amount=${invoice.pay_amount}&label=${encodeURIComponent(invoice.order_description)}`;
@@ -123,7 +85,7 @@ function renderInvoice(invoice, root) {
           <span class="text-4xl font-bold font-mono gradient-text">${fmtBtc(invoice.pay_amount)}</span>
           <span class="text-xl text-[var(--text-muted)] font-mono">BTC</span>
         </div>
-        <div class="text-sm text-[var(--text-dim)] mb-6">≈ $${invoice.price_amount.toFixed(2)} ${invoice.price_currency}</div>
+        <div class="text-sm text-[var(--text-dim)] mb-6">≈ $${Number(invoice.price_amount).toFixed(2)} ${invoice.price_currency}</div>
 
         <div class="card p-5 mb-4">
           <div class="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-2">BTC address (Bitcoin mainnet)</div>
@@ -163,7 +125,7 @@ function renderInvoice(invoice, root) {
 
         <div class="text-xs text-[var(--text-dim)] mt-4">
           Order: <span class="font-mono">${invoice.order_id}</span><br>
-          Receipt and license key will be sent to <span class="text-white">${invoice.customer_email}</span>
+          Plan after grace: <span class="text-white">$${invoice.monthly_after_grace}/mo</span> (starts in 30 days)
         </div>
       </div>
     </div>
@@ -178,7 +140,6 @@ function renderInvoice(invoice, root) {
   document.getElementById('pc-copy-addr').addEventListener('click', (e) => copy(e.currentTarget, invoice.pay_address));
   document.getElementById('pc-copy-amt') .addEventListener('click', (e) => copy(e.currentTarget, fmtBtc(invoice.pay_amount)));
 
-  // Countdown
   const expires = new Date(invoice.expires_at).getTime();
   const tick = () => {
     const diff = Math.max(0, expires - Date.now());
@@ -205,7 +166,6 @@ function updateStatus(status) {
   chip.className = `chip ${m.color}`;
   chip.innerHTML = `<span class="dot dot-${m.dot}"></span> ${m.text}`;
 
-  // Highlight passed steps
   const order = ['waiting','confirming','confirmed','finished'];
   const idx = order.indexOf(status);
   document.querySelectorAll('#pc-status-steps [data-step]').forEach(row => {
@@ -226,35 +186,72 @@ function updateStatus(status) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-function renderSuccess(root, invoice) {
-  const key = makeLicenseKey();
+function renderSuccess(root, invoice, licenseKey) {
   root.innerHTML = `
-    <div class="text-center max-w-xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto">
       <div class="inline-flex w-16 h-16 rounded-full gradient-bg items-center justify-center mb-5">
         <i data-lucide="check" class="w-8 h-8" style="color:#0a0a0f"></i>
       </div>
       <h2 class="text-3xl font-bold mb-3">Payment confirmed.</h2>
       <p class="text-[var(--text-muted)] mb-8">
-        Thanks — your payment of <strong class="text-white font-mono">${fmtBtc(invoice.pay_amount)} BTC</strong> has been received and your license is ready.
+        Thanks — your payment has been received. <strong class="text-white">Copy your activation key below — this is the only place we'll show it.</strong>
       </p>
 
-      <div class="card p-6 text-left mb-6">
-        <div class="text-xs uppercase tracking-wider text-[var(--text-dim)] mb-2">Your license key</div>
-        <div class="flex items-center gap-3">
-          <code class="font-mono text-lg gradient-text font-semibold flex-1 break-all">${key}</code>
-          <button class="btn btn-secondary text-xs" id="pc-copy-key"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
+      <div class="card p-6 text-left mb-6 border-2 border-amber-500/30 bg-amber-500/5">
+        <div class="text-xs uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-2">
+          <i data-lucide="key" class="w-4 h-4"></i> Your activation key
         </div>
-        <div class="text-xs text-[var(--text-dim)] mt-3">Also sent to ${invoice.customer_email}.</div>
+        <div class="flex items-center gap-3">
+          <code class="font-mono text-xl gradient-text font-bold flex-1 break-all" id="pc-license-key">${licenseKey}</code>
+          <button class="btn btn-primary text-xs" id="pc-copy-key"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
+        </div>
+        <div class="text-xs text-[var(--text-dim)] mt-4 leading-relaxed">
+          ⚠️ <strong class="text-white">Save this key now.</strong> Email delivery isn't enabled yet — if you lose this key,
+          we can recover it from order ID <span class="font-mono">${invoice.order_id}</span>, but please save it locally first.
+        </div>
+      </div>
+
+      <div class="card p-5 text-left mb-6">
+        <div class="text-sm font-semibold mb-2">What happens next</div>
+        <ol class="text-sm text-[var(--text-muted)] space-y-1.5 list-decimal list-inside">
+          <li>Download Phantom-Cast Pro from the link below.</li>
+          <li>On first launch, paste your key into the activation dialog. The app will bind it to this PC.</li>
+          <li>You have <strong class="text-white">30 days of full access</strong> to every feature.</li>
+          <li>After day 30, your subscription rolls into <strong class="text-white">$${invoice.monthly_after_grace}/mo</strong> billed in BTC.</li>
+        </ol>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="../download.html"     class="btn btn-primary btn-lg"><i data-lucide="download" class="w-5 h-5"></i> Download Phantom Cast</a>
-        <a href="../app/dashboard.html" class="btn btn-secondary btn-lg"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> Go to dashboard</a>
+        <a href="download.html" class="btn btn-primary btn-lg"><i data-lucide="download" class="w-5 h-5"></i> Download Phantom-Cast</a>
+        <a href="app/dashboard.html" class="btn btn-secondary btn-lg"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> Go to dashboard</a>
       </div>
     </div>
   `;
   if (window.lucide) window.lucide.createIcons();
-  document.getElementById('pc-copy-key').addEventListener('click', (e) => copy(e.currentTarget, key));
+  document.getElementById('pc-copy-key').addEventListener('click', (e) => copy(e.currentTarget, licenseKey));
+
+  // Stash the key in localStorage so the dashboard can show it (until they
+  // explicitly clear it). Best-effort — most browsers persist localStorage
+  // across sessions; users on private windows lose it.
+  try {
+    localStorage.setItem('pc_license_key', licenseKey);
+    localStorage.setItem('pc_order_id', invoice.order_id);
+    localStorage.setItem('pc_owner_email', invoice.customer_email || '');
+  } catch (e) { /* private mode */ }
+}
+
+function renderError(root, message) {
+  root.innerHTML = `
+    <div class="text-center max-w-xl mx-auto py-8">
+      <div class="inline-flex w-16 h-16 rounded-full bg-rose-500/15 items-center justify-center mb-5">
+        <i data-lucide="alert-triangle" class="w-8 h-8 text-rose-400"></i>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">Couldn't start checkout</h2>
+      <p class="text-[var(--text-muted)] mb-6">${message}</p>
+      <a href="checkout.html" class="btn btn-secondary">Try again</a>
+    </div>
+  `;
+  if (window.lucide) window.lucide.createIcons();
 }
 
 async function startCheckout({ plan, email, root }) {
@@ -265,23 +262,32 @@ async function startCheckout({ plan, email, root }) {
     </div>`;
   if (window.lucide) window.lucide.createIcons();
 
-  const invoice = await createInvoice({ plan, email });
+  let invoice;
+  try {
+    invoice = await createInvoice({ plan, email });
+  } catch (e) {
+    renderError(root, e.message || 'unknown error');
+    return;
+  }
   renderInvoice(invoice, root);
 
-  // Poll status every 4s; in production use webhook + websocket / SSE for instant updates.
+  const startedAt = Date.now();
   const poll = setInterval(async () => {
+    if (Date.now() - startedAt > POLL_MAX_DURATION_MS) {
+      clearInterval(poll); return;
+    }
     try {
-      const s = await pollStatus(invoice.payment_id);
-      updateStatus(s.payment_status);
-      if (s.payment_status === 'finished') {
+      const s = await pollStatus(invoice.order_id);
+      updateStatus(s.payment_status || 'waiting');
+      if (s.license_status === 'active' && s.license_key) {
         clearInterval(poll);
-        setTimeout(() => renderSuccess(root, invoice), 900);
+        setTimeout(() => renderSuccess(root, invoice, s.license_key), 800);
       }
       if (s.payment_status === 'failed' || s.payment_status === 'expired') {
         clearInterval(poll);
       }
-    } catch (e) { /* ignore transient errors */ }
-  }, 4000);
+    } catch (e) { /* transient — keep polling */ }
+  }, POLL_INTERVAL_MS);
 }
 
-window.PCCheckout = { startCheckout, PRICES };
+window.PCCheckout = { startCheckout, PRICES, BACKEND_BASE };

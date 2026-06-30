@@ -28,6 +28,10 @@ from modules.face_analyser import (
 from modules.capturer import get_video_frame, get_video_frame_total
 from modules.processors.frame.core import get_frame_processors_modules
 from modules.processors.frame import hair_swap as _hair_swap
+# --- [FEATURE:APPEARANCE] skin-tone match + hair transfer (toggleable) ---
+from modules.processors.frame import appearance as _appearance
+# --- [FEATURE:RTX-UPSCALER] ---
+from modules.processors.frame import rtx_upscaler as _rtx_upscaler
 from modules.utilities import (
     is_image,
     is_video,
@@ -187,6 +191,12 @@ def save_switch_states():
         "forehead_width": modules.globals.forehead_width,
         "hair_color": modules.globals.hair_color,
         "hair_texture": modules.globals.hair_texture,
+        # --- [FEATURE:SKIN-TONE] / [FEATURE:HAIR-TRANSFER] ---
+        "skin_tone_strength": modules.globals.skin_tone_strength,
+        "hair_transfer_strength": modules.globals.hair_transfer_strength,
+        # --- [FEATURE:RTX-UPSCALER] ---
+        "rtx_upscaler_enabled": modules.globals.rtx_upscaler_enabled,
+        "rtx_upscaler_scale": modules.globals.rtx_upscaler_scale,
         "enhancer_blend": modules.globals.enhancer_blend,
         "live_enhance_skip": modules.globals.live_enhance_skip,
         "enable_interpolation": modules.globals.enable_interpolation,
@@ -250,6 +260,20 @@ def load_switch_states():
             "hair_color", switch_states.get("hair_swap_strength", 0.0)
         )
         modules.globals.hair_texture = switch_states.get("hair_texture", 0.0)
+        # --- [FEATURE:SKIN-TONE] / [FEATURE:HAIR-TRANSFER] ---
+        modules.globals.skin_tone_strength = float(
+            switch_states.get("skin_tone_strength", 0.0)
+        )
+        modules.globals.hair_transfer_strength = float(
+            switch_states.get("hair_transfer_strength", 0.0)
+        )
+        # --- [FEATURE:RTX-UPSCALER] ---
+        modules.globals.rtx_upscaler_enabled = bool(
+            switch_states.get("rtx_upscaler_enabled", False)
+        )
+        modules.globals.rtx_upscaler_scale = float(
+            switch_states.get("rtx_upscaler_scale", 2.0)
+        )
         modules.globals.enhancer_blend = switch_states.get("enhancer_blend", 100.0)
         modules.globals.live_enhance_skip = int(
             switch_states.get("live_enhance_skip", 2)
@@ -1342,6 +1366,51 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         ),
     )
 
+    # --- [FEATURE:SKIN-TONE] Skin tone match slider ---
+    skin_tone_var = ctk.DoubleVar(value=modules.globals.skin_tone_strength)
+
+    def on_skin_tone_change(value: float):
+        modules.globals.skin_tone_strength = float(value)
+        save_switch_states()
+
+    skin_tone_slider, _stm = make_slider_row(
+        tuning_inner, 14, _("Skin tone match"), skin_tone_var,
+        0.0, 100.0, on_skin_tone_change,
+    )
+    ToolTip(
+        skin_tone_slider,
+        _(
+            "Match your visible skin (face, ears, neck) to the source "
+            "person's complexion. Statistical re-light — your own shading, "
+            "highlights and texture are kept, only the complexion moves. "
+            "0 = off, 100 = full match. Uses the AI face parser "
+            "(bisenet_resnet_18.onnx, auto-downloads ~50MB)."
+        ),
+    )
+
+    # --- [FEATURE:HAIR-TRANSFER] Hair transfer slider ---
+    hair_transfer_var = ctk.DoubleVar(value=modules.globals.hair_transfer_strength)
+
+    def on_hair_transfer_change(value: float):
+        modules.globals.hair_transfer_strength = float(value)
+        save_switch_states()
+
+    hair_transfer_slider, _htr = make_slider_row(
+        tuning_inner, 15, _("Hair transfer"), hair_transfer_var,
+        0.0, 100.0, on_hair_transfer_change,
+    )
+    ToolTip(
+        hair_transfer_slider,
+        _(
+            "Replace your hair with the source person's hair (shape "
+            "included). AI-segmented, tracked to your head pose, re-lit "
+            "to the scene and grain-matched so it is part of the swap, "
+            "not a sticker. Your leftover hair is inpainted away. "
+            "0 = off (your hair, optionally recolored by the sliders "
+            "above), 100 = fully opaque source hair."
+        ),
+    )
+
     # ===================== CAMERA / OUTPUT / UI CARD =====================
     cam_card = make_card(main, "05 — Camera, output & UI", _("Camera, output & UI"))
     cam_inner = ctk.CTkFrame(cam_card, fg_color="transparent", border_width=0)
@@ -1590,6 +1659,42 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         ),
     )
 
+    # --- [FEATURE:RTX-UPSCALER] switch + scale slider ---
+    rtx_var = ctk.BooleanVar(value=modules.globals.rtx_upscaler_enabled)
+
+    def on_rtx_toggle():
+        modules.globals.rtx_upscaler_enabled = rtx_var.get()
+        save_switch_states()
+        if modules.globals.rtx_upscaler_enabled:
+            # Fetch the Real-ESRGAN model in the background so the first
+            # upscaled frame doesn't stall the live pipeline.
+            threading.Thread(
+                target=_rtx_upscaler.pre_check, daemon=True
+            ).start()
+            update_status(
+                "RTX Upscaler on — applies to the preview/projection "
+                "display (not the virtual camera)."
+            )
+        else:
+            update_status("RTX Upscaler off.")
+
+    rtx_switch = ctk.CTkSwitch(
+        sw_row, text=_("RTX upscaler"),
+        variable=rtx_var, cursor="hand2", command=on_rtx_toggle,
+    )
+    rtx_switch.grid(row=3, column=0, sticky="w", pady=6)
+    ToolTip(
+        rtx_switch,
+        _(
+            "AI super-resolution of the displayed frame. Uses NVIDIA "
+            "Video Effects SuperRes on Windows RTX GPUs (set "
+            "PCAST_NVVFX_HOME to the SDK directory), otherwise the "
+            "Real-ESRGAN x2 model on any GPU/CPU (~64MB auto-download). "
+            "Display only — virtual camera and recorder stay at the "
+            "original resolution."
+        ),
+    )
+
     global record_status_label
     record_status_label = ctk.CTkLabel(
         sw_row,
@@ -1708,6 +1813,26 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         text_color=TEXT_DIM, font=ctk.CTkFont(size=10), anchor="w",
     )
     vcam_status_label.grid(row=6, column=0, columnspan=2, sticky="ew", pady=(8, 0))
+
+    # --- [FEATURE:RTX-UPSCALER] scale slider ---
+    rtx_scale_var = ctk.DoubleVar(value=modules.globals.rtx_upscaler_scale)
+
+    def on_rtx_scale_change(value: float):
+        modules.globals.rtx_upscaler_scale = float(value)
+        save_switch_states()
+
+    rtx_scale_slider, _rxs = make_slider_row(
+        cam_inner, 7, _("Upscale factor"), rtx_scale_var,
+        1.0, 4.0, on_rtx_scale_change, fmt="{:.1f}x",
+    )
+    ToolTip(
+        rtx_scale_slider,
+        _(
+            "Output scale of the RTX Upscaler (1.0 = off, 2.0 = native "
+            "model scale, above 2.0 is resampled). Higher costs more "
+            "GPU/CPU time per frame."
+        ),
+    )
 
     # ===================== IN-WINDOW PREVIEW SLOT =====================
     # Always created; only populated when in_window_preview is on.
@@ -2523,6 +2648,19 @@ def _present_processed_frame(bgr_frame):
         get_virtual_cam().close()
         modules.globals.virtual_cam_active = False
 
+    # 2b) [FEATURE:RTX-UPSCALER] — AI upscale for the DISPLAY targets only.
+    # The virtual camera (above) and recorder keep the original resolution.
+    if (
+        modules.globals.rtx_upscaler_enabled
+        and modules.globals.rtx_upscaler_scale > 1.0
+    ):
+        try:
+            bgr_frame = _rtx_upscaler.upscale(
+                bgr_frame, float(modules.globals.rtx_upscaler_scale)
+            )
+        except Exception as e:
+            print(f"[ui] RTX upscaler failed: {e}")
+
     # 3) Choose the visible target
     targets = []
     if modules.globals.projection_mode and projection_window is not None \
@@ -2742,6 +2880,17 @@ def _processing_thread_func(capture_queue, processed_queue, stop_event,
                         temp_frame = _hair_swap.apply_hair_swap(
                             temp_frame, source_image, cached_target_face,
                             parse_every=5,
+                        )
+                    # --- [FEATURE:APPEARANCE] skin-tone match + hair
+                    # transfer (single-face mode only, parse amortized
+                    # over 5 frames like hair_swap above).
+                    if (
+                        _appearance.is_enabled()
+                        and not modules.globals.many_faces
+                        and cached_target_face is not None
+                    ):
+                        temp_frame = _appearance.apply_appearance(
+                            temp_frame, cached_target_face, parse_every=5,
                         )
                     # Apply post-processing (sharpening, interpolation)
                     temp_frame = frame_processor.apply_post_processing(temp_frame, swapped_bboxes)

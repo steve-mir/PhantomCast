@@ -150,3 +150,70 @@ def get_hair_mask(frame: Frame, include_hat: bool = True) -> Optional[np.ndarray
     if include_hat:
         mask = np.where(label == HAT_CLASS_ID, np.uint8(255), mask)
     return mask
+
+
+# --- [FEATURE:SKIN-TONE] / [FEATURE:HAIR-TRANSFER] helpers -----------------
+# Additive helpers shared by the appearance-matching modules. Safe to delete
+# together with modules/processors/frame/{appearance,skin_tone,hair_transfer}.py.
+
+# zllrunning/face-parsing.PyTorch class ids that read as bare skin:
+# 1 = facial skin, 7/8 = ears, 10 = nose, 14 = neck.
+SKIN_CLASS_IDS = (1, 7, 8, 10, 14)
+
+
+def class_mask(label: np.ndarray, class_ids) -> np.ndarray:
+    """Binary uint8 mask (255 = any of *class_ids*) from a label map."""
+    mask = np.zeros(label.shape, dtype=np.uint8)
+    for cid in class_ids:
+        mask[label == cid] = 255
+    return mask
+
+
+def get_skin_mask(frame: Frame) -> Optional[np.ndarray]:
+    """Binary uint8 mask of all visible skin (face, ears, nose, neck)."""
+    label = parse(frame)
+    if label is None:
+        return None
+    return class_mask(label, SKIN_CLASS_IDS)
+
+
+# Head ROI expansion factors relative to a detected face bbox. BiSeNet is
+# trained on portrait crops — parsing a head-centered crop instead of the
+# whole frame makes labels far more reliable (busy backgrounds stop being
+# classified as skin/hair) and confines effects to the tracked person.
+_ROI_SIDE = 0.9       # extra width on each side, × face width
+_ROI_UP = 1.4         # extra height above, × face height (hair)
+_ROI_DOWN = 1.1       # extra height below, × face height (neck)
+
+
+def head_roi(frame: Frame, face) -> Optional[tuple]:
+    """(x0, y0, x1, y1) head crop around the detected face, frame-clamped."""
+    bbox = getattr(face, "bbox", None) if face is not None else None
+    if bbox is None:
+        return None
+    h, w = frame.shape[:2]
+    fx0, fy0, fx1, fy1 = [float(v) for v in bbox[:4]]
+    fw, fh = max(fx1 - fx0, 1.0), max(fy1 - fy0, 1.0)
+    x0 = int(max(0, fx0 - _ROI_SIDE * fw))
+    x1 = int(min(w, fx1 + _ROI_SIDE * fw))
+    y0 = int(max(0, fy0 - _ROI_UP * fh))
+    y1 = int(min(h, fy1 + _ROI_DOWN * fh))
+    if x1 - x0 < 16 or y1 - y0 < 16:
+        return None
+    return (x0, y0, x1, y1)
+
+
+def parse_head(frame: Frame, face) -> Optional[np.ndarray]:
+    """Full-frame label map parsed from the head ROI only. Everything
+    outside the ROI is class 0 (background). Falls back to a full-frame
+    parse when no usable bbox exists."""
+    roi = head_roi(frame, face)
+    if roi is None:
+        return parse(frame)
+    x0, y0, x1, y1 = roi
+    roi_label = parse(frame[y0:y1, x0:x1])
+    if roi_label is None:
+        return None
+    label = np.zeros(frame.shape[:2], dtype=np.uint8)
+    label[y0:y1, x0:x1] = roi_label
+    return label

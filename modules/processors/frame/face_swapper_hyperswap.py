@@ -45,6 +45,8 @@ from modules.processors.frame.face_masking import (
     create_quick_lip_mask,
 )
 from modules.processors.frame import hair_swap as _hair_swap
+# --- [FEATURE:APPEARANCE] skin-tone match + hair transfer (toggleable) ---
+from modules.processors.frame import appearance as _appearance
 
 NAME = "PCAST.FACE-SWAPPER-HYPERSWAP"
 INPUT_SIZE = 256
@@ -405,6 +407,11 @@ def process_frame(source_face: Face, temp_frame: Frame, target_face: Face = None
                 processed_frame = _hair_swap.apply_hair_swap(
                     processed_frame, source_face, target_face, parse_every=1
                 )
+            # --- [FEATURE:APPEARANCE] skin-tone match + hair transfer ---
+            if _appearance.is_enabled():
+                processed_frame = _appearance.apply_appearance(
+                    processed_frame, target_face, parse_every=1
+                )
 
     return apply_post_processing(processed_frame, swapped_face_bboxes)
 
@@ -580,6 +587,9 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
     use_v2 = getattr(modules.globals, "map_faces", False)
     _hair_swap.reset_state()
     _hair_swap.reset_source_cache()
+    # --- [FEATURE:APPEARANCE] ---
+    _appearance.reset_state()
+    _appearance.reset_source_cache()
     target_frame = cv2.imread(target_path)
     if target_frame is None:
         update_status(f"Could not read target: {target_path}", NAME)
@@ -610,6 +620,9 @@ def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
     update_status("Processing video with HyperSwap face-swap pipeline.", NAME)
     _hair_swap.reset_state()
     _hair_swap.reset_source_cache()
+    # --- [FEATURE:APPEARANCE] ---
+    _appearance.reset_state()
+    _appearance.reset_source_cache()
     modules.processors.frame.core.process_video(
         source_path, temp_frame_paths, process_frames
     )

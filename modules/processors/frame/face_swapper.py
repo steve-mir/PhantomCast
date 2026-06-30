@@ -18,6 +18,8 @@ from modules.utilities import (
 from modules.cluster_analysis import find_closest_centroid
 from modules.gpu_processing import gpu_gaussian_blur, gpu_sharpen, gpu_add_weighted, gpu_resize, gpu_cvt_color
 from modules.processors.frame import hair_swap as _hair_swap
+# --- [FEATURE:APPEARANCE] skin-tone match + hair transfer (toggleable) ---
+from modules.processors.frame import appearance as _appearance
 import os
 from collections import deque
 import time
@@ -743,6 +745,11 @@ def process_frame(source_face: Face, temp_frame: Frame, target_face: Face = None
                 processed_frame = _hair_swap.apply_hair_swap(
                     processed_frame, source_face, target_face, parse_every=1
                 )
+            # --- [FEATURE:APPEARANCE] skin-tone match + hair transfer ---
+            if _appearance.is_enabled():
+                processed_frame = _appearance.apply_appearance(
+                    processed_frame, target_face, parse_every=1
+                )
 
     final_frame = apply_post_processing(processed_frame, swapped_face_bboxes)
     return final_frame
@@ -995,6 +1002,9 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
     PREVIOUS_FRAME_RESULT = None
     _hair_swap.reset_state()
     _hair_swap.reset_source_cache()
+    # --- [FEATURE:APPEARANCE] ---
+    _appearance.reset_state()
+    _appearance.reset_source_cache()
     # ---
 
     use_v2 = getattr(modules.globals, "map_faces", False)
@@ -1058,6 +1068,9 @@ def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
     PREVIOUS_FRAME_RESULT = None
     _hair_swap.reset_state()
     _hair_swap.reset_source_cache()
+    # --- [FEATURE:APPEARANCE] ---
+    _appearance.reset_state()
+    _appearance.reset_source_cache()
     # ---
 
     mode_desc = "'map_faces'" if getattr(modules.globals, "map_faces", False) else "'simple'"

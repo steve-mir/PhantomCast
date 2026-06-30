@@ -103,6 +103,32 @@ forehead_width: float = 0.0        # Lateral forehead/head extension (0=off, 100
 hair_color: float = 0.0            # Color match strength toward source hair (0-100)
 hair_texture: float = 0.0          # Hi-freq luminance variance match strength (0-100)
 
+# --- [FEATURE:SKIN-TONE] Skin complexion matching ------------------------
+# Shift the target's visible skin (face, nose, ears, neck — BiSeNet parsed)
+# toward the source image's complexion via statistical LAB transfer. The
+# transfer moves the tone/chroma distribution while keeping the target's
+# own shading and texture, so the result is re-lit rather than painted.
+# 0 = off (legacy behavior, code path completely skipped).
+skin_tone_strength: float = 0.0    # 0-100; 0 = off, 100 = full match
+
+# --- [FEATURE:HAIR-TRANSFER] Source hair transfer ------------------------
+# Replace the target's hair with the source's hair (shape included), not
+# just recolor it. The source hair is segmented with BiSeNet, aligned to
+# the target head pose per frame, re-lit to the scene, grain-matched and
+# feather-composited; leftover original hair is inpainted away.
+# Independent from the legacy hair_color / hair_texture sliders above.
+# 0 = off (legacy behavior, code path completely skipped).
+hair_transfer_strength: float = 0.0  # 0-100; 0 = off, 100 = fully opaque
+
+# --- [FEATURE:RTX-UPSCALER] AI upscaling of the preview frame ------------
+# Final display-stage spatial upscale. Uses NVIDIA Video Effects SDK
+# (RTX VSR) when available on Windows + RTX GPUs (opt-in, experimental),
+# otherwise the Real-ESRGAN x2 ONNX model on any GPU/CPU. Applies to the
+# preview / projection / in-window targets only — the virtual camera and
+# recorder receive the un-upscaled frame.
+rtx_upscaler_enabled: bool = False
+rtx_upscaler_scale: float = 2.0      # 1.0-4.0 output scale factor
+
 # --- START: Added for Frame Interpolation ---
 enable_interpolation: bool = True # Toggle temporal smoothing
 interpolation_weight: float = 0  # Blend weight for current frame (0.0-1.0). Lower=smoother.
